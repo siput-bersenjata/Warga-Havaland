@@ -252,6 +252,18 @@ body.lite-mode .hero-badge-pill {
   color: var(--accent);
 }
 
+.user-auth-pill.guest-mode {
+  background: var(--bg-subtle);
+  border: 1px dashed var(--surface-border);
+  color: var(--text-secondary);
+}
+
+.user-auth-pill.guest-mode:hover {
+  background: var(--surface);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
 /* ==========================================================================
    Base & Reset
    ========================================================================== */

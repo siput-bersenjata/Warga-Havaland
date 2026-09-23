@@ -60,6 +60,7 @@ const HavalandApp = {
     if (initialHash && ["beranda", "kas", "rincian", "kegiatan", "warga", "kontak"].includes(initialHash)) {
       this.navigate(initialHash, false);
     }
+    this.initialized = true;
   },
 
   // Sinkronisasi data dari Vercel Cloud Database
@@ -142,6 +143,11 @@ const HavalandApp = {
     const customAsp = HavalandUtils.loadStorage("custom_aspirasi", []);
     if (customAsp && customAsp.length > 0) {
       HavalandData.aspirasi = [...customAsp, ...HavalandData.aspirasi];
+    }
+
+    const customWarga = HavalandUtils.loadStorage("custom_warga", null);
+    if (customWarga && Array.isArray(customWarga)) {
+      HavalandData.warga = customWarga;
     }
   },
 
@@ -576,9 +582,11 @@ const HavalandApp = {
                     <svg class="w-4 h-4 mr-1 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     Kwitansi
                   </button>
-                  <button class="btn btn-sm" style="color: var(--danger); padding: 4px 6px; border: 1px solid rgba(239, 68, 68, 0.25); background: transparent;" onclick="HavalandApp.hapusTransaksi('${t.id}', event)" title="Hapus Transaksi (Khusus Warga/Admin Login)">
+                  ${(typeof HavalandAuth !== 'undefined' && HavalandAuth.isLoggedIn()) ? `
+                  <button class="btn btn-sm" style="color: var(--danger); padding: 4px 6px; border: 1px solid rgba(239, 68, 68, 0.25); background: transparent;" onclick="HavalandApp.hapusTransaksi('${t.id}', event)" title="Hapus Transaksi (Pengguna Login)">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                   </button>
+                  ` : ''}
                 </div>
               </td>
             </tr>
@@ -616,7 +624,14 @@ const HavalandApp = {
                 <div class="trx-amount ${isMasuk ? 'masuk' : 'keluar'}">
                   ${isMasuk ? '+' : '-'} ${HavalandUtils.formatRupiah(t.nominal)}
                 </div>
-                <span class="badge ${isMasuk ? 'badge-success' : 'badge-danger'}">Kwitansi →</span>
+                <div style="display: flex; gap: 4px; align-items: center; justify-content: flex-end; margin-top: 4px;">
+                  <span class="badge ${isMasuk ? 'badge-success' : 'badge-danger'}">Kwitansi →</span>
+                  ${(typeof HavalandAuth !== 'undefined' && HavalandAuth.isLoggedIn()) ? `
+                  <button class="btn btn-sm" style="color: var(--danger); padding: 2px 6px; border: 1px solid rgba(239, 68, 68, 0.25); background: transparent;" onclick="HavalandApp.hapusTransaksi('${t.id}', event)" title="Hapus Transaksi (Pengguna Login)">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                  ` : ''}
+                </div>
               </div>
             </div>
           `;
@@ -739,10 +754,12 @@ const HavalandApp = {
               <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
               Simpan ke Kalender
             </button>
+            ${(typeof HavalandAuth !== 'undefined' && HavalandAuth.isLoggedIn()) ? `
             <button class="btn btn-sm" style="color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.25); background: transparent; font-size: 0.75rem;" onclick="HavalandApp.hapusKegiatan('${k.id}')" title="Hapus Jadwal Kegiatan">
               <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
               Hapus
             </button>
+            ` : ''}
           </div>
         </div>
       `;
@@ -1013,7 +1030,14 @@ END:VCALENDAR`;
               <span class="badge badge-purple">${a.kategori}</span>
               <span style="font-size: 0.75rem; color: var(--text-muted);">${HavalandUtils.formatTanggalSingkat(a.tanggal)}</span>
             </div>
-            <span style="font-size: 0.75rem; font-weight: 700; color: var(--danger);">Urgensi: ${a.urgensi}</span>
+            <div style="display: flex; gap: 0.4rem; align-items: center;">
+              <span style="font-size: 0.75rem; font-weight: 700; color: var(--danger);">Urgensi: ${a.urgensi}</span>
+              ${(typeof HavalandAuth !== 'undefined' && HavalandAuth.isAdmin()) ? `
+              <button type="button" class="btn btn-sm" style="color: var(--danger); padding: 1px 6px; border: 1px solid rgba(239, 68, 68, 0.25); background: transparent; font-size: 0.7rem;" onclick="HavalandApp.hapusAspirasi('${a.id}')" title="Hapus Aspirasi (Admin RT)">
+                Hapus
+              </button>
+              ` : ''}
+            </div>
           </div>
 
           <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--text-primary);">${a.judul}</h4>
@@ -1031,6 +1055,13 @@ END:VCALENDAR`;
 
   async handleKirimAspirasi(event) {
     event.preventDefault();
+    if (!HavalandAuth.isLoggedIn()) {
+      HavalandUtils.showToast("Akses Masuk Diperlukan", "Anda dalam Mode Tamu. Silakan masuk akun warga terlebih dahulu untuk mengirim aspirasi.", "warning");
+      HavalandAuth.openLoginModal();
+      return;
+    }
+
+    const user = HavalandAuth.getCurrentUser();
     const nama = document.getElementById("asp-nama").value.trim();
     const kategori = document.getElementById("asp-kategori").value;
     const urgensi = document.getElementById("asp-urgensi").value;
@@ -1046,7 +1077,8 @@ END:VCALENDAR`;
       tanggal: new Date().toISOString().slice(0, 10),
       status: "Diproses",
       tanggapan: "Laporan telah diterima sistem dan segera diteruskan ke Seksi terkait.",
-      urgensi: urgensi
+      urgensi: urgensi,
+      createdBy: `${user.nama} (${user.role})`
     };
 
     HavalandData.aspirasi.unshift(newAspirasi);
@@ -1060,6 +1092,7 @@ END:VCALENDAR`;
     this.closeModal("modal-aspirasi");
     document.getElementById("form-aspirasi").reset();
 
+    if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
     HavalandUtils.showToast("Laporan Terkirim", "Terima kasih, aspirasi fasilitas Anda telah dicatat pengurus RT!", "success");
 
     // Kirim ke Vercel Cloud Database jika API tersedia
@@ -1072,6 +1105,21 @@ END:VCALENDAR`;
     } catch (e) {
       console.log("Cloud sync aspirasi dilewati (mode offline).");
     }
+  },
+
+  hapusAspirasi(aspId) {
+    if (!HavalandAuth.isAdmin()) {
+      HavalandUtils.showToast("Akses Terbatas", "Hanya Administrator RT yang dapat menghapus catatan aspirasi.", "error");
+      return;
+    }
+    const user = HavalandAuth.getCurrentUser();
+    if (!confirm(`Hapus catatan aspirasi ${aspId}? Tindakan ini akan dicatat atas nama ${user.nama}.`)) return;
+
+    HavalandData.aspirasi = HavalandData.aspirasi.filter(a => a.id !== aspId);
+    HavalandUtils.saveStorage("custom_aspirasi", HavalandData.aspirasi);
+    this.renderAspirasi();
+    if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+    HavalandUtils.showToast("Aspirasi Dihapus", `Laporan ${aspId} berhasil dihapus oleh ${user.nama}`, "info");
   },
 
   // =========================================================================
@@ -1094,6 +1142,11 @@ END:VCALENDAR`;
 
   async handleTambahTransaksi(event) {
     event.preventDefault();
+    if (!HavalandAuth.isLoggedIn()) {
+      HavalandUtils.showToast("Akses Masuk Diperlukan", "Anda dalam Mode Tamu. Silakan masuk akun terlebih dahulu untuk mencatat transaksi.", "warning");
+      HavalandAuth.openLoginModal();
+      return;
+    }
     const user = HavalandAuth.getCurrentUser();
     const jenis = document.getElementById("new-trx-jenis").value;
     const tanggal = document.getElementById("new-trx-tanggal").value;
@@ -1164,7 +1217,7 @@ END:VCALENDAR`;
   hapusTransaksi(trxId, e) {
     if (e) e.stopPropagation();
     if (!HavalandAuth.isLoggedIn()) {
-      HavalandUtils.showToast("Akses Terbatas", "Silakan masuk akun terlebih dahulu untuk menghapus transaksi kas", "warning");
+      HavalandUtils.showToast("Akses Terbatas", "Anda dalam Mode Tamu (Hanya Lihat). Silakan masuk akun terlebih dahulu untuk menghapus transaksi kas.", "warning");
       HavalandAuth.openLoginModal();
       return;
     }
@@ -1186,7 +1239,7 @@ END:VCALENDAR`;
   // =========================================================================
   openTambahKegiatanModal() {
     if (!HavalandAuth.isLoggedIn()) {
-      HavalandUtils.showToast("Akses Diperlukan", "Silakan masuk akun terlebih dahulu untuk menambah jadwal kegiatan", "info");
+      HavalandUtils.showToast("Akses Masuk Diperlukan", "Anda dalam Mode Tamu (Hanya Lihat). Silakan masuk akun terlebih dahulu untuk menambah jadwal kegiatan.", "info");
       HavalandAuth.openLoginModal();
       return;
     }
@@ -1201,6 +1254,7 @@ END:VCALENDAR`;
   handleTambahKegiatan(event) {
     event.preventDefault();
     if (!HavalandAuth.isLoggedIn()) {
+      HavalandUtils.showToast("Akses Masuk Diperlukan", "Anda dalam Mode Tamu. Silakan masuk akun terlebih dahulu untuk menambah jadwal kegiatan.", "warning");
       HavalandAuth.openLoginModal();
       return;
     }
@@ -1247,7 +1301,7 @@ END:VCALENDAR`;
 
   hapusKegiatan(kegId) {
     if (!HavalandAuth.isLoggedIn()) {
-      HavalandUtils.showToast("Akses Terbatas", "Silakan login untuk menghapus jadwal kegiatan", "warning");
+      HavalandUtils.showToast("Akses Terbatas", "Anda dalam Mode Tamu (Hanya Lihat). Silakan masuk akun untuk menghapus jadwal kegiatan.", "warning");
       HavalandAuth.openLoginModal();
       return;
     }
@@ -1664,7 +1718,7 @@ END:VCALENDAR`;
     const wargaId = select ? select.value : null;
 
     if (!wargaId) {
-      resultBox.style.display = "none";
+      if (resultBox) resultBox.style.display = "none";
       this.selectedWargaIuran = null;
       return;
     }
@@ -1674,24 +1728,159 @@ END:VCALENDAR`;
 
     this.selectedWargaIuran = w;
 
-    document.getElementById("cek-blok-label").textContent = w.blok;
-    document.getElementById("cek-nama-kk").textContent = w.namaKK;
-    document.getElementById("cek-cluster-label").textContent = w.cluster;
-    document.getElementById("cek-terakhir-bayar").textContent = w.terakhirBayar;
+    const blokLabel = document.getElementById("cek-blok-label");
+    const namaKKLabel = document.getElementById("cek-nama-kk");
+    const clusterLabel = document.getElementById("cek-cluster-label");
+    const terakhirBayarLabel = document.getElementById("cek-terakhir-bayar");
+
+    if (blokLabel) blokLabel.textContent = w.blok;
+    if (namaKKLabel) namaKKLabel.textContent = w.namaKK;
+    if (clusterLabel) clusterLabel.textContent = w.cluster;
+    if (terakhirBayarLabel) terakhirBayarLabel.textContent = w.terakhirBayar;
 
     const isLunas = w.iuranBulanIni;
     const badgeContainer = document.getElementById("cek-status-badge");
     const statusText = document.getElementById("cek-bulan-status");
 
-    if (isLunas) {
-      badgeContainer.innerHTML = `<span class="badge badge-success" style="font-size: 0.85rem;">Lunas Terverifikasi</span>`;
-      statusText.innerHTML = `<span style="color: var(--accent); font-weight: 700;">Lunas (September 2026)</span>`;
-    } else {
-      badgeContainer.innerHTML = `<span class="badge badge-danger" style="font-size: 0.85rem;">Belum Terbayar</span>`;
-      statusText.innerHTML = `<span style="color: var(--danger); font-weight: 700;">Menunggu Pembayaran (Rp 350.000)</span>`;
+    if (badgeContainer && statusText) {
+      if (isLunas) {
+        badgeContainer.innerHTML = `<span class="badge badge-success" style="font-size: 0.85rem;">Lunas Terverifikasi</span>`;
+        statusText.innerHTML = `<span style="color: var(--accent); font-weight: 700;">Lunas (September 2026)</span>`;
+      } else {
+        badgeContainer.innerHTML = `<span class="badge badge-danger" style="font-size: 0.85rem;">Belum Terbayar</span>`;
+        statusText.innerHTML = `<span style="color: var(--danger); font-weight: 700;">Menunggu Pembayaran (Rp 350.000)</span>`;
+      }
     }
 
-    resultBox.style.display = "block";
+    // Render area aksi otentikasi iuran (Mode Tamu vs Pengguna Login)
+    const actionArea = document.getElementById("iuran-auth-action-area");
+    if (actionArea) {
+      if (typeof HavalandAuth !== "undefined" && HavalandAuth.isLoggedIn()) {
+        const user = HavalandAuth.getCurrentUser();
+        if (isLunas) {
+          actionArea.innerHTML = `
+            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 0.75rem 0.9rem; font-size: 0.8rem; color: var(--accent); display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <span>Status: <strong>Lunas Terverifikasi</strong></span>
+              </div>
+              ${HavalandAuth.isAdmin() ? `
+              <button type="button" class="btn btn-sm" style="color: var(--danger); background: transparent; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.72rem; padding: 3px 8px;" onclick="HavalandApp.batalkanIuranRumahIni('${w.id}')" title="Batalkan status lunas (Admin/Pengurus)">
+                Batalkan Lunas
+              </button>
+              ` : ''}
+            </div>
+          `;
+        } else {
+          actionArea.innerHTML = `
+            <button type="button" class="btn btn-primary" onclick="HavalandApp.catatIuranRumahIni('${w.id}')" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; font-weight: 700;">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Verifikasi & Catat Masuk ke Buku Kas (Rp 350.000)
+            </button>
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-align: center;">
+              Pencatat: <strong>${user.nama} (${user.role})</strong> • Otomatis masuk ke Buku Kas
+            </div>
+          `;
+        }
+      } else {
+        actionArea.innerHTML = `
+          <div style="background: var(--bg-subtle); border: 1px dashed var(--surface-border); border-radius: var(--radius-md); padding: 0.75rem 0.9rem; font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;">
+            <div>
+              <div style="font-weight: 700; color: var(--text-primary); font-size: 0.82rem; display: flex; align-items: center; gap: 0.35rem;">
+                <span>🔒</span> Mode Tamu (Hanya Lihat Data)
+              </div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+                Untuk mengubah status iuran atau verifikasi mutasi kas, silakan masuk ke akun warga/pengurus.
+              </div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; white-space: nowrap;" onclick="HavalandAuth.openLoginModal()">
+              Masuk Akun
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    if (resultBox) resultBox.style.display = "block";
+  },
+
+  catatIuranRumahIni(wargaId) {
+    if (!HavalandAuth.isLoggedIn()) {
+      HavalandUtils.showToast("Akses Terbatas", "Anda dalam Mode Tamu. Silakan masuk akun warga terlebih dahulu untuk mencatat pembayaran iuran.", "warning");
+      HavalandAuth.openLoginModal();
+      return;
+    }
+
+    const w = HavalandData.warga.find(item => item.id === wargaId);
+    if (!w) return;
+
+    const user = HavalandAuth.getCurrentUser();
+    const nominal = 350000;
+    const tanggal = new Date().toISOString().slice(0, 10);
+    const pencatatInfo = `${user.nama} (${user.role})`;
+
+    const newTrx = {
+      id: `TRX-${tanggal.replace(/-/g, '').slice(0, 6)}-${(HavalandData.transaksi.length + 1).toString().padStart(3, '0')}`,
+      tanggal: tanggal,
+      jenis: "masuk",
+      kategori: "Iuran Bulanan",
+      uraian: `Iuran Kas September 2026 - ${w.namaKK} (${w.blok})`,
+      nominal: nominal,
+      metode: "Transfer Bank",
+      pj: pencatatInfo,
+      bukti: `IUR-${w.blok.replace(/[^a-zA-Z0-9]/g, '')}-${Date.now().toString().slice(-4)}`,
+      status: "Verified",
+      createdBy: pencatatInfo,
+      createdAt: new Date().toISOString(),
+      catatan: `Pembayaran iuran dikonfirmasi oleh ${pencatatInfo}`
+    };
+
+    // Update status warga
+    w.iuranBulanIni = true;
+    w.terakhirBayar = "September 2026";
+
+    // Simpan data transaksi
+    HavalandData.transaksi.unshift(newTrx);
+    const savedTrx = HavalandUtils.loadStorage("custom_transaksi", []);
+    savedTrx.unshift(newTrx);
+    HavalandUtils.saveStorage("custom_transaksi", savedTrx);
+
+    // Simpan data warga
+    HavalandUtils.saveStorage("custom_warga", HavalandData.warga);
+
+    this.recalculateSummary();
+    this.renderKPIs();
+    this.filterTransaksi();
+    this.filterWarga();
+    this.renderBerandaHighlights();
+    this.updateCekIuranDetail();
+
+    if (typeof HavalandBackup !== "undefined") {
+      HavalandBackup.autoSnapshot();
+    }
+
+    HavalandUtils.showToast(
+      "Iuran Berhasil Dicatat",
+      `Iuran ${w.blok} (${w.namaKK}) Rp 350.000 telah diverifikasi dan masuk Buku Kas atas nama ${user.nama}!`,
+      "success"
+    );
+  },
+
+  batalkanIuranRumahIni(wargaId) {
+    if (!HavalandAuth.isLoggedIn()) {
+      HavalandUtils.showToast("Akses Terbatas", "Silakan masuk akun terlebih dahulu.", "warning");
+      HavalandAuth.openLoginModal();
+      return;
+    }
+    const w = HavalandData.warga.find(item => item.id === wargaId);
+    if (!w) return;
+    if (!confirm(`Batalkan status lunas iuran untuk rumah ${w.blok} (${w.namaKK})?`)) return;
+
+    w.iuranBulanIni = false;
+    HavalandUtils.saveStorage("custom_warga", HavalandData.warga);
+    this.filterWarga();
+    this.updateCekIuranDetail();
+    HavalandUtils.showToast("Dibatalkan", `Status iuran ${w.blok} diubah menjadi Belum Terbayar.`, "info");
   },
 
   kirimWAKonfirmasi() {
@@ -1721,6 +1910,20 @@ END:VCALENDAR`;
   },
 
   openAspirasiModal() {
+    if (!HavalandAuth.isLoggedIn()) {
+      HavalandUtils.showToast(
+        "Akses Masuk Diperlukan",
+        "Anda dalam Mode Tamu (Hanya Lihat). Silakan masuk akun warga terlebih dahulu untuk mengirim aspirasi dan keluhan.",
+        "info"
+      );
+      HavalandAuth.openLoginModal();
+      return;
+    }
+    const user = HavalandAuth.getCurrentUser();
+    const namaInput = document.getElementById("asp-nama");
+    if (namaInput && user) {
+      namaInput.value = `${user.nama} (${user.blok ? 'Blok ' + user.blok : user.role})`;
+    }
     this.openModal("modal-aspirasi");
   },
 
@@ -1981,10 +2184,14 @@ const HavalandAuth = {
 
     if (this.currentUser) {
       const roleIcon = this.currentUser.isAdmin ? "👑" : "👤";
-      const shortName = this.currentUser.nama.split(",")[0].split(" ")[0];
+      const rawName = this.currentUser.nama.split(",")[0].trim();
+      const parts = rawName.split(" ").filter(p => !["Ir.", "dr.", "H.", "Hj.", "Drs.", "Dr.", "ST", "S.T."].includes(p));
+      const shortName = parts[0] || rawName.split(" ")[0];
       const roleBadge = this.currentUser.isAdmin ? "Admin" : "Warga";
       nameLabel.innerHTML = `${roleIcon} ${shortName} <span style="font-size: 0.7rem; opacity: 0.85;">(${roleBadge})</span>`;
       btn.classList.add("logged-in");
+      btn.classList.remove("guest-mode");
+      document.body.setAttribute("data-auth-state", "logged-in");
 
       let sisaText = "";
       if (this.currentSession && this.currentSession.expiresAt) {
@@ -1994,9 +2201,22 @@ const HavalandAuth = {
 
       btn.setAttribute("title", `Masuk sebagai: ${this.currentUser.nama} (${this.currentUser.role})${sisaText} • Klik untuk keluar`);
     } else {
-      nameLabel.textContent = "Masuk Akun";
+      nameLabel.innerHTML = `<span>Mode Tamu</span> <span style="font-size: 0.7rem; opacity: 0.75;">(Hanya Lihat)</span>`;
       btn.classList.remove("logged-in");
-      btn.setAttribute("title", "Klik untuk masuk akun warga / pengurus RT");
+      btn.classList.add("guest-mode");
+      btn.setAttribute("title", "Anda dalam Mode Tamu (Hanya Lihat Data). Klik untuk Masuk Akun Warga/Pengurus.");
+      document.body.setAttribute("data-auth-state", "guest");
+    }
+
+    // Refresh antarmuka dinamis sesuai status hak akses (CRUD/Hapus/Vote/Iuran)
+    if (typeof HavalandApp !== "undefined" && HavalandApp.initialized) {
+      HavalandApp.filterTransaksi();
+      HavalandApp.renderKegiatan();
+      HavalandApp.renderAspirasi();
+      HavalandApp.updateCekIuranDetail();
+    }
+    if (typeof HavalandProposals !== "undefined") {
+      HavalandProposals.renderSlider();
     }
   }
 };
@@ -2459,9 +2679,16 @@ const HavalandProposals = {
                 <span>${hasVoted ? 'Didukung' : 'Dukung'}</span>
                 <strong>(${item.dukungan || 0})</strong>
               </button>
-              <button type="button" class="btn btn-sm" style="font-size: 0.72rem; color: var(--primary); background: transparent; padding: 0;" onclick="HavalandProposals.shareIdeaWA('${item.id}')">
-                Bagikan WA →
-              </button>
+              <div style="display: flex; gap: 4px; align-items: center;">
+                <button type="button" class="btn btn-sm" style="font-size: 0.72rem; color: var(--primary); background: transparent; padding: 0;" onclick="HavalandProposals.shareIdeaWA('${item.id}')">
+                  Bagikan WA →
+                </button>
+                ${(typeof HavalandAuth !== 'undefined' && HavalandAuth.isAdmin()) ? `
+                <button type="button" class="btn btn-sm" style="font-size: 0.7rem; color: var(--danger); background: transparent; border: 1px solid rgba(239, 68, 68, 0.25); padding: 1px 6px; margin-left: 4px;" onclick="HavalandProposals.hapusIde('${item.id}')" title="Hapus Usulan (Admin RT)">
+                  Hapus
+                </button>
+                ` : ''}
+              </div>
             </div>
           </div>
         </div>
@@ -2478,6 +2705,16 @@ const HavalandProposals = {
   },
 
   vote(ideaId) {
+    if (!HavalandAuth.isLoggedIn()) {
+      HavalandUtils.showToast(
+        "Akses Masuk Diperlukan",
+        "Anda dalam Mode Tamu (Hanya Lihat). Silakan masuk akun warga terlebih dahulu untuk memberikan dukungan usulan ide.",
+        "info"
+      );
+      HavalandAuth.openLoginModal();
+      return;
+    }
+
     const votedIds = JSON.parse(localStorage.getItem("havaland_voted_ideas") || "[]");
     const item = HavalandData.usulanIde.find(u => u.id === ideaId);
     if (!item) return;
@@ -2501,6 +2738,21 @@ const HavalandProposals = {
     this.renderSlider();
   },
 
+  hapusIde(ideaId) {
+    if (!HavalandAuth.isAdmin()) {
+      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat menghapus usulan ide warga.", "error");
+      return;
+    }
+    const user = HavalandAuth.getCurrentUser();
+    if (!confirm(`Hapus usulan ide warga ini? Tindakan ini akan dicatat atas nama ${user.nama}.`)) return;
+
+    HavalandData.usulanIde = HavalandData.usulanIde.filter(u => u.id !== ideaId);
+    HavalandUtils.saveStorage("custom_usulan", HavalandData.usulanIde);
+    this.renderSlider();
+    if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+    HavalandUtils.showToast("Usulan Dihapus", `Usulan ide berhasil dihapus oleh ${user.nama}.`, "info");
+  },
+
   shareIdeaWA(ideaId) {
     const item = HavalandData.usulanIde.find(u => u.id === ideaId);
     if (!item) return;
@@ -2512,7 +2764,7 @@ const HavalandProposals = {
     if (!HavalandAuth.isLoggedIn()) {
       HavalandUtils.showToast(
         "Akses Masuk Diperlukan",
-        "Silakan masuk akun warga terlebih dahulu untuk mengajukan usulan ide.",
+        "Anda dalam Mode Tamu (Hanya Lihat). Silakan masuk akun warga terlebih dahulu untuk mengajukan usulan ide.",
         "info"
       );
       HavalandAuth.openLoginModal();
@@ -2531,6 +2783,7 @@ const HavalandProposals = {
   handleSubmit(event) {
     event.preventDefault();
     if (!HavalandAuth.isLoggedIn()) {
+      HavalandUtils.showToast("Akses Masuk Diperlukan", "Anda dalam Mode Tamu. Silakan masuk akun warga terlebih dahulu untuk mengajukan usulan ide.", "warning");
       HavalandAuth.openLoginModal();
       return;
     }
