@@ -1,7 +1,12 @@
 /**
  * Database Connection Module for PostgreSQL (Vercel Postgres, Supabase, Neon, etc.)
  */
-const { Pool } = require('pg');
+let Pool = null;
+try {
+  Pool = require('pg').Pool;
+} catch (e) {
+  // pg is listed in package.json and automatically installed during Vercel deployment
+}
 
 const connectionString = 
   process.env.POSTGRES_URL || 
@@ -11,7 +16,7 @@ const connectionString =
 
 let pool = null;
 
-if (connectionString) {
+if (connectionString && Pool) {
   pool = new Pool({
     connectionString,
     ssl: {

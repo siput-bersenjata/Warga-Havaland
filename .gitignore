@@ -3,3 +3,15 @@ node_modules/
 .env.local
 .DS_Store
 Thumbs.db
+
+# Test/scratch files
+scratch/
+
+# Backup data (may contain sensitive info)
+backups/
+
+# Logs
+*.log
+
+# Vercel deployment cache
+.vercel/

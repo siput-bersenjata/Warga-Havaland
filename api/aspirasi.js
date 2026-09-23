@@ -1,7 +1,11 @@
 const db = require('./db');
+const { validateToken, setCorsHeaders, handlePreflight, safeErrorResponse, validateStringLength } = require('./middleware/auth');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
+  setCorsHeaders(res);
+
+  if (handlePreflight(req, res)) return;
 
   if (req.method === 'GET') {
     if (!db.isConfigured) {
@@ -11,11 +15,18 @@ module.exports = async function handler(req, res) {
       const result = await db.query('SELECT * FROM aspirasi_warga ORDER BY tanggal DESC, created_at DESC');
       return res.status(200).json({ success: true, isConfigured: true, data: result.rows });
     } catch (error) {
-      return res.status(500).json({ success: false, error: error.message });
+      return safeErrorResponse(res, 500, "Gagal mengambil data aspirasi.", error);
     }
   }
 
   if (req.method === 'POST') {
+    // Require authentication for write operations
+    const authHeader = req.headers.authorization || req.headers['Authorization'];
+    const user = validateToken(authHeader);
+    if (!user) {
+      return safeErrorResponse(res, 401, "Akses ditolak. Silakan login terlebih dahulu.");
+    }
+
     if (!db.isConfigured) {
       return res.status(200).json({
         success: false,
@@ -28,7 +39,19 @@ module.exports = async function handler(req, res) {
       const { pelapor, kategori, judul, urgensi } = req.body;
 
       if (!pelapor || !judul) {
-        return res.status(400).json({ success: false, error: "Nama pelapor dan rincian laporan wajib diisi." });
+        return safeErrorResponse(res, 400, "Nama pelapor dan rincian laporan wajib diisi.");
+      }
+
+      // Length validations
+      const lengthErrors = [
+        validateStringLength(pelapor, 'Nama Pelapor', 150),
+        validateStringLength(kategori, 'Kategori', 100),
+        validateStringLength(judul, 'Rincian Laporan', 1000),
+        validateStringLength(urgensi, 'Urgensi', 50),
+      ].filter(Boolean);
+
+      if (lengthErrors.length > 0) {
+        return safeErrorResponse(res, 400, lengthErrors[0]);
       }
 
       const generatedId = `ASP-${Date.now().toString().slice(-4)}`;
@@ -58,8 +81,7 @@ module.exports = async function handler(req, res) {
         data: result.rows[0]
       });
     } catch (error) {
-      console.error("POST /api/aspirasi error:", error);
-      return res.status(500).json({ success: false, error: error.message });
+      return safeErrorResponse(res, 500, "Gagal mengirim aspirasi.", error);
     }
   }
 

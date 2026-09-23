@@ -98,6 +98,15 @@ const HavalandUtils = {
     }
   },
 
+  // Hapus data dari LocalStorage
+  removeStorage(key) {
+    try {
+      localStorage.removeItem(`havaland_${key}`);
+    } catch (e) {
+      console.warn("Gagal menghapus dari LocalStorage:", e);
+    }
+  },
+
   // Ekspor Transaksi Kas ke format CSV
   exportKasCSV(transaksiList) {
     if (!transaksiList || transaksiList.length === 0) {

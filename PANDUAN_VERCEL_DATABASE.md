@@ -5,10 +5,36 @@ Sistem ini telah dilengkapi dengan arsitektur **Serverless API (`/api/*`)** dan 
 ---
 
 ## 🔒 Keamanan Database yang Diterapkan:
-1. **Zero Secret Exposure**: URL & password database disimpan di *Environment Variables* Vercel (di sisi server), **tidak pernah terlihat** oleh pengunjung di browser.
-2. **Proteksi SQL Injection**: Seluruh *query* penambahan transaksi dan aspirasi menggunakan *Parameterized Queries* (`$1, $2, ...`), mencegah manipulasi database berbahaya.
-3. **Graceful Fallback**: Jika database belum disambungkan atau sedang offline, website akan tetap berjalan lancar dengan data lokal + LocalStorage tanpa error.
-4. **Security Headers**: Dilengkapi *XSS Protection*, *Anti-Clickjacking (X-Frame-Options: DENY)*, dan *MIME-Type Sniffing Prevention* di `vercel.json`.
+1. **Garansi Data Lama Aman (Non-Destructive)**: Jika database Anda sudah memiliki data di Vercel, sistem **TIDAK AKAN MENGHAPUS ATAU MENIMPA DATA LAMA**. Seluruh query menggunakan sintaks `CREATE TABLE IF NOT EXISTS` dan `ON CONFLICT DO NOTHING`.
+2. **Zero Secret Exposure**: URL & password database disimpan di *Environment Variables* Vercel (di sisi server), **tidak pernah terlihat** oleh pengunjung di browser.
+3. **Proteksi Akun Admin Utama**: Akun admin utama (`admin`) dilindungi di level API backend dan database sehingga **tidak dapat dihapus** oleh siapapun.
+4. **Role-Based Access Control (RBAC)**: Pembagian hak akses ketat antara Tamu (Hanya Lihat), Warga Tetap, Pengurus RT, Bendahara RT, dan Administrator RT.
+5. **Proteksi SQL Injection & XSS**: Seluruh *query* menggunakan *Parameterized Queries* (`$1, $2, ...`) dan password warga dienkripsi dengan standar **SHA-256**.
+6. **Graceful Fallback**: Jika database offline atau belum terhubung, website otomatis berjalan lancar dengan data lokal + LocalStorage tanpa error.
+7. **Security Headers**: Dilengkapi *XSS Protection*, *Anti-Clickjacking (X-Frame-Options: DENY)*, *Content Security Policy (CSP)*, dan *MIME-Type Sniffing Prevention* di `vercel.json`.
+
+---
+
+## 👥 Manajemen Akun & Hak Akses Warga (Baru)
+
+Administrator RT dapat menambahkan akun baru agar warga perumahan dapat login dan berpartisipasi aktif:
+
+### 1. Akses Akun Administrator Utama:
+* **Username**: `admin`
+* **Password**: `Amalia2125`
+* **Keamanan**: Password dienkripsi dengan SHA-256 hash. Akun ini dilindungi dan tidak dapat dihapus.
+
+### 2. Cara Admin Menambah Akun Warga Baru:
+1. Login ke website menggunakan akun `admin`.
+2. Di bagian header atas (atau menu Pengaturan), klik tombol **"👥 Kelola Akun"**.
+3. Klik tombol **"+ Buat Akun Warga Baru"**.
+4. Pilih nama warga dari dropdown (sudah tersedia daftar 25 kepala keluarga Havaland: Bu Tutik D1, Bu Wati D2, Bu Maria F7, Bu Natali I10-11, dll.). Nama, Blok, dan saran Username akan terisi otomatis.
+5. Masukkan password baru (minimal 6 karakter) dan pilih peran akses:
+   - **Warga Tetap**: Berpartisipasi kirim usulan ide/inovasi, voting usulan, lapor fasilitas rusak/aspirasi, dan cek iuran rumah sendiri.
+   - **Pengurus RT**: Hak warga + menambah/mengelola jadwal kegiatan & siskamling ronda malam, serta memberikan tanggapan status aspirasi warga.
+   - **Bendahara RT**: Hak warga + mencatat transaksi kas masuk/keluar serta verifikasi status pembayaran iuran warga.
+   - **Administrator RT**: Akses penuh sistem, kelola akun pengguna lain, dan backup/restore data.
+6. Klik **"Simpan Akun Baru"**. Akun langsung aktif dan dapat langsung digunakan oleh warga!
 
 ---
 
@@ -20,7 +46,7 @@ Sistem ini telah dilengkapi dengan arsitektur **Serverless API (`/api/*`)** dan 
    ```bash
    git init
    git add .
-   git commit -m "Inisialisasi Website Warga Havaland lengkap dengan API Database"
+   git commit -m "Portal Warga Havaland lengkap dengan Manajemen Akun RBAC dan Database Postgres"
    git branch -M main
    git remote add origin https://github.com/USERNAME-ANDA/warga-havaland.git
    git push -u origin main
@@ -33,45 +59,37 @@ Sistem ini telah dilengkapi dengan arsitektur **Serverless API (`/api/*`)** dan 
 2. Klik tombol **"Add New..."** lalu pilih **"Project"**.
 3. Pilih repositori `warga-havaland` yang baru saja Anda upload, lalu klik **"Import"**.
 4. Biarkan pengaturan default, lalu klik tombol **"Deploy"**.
-5. Tunggu sekitar 1 menit hingga website selesai dideploy dan mendapatkan link gratis (misal: `https://warga-havaland.vercel.app`).
+5. Tunggu sekitar 1 menit hingga website selesai dideploy dan mendapatkan link resmi (misal: `https://warga-havaland.vercel.app`).
 
 ---
 
-### LANGKAH 3: Buat Database PostgreSQL Gratis di Vercel (1 Menit)
-Vercel menyediakan database PostgreSQL bawaan yang sangat mudah dibuat:
+### LANGKAH 3: Hubungkan Database PostgreSQL di Vercel
 
-1. Di dashboard proyek Anda di Vercel, klik tab **"Storage"** di menu atas.
-2. Klik tombol **"Create Database"** lalu pilih **"Postgres"** (didukung oleh Neon).
-3. Beri nama database Anda (misal: `havaland-db`) dan pilih lokasi terdekat (misal: *Singapore - sin1*).
-4. Klik **"Create"**.
-5. Setelah database terbuat, klik tab **".env.local"** atau pilih opsi **"Connect to Project"** agar environment variable `POSTGRES_URL` otomatis terpasang ke website Anda!
-6. Lakukan *Redeploy* sekali (di menu Deployments -> Redeploy) agar variabel database baru aktif.
+* **Jika Database SUDAH ADA**:
+  Cukup pastikan Environment Variable `POSTGRES_URL` atau `DATABASE_URL` sudah terpasang di menu **Settings -> Environment Variables** Vercel Anda. **Data lama Anda dijamin aman dan tidak akan dihapus**.
 
-> 💡 **Alternatif**: Jika Anda lebih menyukai **Supabase** atau **Neon**, cukup buat database gratis di sana, lalu copy *Connection String* URI dan masukkan ke Vercel di menu **Settings -> Environment Variables** dengan nama `POSTGRES_URL` atau `DATABASE_URL`.
+* **Jika BELUM ADA Database (Buat Baru dalam 1 Menit)**:
+  1. Di dashboard proyek Anda di Vercel, klik tab **"Storage"** di menu atas.
+  2. Klik tombol **"Create Database"** lalu pilih **"Postgres"**.
+  3. Beri nama database Anda (misal: `havaland-db`) dan pilih region terdekat (misal: *Singapore - sin1*).
+  4. Klik **"Create"**. Environment variable `POSTGRES_URL` akan otomatis terhubung ke website Anda!
+  5. Lakukan *Redeploy* sekali (di menu Deployments -> Redeploy) agar variabel database aktif.
 
 ---
 
-### LANGKAH 4: Inisialisasi Tabel & Data Awal (Sekali Saja)
-Setelah database terhubung ke proyek Vercel Anda, buat tabel otomatis dengan salah satu cara berikut:
-
-* **Cara Termudah (Via Browser)**:
-  Buka link berikut di browser Anda:
+### LANGKAH 4: Inisialisasi Tabel & Data Awal (Aman)
+Jika database Anda baru:
+* Buka browser dan login sebagai `admin` di website Anda, lalu inisialisasi tabel via endpoint:
   👉 **`https://<nama-web-anda>.vercel.app/api/init-db`**
-  
-  Maka sistem akan otomatis:
-  - Membuat tabel `transaksi_kas`
-  - Membuat tabel `warga_havaland`
-  - Membuat tabel `kegiatan_rutin`
-  - Membuat tabel `aspirasi_warga`
-  - Mengisi data awal kas dan warga Havaland
-
-* **Cara Manual (Via SQL Editor Vercel)**:
-  Buka tab **Storage -> Data / Query** di Vercel, copy isi file `schema.sql`, lalu klik **Run Query**.
+* Atau jalankan isi file `schema.sql` di tab **Storage -> Data / Query** Vercel Anda.
+* **Catatan**: Jika tabel atau data sudah ada sebelumnya, perintah ini otomatis dilewati (`DO NOTHING`), sehingga data yang sudah ada tetap aman 100%.
 
 ---
 
-## 🎯 Hasil Akhir
+## 🎯 Hasil Akhir & Verifikasi
 Setelah terhubung:
-- Indikator di pojok kanan atas website akan berubah menjadi **🟢 Cloud DB Aktif**.
-- Setiap kali Bendahara menambah transaksi kas melalui modal *"+ Catat Transaksi Baru"*, data langsung masuk ke PostgreSQL cloud permanen.
-- Setiap kali warga mengirim laporan di *"Lapor Fasilitas"*, laporan tersebut langsung masuk ke database pengurus RT.
+- Indikator di pojok kanan atas website akan otomatis mendeteksi koneksi cloud.
+- Admin dapat menambah akun warga kapan saja dari website.
+- Pengunjung tanpa login hanya dapat melihat data (Mode Tamu / Read-Only).
+- Transaksi kas, agenda kegiatan, usulan ide, dan aspirasi tersimpan secara terpusat, aman, dan transparan.
+

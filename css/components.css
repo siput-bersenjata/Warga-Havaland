@@ -673,12 +673,16 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.25rem 0.65rem;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.75rem;
   border-radius: var(--radius-full);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.02em;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+  line-height: 1.2;
 }
 
 .badge-success { background: rgba(16, 185, 129, 0.12); color: var(--accent); }
@@ -1909,4 +1913,170 @@ textarea.form-control {
   line-height: 1.35;
 }
 
+/* ==========================================================================
+   Spacious 2-Column Cek Iuran Layout & Inline House Selection
+   ========================================================================== */
+.cek-iuran-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 820px) {
+  .cek-iuran-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.filter-pills-wrapped {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  overflow: visible;
+}
+
+.filter-pills-wrapped .pill-btn {
+  height: 30px;
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
+}
+
+/* Inline house list (Left column of Cek Iuran modal) */
+.inline-house-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 440px;
+  overflow-y: auto;
+  padding-right: 0.3rem;
+  scrollbar-width: thin;
+}
+
+.inline-house-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.inline-house-list::-webkit-scrollbar-thumb {
+  background: var(--surface-border);
+  border-radius: 3px;
+}
+
+.inline-house-list .autocomplete-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  gap: 0.75rem;
+  margin-bottom: 0;
+}
+
+.inline-house-list .autocomplete-item:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+  transform: translateX(2px);
+}
+
+.inline-house-list .autocomplete-item.selected,
+.inline-house-list .autocomplete-item.active {
+  background: rgba(16, 185, 129, 0.09);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1.5px var(--primary);
+}
+
+.inline-house-list .autocomplete-item.selected .autocomplete-item-blok {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+/* ==========================================================================
+   Separate Scaling Buttons for Settings (Font Size & Button/Icon Size)
+   ========================================================================== */
+.size-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .size-options {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.size-btn {
+  background: var(--bg-subtle);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--text-secondary);
+  text-align: center;
+  min-height: 58px;
+}
+
+.size-btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.size-btn.active {
+  background: var(--primary) !important;
+  color: #FFFFFF !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35);
+}
+
+.size-btn.active * {
+  color: #FFFFFF !important;
+}
+
+/* ==========================================================================
+   Emergency Contact Row Card - Guaranteed Symmetry
+   ========================================================================== */
+.kontak-card-item {
+  background: var(--bg-subtle);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: all var(--transition-fast);
+}
+
+.kontak-card-item:hover {
+  border-color: var(--primary-light);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 520px) {
+  .kontak-card-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .kontak-card-item > div:last-child {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
 

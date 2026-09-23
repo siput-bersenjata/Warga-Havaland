@@ -1,9 +1,14 @@
 const db = require('./db');
+const { validateToken, setCorsHeaders, handlePreflight, safeErrorResponse } = require('./middleware/auth');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
+  setCorsHeaders(res);
+
+  if (handlePreflight(req, res)) return;
 
   if (req.method === 'GET') {
+    // GET is public — read-only access for all visitors
     if (!db.isConfigured) {
       return res.status(200).json({ success: true, isConfigured: false, data: [] });
     }
@@ -11,11 +16,22 @@ module.exports = async function handler(req, res) {
       const result = await db.query('SELECT * FROM warga_havaland ORDER BY blok ASC');
       return res.status(200).json({ success: true, isConfigured: true, data: result.rows });
     } catch (error) {
-      return res.status(500).json({ success: false, error: error.message });
+      return safeErrorResponse(res, 500, "Gagal mengambil data warga.", error);
     }
   }
 
   if (req.method === 'PUT') {
+    // Require admin authentication for data modification
+    const authHeader = req.headers.authorization || req.headers['Authorization'];
+    const user = validateToken(authHeader);
+    if (!user) {
+      return safeErrorResponse(res, 401, "Akses ditolak. Silakan login terlebih dahulu.");
+    }
+
+    if (!user.isAdmin) {
+      return safeErrorResponse(res, 403, "Akses ditolak. Hanya Administrator RT yang berhak mengubah data warga.");
+    }
+
     if (!db.isConfigured) {
       return res.status(200).json({
         success: false,
@@ -28,7 +44,11 @@ module.exports = async function handler(req, res) {
       const { id, iuran_bulan_ini, status_iuran, terakhir_bayar } = req.body;
 
       if (!id) {
-        return res.status(400).json({ success: false, error: "ID warga wajib disertakan." });
+        return safeErrorResponse(res, 400, "ID warga wajib disertakan.");
+      }
+
+      if (typeof id !== 'string' || id.length > 50) {
+        return safeErrorResponse(res, 400, "Format ID warga tidak valid.");
       }
 
       const updateQuery = `
@@ -45,7 +65,7 @@ module.exports = async function handler(req, res) {
       const result = await db.query(updateQuery, values);
 
       if (result.rowCount === 0) {
-        return res.status(404).json({ success: false, error: "Data warga tidak ditemukan." });
+        return safeErrorResponse(res, 404, "Data warga tidak ditemukan.");
       }
 
       return res.status(200).json({
@@ -54,8 +74,7 @@ module.exports = async function handler(req, res) {
         data: result.rows[0]
       });
     } catch (error) {
-      console.error("PUT /api/warga error:", error);
-      return res.status(500).json({ success: false, error: error.message });
+      return safeErrorResponse(res, 500, "Gagal memperbarui data warga.", error);
     }
   }
 

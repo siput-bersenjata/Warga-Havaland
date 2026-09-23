@@ -1,7 +1,15 @@
 const db = require('./db');
+const { setCorsHeaders, handlePreflight, safeErrorResponse } = require('./middleware/auth');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
+  setCorsHeaders(res);
+
+  if (handlePreflight(req, res)) return;
+
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
   if (!db.isConfigured) {
     return res.status(200).json({
@@ -44,10 +52,6 @@ module.exports = async function handler(req, res) {
       }
     });
   } catch (error) {
-    console.error("API /data error:", error);
-    return res.status(500).json({
-      connected: false,
-      error: error.message
-    });
+    return safeErrorResponse(res, 500, "Gagal mengambil data.", error);
   }
 };
