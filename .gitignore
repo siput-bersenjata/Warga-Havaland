@@ -15,3 +15,6 @@ backups/
 
 # Vercel deployment cache
 .vercel/
+
+.vercel
+.env*
