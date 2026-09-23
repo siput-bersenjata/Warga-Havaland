@@ -1,17 +1,22 @@
 /**
  * Data Terpusat Warga Perumahan Havaland
- * Lingkungan RT 04 / RW 08, Kelurahan Havaland Asri
+ * Lingkungan RT 04 / RW 08
+ * Alamat: 4J58+37W, Babaan, Ngenep, Kec. Karang Ploso, Kabupaten Malang, Jawa Timur 65152
  */
 
 const HavalandData = {
   profile: {
     namaPerumahan: "Perumahan Havaland",
     lingkungan: "RT 04 / RW 08",
-    kelurahan: "Havaland Asri",
-    kecamatan: "Medan Sunggal",
-    kota: "Medan",
-    provinsi: "Sumatera Utara",
-    kodePos: "20128",
+    alamatLengkap: "4J58+37W, Babaan, Ngenep, Kec. Karang Ploso, Kabupaten Malang, Jawa Timur 65152",
+    plusCode: "4J58+37W",
+    dusun: "Babaan",
+    desa: "Ngenep",
+    kecamatan: "Karang Ploso",
+    kabupaten: "Malang",
+    kota: "Kabupaten Malang",
+    provinsi: "Jawa Timur",
+    kodePos: "65152",
     rekeningKas: {
       bank: "Bank Mandiri",
       nomorRekening: "106-00-9823412-1",
@@ -23,9 +28,9 @@ const HavalandData = {
       { nama: "Bendahara Kas (Ibu Citra Lestari)", nomor: "0821-6577-8899", wa: "6282165778899", role: "Bendahara Kas", icon: "wallet" },
       { nama: "Sekretaris RT (Bpk. Rahmat Hidayat)", nomor: "0852-9811-3456", wa: "6285298113456", role: "Sekretaris", icon: "file-text" },
       { nama: "Koordinator Kebersihan (Bpk. Joko Santoso)", nomor: "0812-6543-7722", wa: "6281265437722", role: "Koor Kebersihan", icon: "trash-2" },
-      { nama: "Polsek Medan Sunggal", nomor: "061-8451110", wa: "", role: "Kepolisian", icon: "phone-call" },
-      { nama: "Pemadam Kebakaran (Damkar)", nomor: "113 / 061-4515356", wa: "", role: "Darurat Api", icon: "flame" },
-      { nama: "Ambulans & IGD RS Terdekat", nomor: "118 / 061-8212111", wa: "", role: "Medis Darurat", icon: "activity" }
+      { nama: "Polsek Karang Ploso", nomor: "0341-461110", wa: "", role: "Kepolisian (Polsek Karang Ploso)", icon: "phone-call" },
+      { nama: "Pemadam Kebakaran (Damkar Kab. Malang)", nomor: "113 / 0341-366113", wa: "", role: "Darurat Api (Damkar)", icon: "flame" },
+      { nama: "Puskesmas & IGD Karang Ploso", nomor: "118 / 0341-461320", wa: "", role: "Medis Darurat (Karang Ploso)", icon: "activity" }
     ]
   },
 
@@ -209,7 +214,7 @@ const HavalandData = {
       nominal: 1450000,
       metode: "Transfer Vendor",
       pj: "Koor Keamanan (Kapten Anton)",
-      bukti: "INV-CCTV-MEDAN",
+      bukti: "INV-CCTV-MLG",
       status: "Verified",
       catatan: "Pembersihan lensa dome, ganti kabel LAN pos satpam"
     }

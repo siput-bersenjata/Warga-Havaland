@@ -1,6 +1,6 @@
 /**
  * Havaland Community Portal - Main Application Logic
- * RT 04 / RW 08, Kelurahan Havaland Asri
+ * RT 04 / RW 08, Babaan, Ngenep, Kec. Karang Ploso, Kabupaten Malang, Jawa Timur 65152
  */
 
 const HavalandApp = {

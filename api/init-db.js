@@ -91,7 +91,7 @@ module.exports = async function handler(req, res) {
         ('TRX-202609-009', '2026-09-08', 'keluar', 'Sosial & Warga', 'Santunan Tali Kasih Warga Sakit Opname (Ibu Ratna Blok B-12)', 500000, 'Tunai', 'Seksi Sosial (Ibu Rina)', 'TANDA-TERIMA-04', 'Verified', 'Sesuai kesepakatan tata tertib dana sosial warga'),
         ('TRX-202609-010', '2026-09-05', 'keluar', 'Kebersihan & Sampah', 'Retribusi Pengangkutan Truk Sampah DLH Bulan September', 1200000, 'Transfer Rek Dishub/DLH', 'Koor Kebersihan (Joko S.)', 'RESI-DLH-8921', 'Verified', 'Pengangkutan 3x seminggu terjadwal'),
         ('TRX-202609-011', '2026-09-02', 'masuk', 'Iuran Warga', 'Iuran Kolektif Awal Bulan Warga Blok A & Blok B (28 KK)', 9800000, 'Transfer Terpadu', 'Bendahara (Citra L.)', 'KWT-REKAP-09A', 'Verified', '28 KK x Rp 350.000'),
-        ('TRX-202608-012', '2026-08-28', 'keluar', 'Fasilitas & PJU', 'Maintenance Berkala Barrier Gate Otomatis & Servis 8 Titik CCTV', 1450000, 'Transfer Vendor', 'Koor Keamanan (Kapten Anton)', 'INV-CCTV-MEDAN', 'Verified', 'Pembersihan lensa dome, ganti kabel LAN pos satpam')
+        ('TRX-202608-012', '2026-08-28', 'keluar', 'Fasilitas & PJU', 'Maintenance Berkala Barrier Gate Otomatis & Servis 8 Titik CCTV', 1450000, 'Transfer Vendor', 'Koor Keamanan (Kapten Anton)', 'INV-CCTV-MLG', 'Verified', 'Pembersihan lensa dome, ganti kabel LAN pos satpam')
       `);
     }
 
