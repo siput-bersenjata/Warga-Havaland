@@ -150,7 +150,42 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* ==========================================================================
-   Top Header Navigation (Desktop & Mobile)
+   Universal SVG Icon Sizing & Strict Layout Constraints
+   ========================================================================== */
+svg {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.w-3 { width: 12px !important; height: 12px !important; }
+.w-3-5, .w-3\.5 { width: 14px !important; height: 14px !important; }
+.w-4 { width: 16px !important; height: 16px !important; }
+.w-5 { width: 20px !important; height: 20px !important; }
+.w-6 { width: 24px !important; height: 24px !important; }
+.w-7 { width: 28px !important; height: 28px !important; }
+.w-8 { width: 32px !important; height: 32px !important; }
+
+.h-3 { height: 12px !important; }
+.h-3-5, .h-3\.5 { height: 14px !important; }
+.h-4 { height: 16px !important; }
+.h-5 { height: 20px !important; }
+.h-6 { height: 24px !important; }
+.h-7 { height: 28px !important; }
+.h-8 { height: 32px !important; }
+
+/* Essential Visibility & Alignment Utilities */
+.hidden { display: none !important; }
+.inline { display: inline-block !important; }
+.mr-1 { margin-right: 0.25rem !important; }
+.mr-2 { margin-right: 0.5rem !important; }
+.ml-1 { margin-left: 0.25rem !important; }
+.ml-2 { margin-left: 0.5rem !important; }
+.text-emerald-600, .text-emerald-500 { color: var(--primary) !important; }
+.text-rose-600, .text-rose-500 { color: var(--danger) !important; }
+
+/* ==========================================================================
+   Top Header Navigation (Desktop & Mobile) - Symmetrical & Clean
    ========================================================================== */
 .site-header {
   position: sticky;
@@ -166,23 +201,24 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .header-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0.75rem 1.25rem;
+  padding: 0.65rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .brand-wrapper {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
+  gap: 0.75rem;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .brand-logo-badge {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
   background: var(--primary-gradient);
   display: flex;
@@ -193,6 +229,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   flex-shrink: 0;
 }
 
+.brand-logo-badge svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
 .brand-text h1 {
   font-size: 1.15rem;
   font-weight: 800;
@@ -201,6 +242,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  line-height: 1.1;
 }
 
 .brand-tag {
@@ -210,21 +252,30 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   color: var(--primary);
   padding: 2px 7px;
   border-radius: var(--radius-full);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.brand-sub {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-weight: 500;
+[data-theme="dark"] .brand-tag {
+  color: var(--accent);
 }
 
-/* Desktop Nav Links */
+.brand-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* Desktop Nav Links - Segmented Pill Bar */
 .desktop-nav {
   display: none;
   align-items: center;
-  gap: 0.5rem;
+  gap: 3px;
+  background: var(--bg-subtle);
+  padding: 4px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--surface-border);
 }
 
 @media (min-width: 1024px) {
@@ -234,70 +285,85 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .nav-link {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.55rem 0.95rem;
-  font-size: 0.9rem;
+  justify-content: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 13px;
+  font-size: 0.84rem;
   font-weight: 600;
   color: var(--text-secondary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
+  white-space: nowrap !important;
   transition: all var(--transition-fast);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+@media (min-width: 1200px) {
+  .nav-link {
+    height: 38px;
+    padding: 0 15px;
+    font-size: 0.88rem;
+    gap: 8px;
+  }
+}
+
+.nav-link svg {
+  width: 16px !important;
+  height: 16px !important;
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
 }
 
 .nav-link:hover {
   color: var(--primary);
-  background: var(--primary-subtle);
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .nav-link:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .nav-link.active {
-  color: #FFFFFF;
-  background: var(--primary-gradient);
-  box-shadow: var(--shadow-sm);
+  color: #FFFFFF !important;
+  background: var(--primary) !important;
+  box-shadow: 0 2px 8px rgba(6, 95, 70, 0.35);
 }
 
+.nav-link.active svg {
+  color: #FFFFFF !important;
+}
+
+/* Header Action Buttons on the Right */
 .header-actions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-/* Utility buttons */
-.icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  background: var(--bg-subtle);
-  border: 1px solid var(--surface-border);
-  transition: all var(--transition-fast);
-}
-
-.icon-btn:hover {
-  color: var(--primary);
-  background: var(--surface-hover);
-  transform: translateY(-1px);
+  flex-shrink: 0;
 }
 
 .live-badge {
   display: none;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.35rem 0.75rem;
+  gap: 6px;
+  height: 38px;
+  padding: 0 12px;
   border-radius: var(--radius-full);
-  background: rgba(16, 185, 129, 0.12);
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(16, 185, 129, 0.1);
   color: var(--accent);
   border: 1px solid rgba(16, 185, 129, 0.25);
+  white-space: nowrap;
 }
 
 @media (min-width: 640px) {
   .live-badge {
-    display: flex;
+    display: inline-flex;
   }
 }
 
@@ -308,12 +374,44 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   background: var(--accent);
   box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
   animation: pulse-ring 2s infinite;
+  flex-shrink: 0;
 }
 
 @keyframes pulse-ring {
   0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
   70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Utility Circle Buttons */
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background: var(--bg-subtle);
+  border: 1px solid var(--surface-border);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.icon-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.icon-btn:hover {
+  color: var(--primary);
+  background: var(--surface);
+  border-color: var(--primary-light);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 /* ==========================================================================
@@ -331,9 +429,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   border-top: 1px solid var(--surface-border);
   display: flex;
   justify-content: space-around;
-  padding: 0.5rem 0.25rem;
-  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  padding: 0.4rem 0.25rem;
+  padding-bottom: max(0.4rem, env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
 }
 
 @media (min-width: 1024px) {
@@ -356,11 +454,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   position: relative;
   transition: all var(--transition-fast);
   border-radius: var(--radius-sm);
+  padding: 4px 0;
 }
 
 .bottom-nav-item svg {
-  width: 22px;
-  height: 22px;
+  width: 22px !important;
+  height: 22px !important;
   transition: transform var(--transition-fast);
 }
 
@@ -373,14 +472,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .bottom-nav-item.active svg {
-  transform: translateY(-2px) scale(1.1);
+  transform: translateY(-1px) scale(1.08);
 }
 
 .bottom-nav-item.active::after {
   content: '';
   position: absolute;
-  bottom: -2px;
-  width: 20px;
+  bottom: 0px;
+  width: 18px;
   height: 3px;
   border-radius: var(--radius-full);
   background: var(--primary);
@@ -420,6 +519,23 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Symmetrical Grid Layouts for Highlights & Contacts */
+.dashboard-highlights-grid,
+.kontak-aspirasi-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-highlights-grid,
+  .kontak-aspirasi-grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+  }
 }
 
 /* ==========================================================================
@@ -506,15 +622,20 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .btn-hero-primary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   background: #FFFFFF;
   color: var(--primary-dark);
   font-weight: 700;
   font-size: 0.9rem;
-  padding: 0.7rem 1.25rem;
+  height: 42px;
+  padding: 0 1.35rem;
   border-radius: var(--radius-md);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
   transition: all var(--transition-fast);
+  white-space: nowrap;
+  box-sizing: border-box;
+  line-height: 1;
 }
 
 .btn-hero-primary:hover {
@@ -526,16 +647,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .btn-hero-secondary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(8px);
   color: #FFFFFF;
   font-weight: 600;
   font-size: 0.9rem;
-  padding: 0.7rem 1.25rem;
+  height: 42px;
+  padding: 0 1.35rem;
   border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.3);
   transition: all var(--transition-fast);
+  white-space: nowrap;
+  box-sizing: border-box;
+  line-height: 1;
 }
 
 .btn-hero-secondary:hover {
@@ -549,15 +675,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .section-header {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin-bottom: 1.25rem;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
 @media (min-width: 640px) {
   .section-header {
     flex-direction: row;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
+    gap: 1rem;
   }
 }
 
