@@ -1757,3 +1757,64 @@ textarea.form-control {
   color: var(--text-muted);
 }
 
+/* ==========================================================================
+   Remember Me / 30-Day Session Persistence Component
+   ========================================================================== */
+.remember-me-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.65rem 0.8rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  user-select: none;
+  transition: all var(--transition-fast);
+}
+
+.remember-me-container:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+}
+
+.remember-me-checkbox {
+  margin-top: 3px;
+  width: 17px;
+  height: 17px;
+  accent-color: var(--primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.remember-me-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.remember-me-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.remember-me-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent);
+}
+
+.remember-me-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+

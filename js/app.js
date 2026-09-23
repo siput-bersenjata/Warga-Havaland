@@ -1595,21 +1595,96 @@ END:VCALENDAR`;
 };
 
 // =============================================================================
-// MODUL 1: AUTENTIKASI PENGGUNA (WARGA & PENGURUS RT)
+// MODUL 1: AUTENTIKASI PENGGUNA (WARGA & PENGURUS RT) DENGAN REMEMBER ME 30 HARI
 // =============================================================================
 const HavalandAuth = {
   currentUser: null,
+  currentSession: null,
+  THIRTY_DAYS_MS: 30 * 24 * 60 * 60 * 1000, // 30 hari dalam milidetik (2.592.000.000 ms)
 
   init() {
     try {
-      const savedUser = localStorage.getItem("havaland_auth_user");
-      if (savedUser) {
-        this.currentUser = JSON.parse(savedUser);
+      const sessionStr = localStorage.getItem("havaland_auth_session") || sessionStorage.getItem("havaland_auth_session");
+      if (sessionStr) {
+        const session = JSON.parse(sessionStr);
+        const now = Date.now();
+
+        // 1. Cek apakah sesi dibatasi 30 hari dan sudah kedaluwarsa (> 30 hari)
+        if (session.expiresAt && now > session.expiresAt) {
+          console.warn("Masa aktif login 30 hari telah berakhir. Pengguna diminta login kembali.");
+          this.clearSession();
+          this.currentUser = null;
+          this.currentSession = null;
+          this.updateUI();
+
+          setTimeout(() => {
+            HavalandUtils.showToast(
+              "Sesi Berakhir (30 Hari)",
+              "Masa aktif login 30 hari Anda telah berakhir demi keamanan. Silakan masuk kembali.",
+              "warning"
+            );
+            this.openLoginModal();
+          }, 800);
+          return;
+        }
+
+        // 2. Sesi masih sah dan berlaku dalam 30 hari
+        if (session.user) {
+          this.currentUser = session.user;
+          this.currentSession = session;
+          const sisaHari = session.expiresAt
+            ? Math.max(1, Math.ceil((session.expiresAt - now) / (24 * 60 * 60 * 1000)))
+            : null;
+          console.log(`Pengguna otomatis masuk via Remember Me: ${this.currentUser.nama} (Sisa masa aktif: ${sisaHari || 'Sesi Tab'} hari)`);
+        }
+      } else {
+        // Fallback backward compatibility untuk data lama
+        const savedUser = localStorage.getItem("havaland_auth_user");
+        if (savedUser) {
+          const userObj = JSON.parse(savedUser);
+          this.saveSession(userObj, true);
+        }
       }
     } catch (e) {
+      this.clearSession();
       this.currentUser = null;
+      this.currentSession = null;
     }
     this.updateUI();
+  },
+
+  saveSession(user, rememberMe = true) {
+    this.currentUser = user;
+    const now = Date.now();
+    const expiresAt = rememberMe ? now + this.THIRTY_DAYS_MS : null;
+
+    const session = {
+      user: user,
+      rememberMe: !!rememberMe,
+      loginAt: now,
+      expiresAt: expiresAt,
+      token: "havaland_sess_" + Math.random().toString(36).slice(2) + Date.now().toString(36)
+    };
+
+    this.currentSession = session;
+
+    if (rememberMe) {
+      localStorage.setItem("havaland_auth_session", JSON.stringify(session));
+      localStorage.setItem("havaland_auth_user", JSON.stringify(user));
+      sessionStorage.removeItem("havaland_auth_session");
+    } else {
+      sessionStorage.setItem("havaland_auth_session", JSON.stringify(session));
+      localStorage.removeItem("havaland_auth_session");
+      localStorage.removeItem("havaland_auth_user");
+    }
+  },
+
+  clearSession() {
+    this.currentUser = null;
+    this.currentSession = null;
+    localStorage.removeItem("havaland_auth_session");
+    localStorage.removeItem("havaland_auth_user");
+    sessionStorage.removeItem("havaland_auth_session");
   },
 
   isLoggedIn() {
@@ -1628,10 +1703,12 @@ const HavalandAuth = {
     const userInput = document.getElementById("login-username");
     const passInput = document.getElementById("login-password");
     const errMsg = document.getElementById("login-error-msg");
+    const rememberCheckbox = document.getElementById("login-remember-me");
 
     if (userInput) userInput.value = targetRole === 'admin' ? "admin" : "";
     if (passInput) passInput.value = targetRole === 'admin' ? "havaland2026" : "";
     if (errMsg) errMsg.style.display = "none";
+    if (rememberCheckbox) rememberCheckbox.checked = true;
 
     HavalandApp.openModal("modal-login");
   },
@@ -1641,19 +1718,22 @@ const HavalandAuth = {
     const userVal = document.getElementById("login-username").value.trim().toLowerCase();
     const passVal = document.getElementById("login-password").value.trim();
     const errMsg = document.getElementById("login-error-msg");
+    const rememberCheckbox = document.getElementById("login-remember-me");
+    const rememberMe = rememberCheckbox ? rememberCheckbox.checked : true;
 
     const matched = HavalandData.akunPengguna.find(u => 
       u.username.toLowerCase() === userVal && u.password === passVal
     );
 
     if (matched) {
-      this.currentUser = matched;
-      localStorage.setItem("havaland_auth_user", JSON.stringify(matched));
+      this.saveSession(matched, rememberMe);
       this.updateUI();
       HavalandApp.closeModal("modal-login");
+
+      const durasiMsg = rememberMe ? " (Ingat Saya: Tetap masuk 30 hari)" : " (Sesi sementara)";
       HavalandUtils.showToast(
         "Berhasil Masuk",
-        `Selamat datang, ${matched.nama}! Anda masuk sebagai ${matched.role}.`,
+        `Selamat datang, ${matched.nama}! Anda masuk sebagai ${matched.role}.${durasiMsg}`,
         "success"
       );
       if (typeof HavalandSettings !== "undefined") {
@@ -1682,13 +1762,15 @@ const HavalandAuth = {
     }
 
     if (target) {
-      this.currentUser = target;
-      localStorage.setItem("havaland_auth_user", JSON.stringify(target));
+      const rememberCheckbox = document.getElementById("login-remember-me");
+      const rememberMe = rememberCheckbox ? rememberCheckbox.checked : true;
+
+      this.saveSession(target, rememberMe);
       this.updateUI();
       HavalandApp.closeModal("modal-login");
       HavalandUtils.showToast(
         "Simulasi Masuk Berhasil",
-        `Masuk sebagai ${target.nama} (${target.role})`,
+        `Masuk sebagai ${target.nama} (${target.role}) - Ingat Saya aktif 30 hari`,
         "success"
       );
       if (typeof HavalandSettings !== "undefined") {
@@ -1698,8 +1780,7 @@ const HavalandAuth = {
   },
 
   logout() {
-    this.currentUser = null;
-    localStorage.removeItem("havaland_auth_user");
+    this.clearSession();
     this.updateUI();
     if (typeof HavalandSettings !== "undefined") {
       HavalandSettings.renderBackupSection();
@@ -1709,7 +1790,15 @@ const HavalandAuth = {
 
   handleClickAuth() {
     if (this.currentUser) {
-      const msg = `Halo ${this.currentUser.nama} (${this.currentUser.role})!\n\nApakah Anda ingin keluar (Logout) atau mengganti akun?`;
+      let infoSesi = "";
+      if (this.currentSession && this.currentSession.expiresAt) {
+        const sisaHari = Math.max(1, Math.ceil((this.currentSession.expiresAt - Date.now()) / (24 * 60 * 60 * 1000)));
+        infoSesi = `\n🔒 Status Sesi: Ingat Saya aktif (Sisa masa berlaku: ${sisaHari} hari lagi)\n`;
+      } else if (this.currentSession && !this.currentSession.rememberMe) {
+        infoSesi = `\n🔒 Status Sesi: Sementara (akan keluar saat tab ditutup)\n`;
+      }
+
+      const msg = `Halo ${this.currentUser.nama} (${this.currentUser.role})!${infoSesi}\nApakah Anda ingin keluar (Logout) atau mengganti akun?`;
       if (confirm(msg)) {
         this.logout();
       }
@@ -1729,7 +1818,14 @@ const HavalandAuth = {
       const roleBadge = this.currentUser.isAdmin ? "Admin" : "Warga";
       nameLabel.innerHTML = `${roleIcon} ${shortName} <span style="font-size: 0.7rem; opacity: 0.85;">(${roleBadge})</span>`;
       btn.classList.add("logged-in");
-      btn.setAttribute("title", `Masuk sebagai: ${this.currentUser.nama} (${this.currentUser.role}) • Klik untuk keluar`);
+
+      let sisaText = "";
+      if (this.currentSession && this.currentSession.expiresAt) {
+        const sisaHari = Math.max(1, Math.ceil((this.currentSession.expiresAt - Date.now()) / (24 * 60 * 60 * 1000)));
+        sisaText = ` • Sesi aktif 30 hari (${sisaHari} hari lagi)`;
+      }
+
+      btn.setAttribute("title", `Masuk sebagai: ${this.currentUser.nama} (${this.currentUser.role})${sisaText} • Klik untuk keluar`);
     } else {
       nameLabel.textContent = "Masuk Akun";
       btn.classList.remove("logged-in");
