@@ -5,7 +5,7 @@
 
 const HavalandApp = {
   activeTab: "beranda",
-  currentTheme: "light",
+  currentTheme: "dark",
   filteredTransaksi: [],
   filteredWarga: [],
   selectedWargaIuran: null,
@@ -95,31 +95,64 @@ const HavalandApp = {
     }
   },
 
-  // Inisialisasi Tema (Dark/Light Mode)
+  // Inisialisasi Tema (Dark / AMOLED / Light Mode - Default: Gelap)
   initTheme() {
-    const savedTheme = localStorage.getItem("havaland_theme") || "light";
-    this.setTheme(savedTheme);
+    const savedTheme = localStorage.getItem("havaland_theme") || "dark";
+    this.setTheme(savedTheme, false);
   },
 
   toggleTheme() {
-    const newTheme = this.currentTheme === "light" ? "dark" : "light";
-    this.setTheme(newTheme);
-    HavalandUtils.showToast("Tema Diubah", `Mode ${newTheme === 'dark' ? 'Gelap' : 'Terang'} diaktifkan`, "info");
+    // Siklus: dark -> amoled -> light -> dark
+    let nextTheme = "dark";
+    if (this.currentTheme === "dark") nextTheme = "amoled";
+    else if (this.currentTheme === "amoled") nextTheme = "light";
+    else nextTheme = "dark";
+
+    this.setTheme(nextTheme, true);
   },
 
-  setTheme(theme) {
+  setTheme(theme, notify = false) {
+    if (!["light", "dark", "amoled"].includes(theme)) theme = "dark";
     this.currentTheme = theme;
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("havaland_theme", theme);
 
+    // Update meta theme-color peramban mobile
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      if (theme === "amoled") metaThemeColor.setAttribute("content", "#000000");
+      else if (theme === "dark") metaThemeColor.setAttribute("content", "#0B1120");
+      else metaThemeColor.setAttribute("content", "#065F46");
+    }
+
+    // Update active button state di Modal Pengaturan
+    document.querySelectorAll(".theme-mode-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.getAttribute("data-theme-mode") === theme);
+    });
+
+    const themeLabels = {
+      light: "Mode Terang ☀️",
+      dark: "Mode Gelap (Modern) 🌙",
+      amoled: "Mode Gelap AMOLED (Pure Black) 🖤"
+    };
+
+    const lbl = document.getElementById("settings-theme-label");
+    if (lbl) {
+      lbl.textContent = themeLabels[theme] || theme;
+    }
+
     const sunIcon = document.getElementById("theme-icon-sun");
     const moonIcon = document.getElementById("theme-icon-moon");
-    if (theme === "dark") {
+    if (theme === "dark" || theme === "amoled") {
       sunIcon?.classList.remove("hidden");
       moonIcon?.classList.add("hidden");
     } else {
       sunIcon?.classList.add("hidden");
       moonIcon?.classList.remove("hidden");
+    }
+
+    if (notify) {
+      HavalandUtils.showToast("Tema Diubah", `${themeLabels[theme]} aktif`, "info");
     }
   },
 
@@ -2979,10 +3012,19 @@ const HavalandSettings = {
   },
 
   updateThemeLabel() {
+    const themeLabels = {
+      light: "Mode Terang ☀️",
+      dark: "Mode Gelap (Modern) 🌙",
+      amoled: "Mode Gelap AMOLED 🖤"
+    };
     const lbl = document.getElementById("settings-theme-label");
     if (lbl) {
-      lbl.textContent = HavalandApp.currentTheme === "dark" ? "Mode Gelap: Aktif 🌙" : "Mode Gelap: Nonaktif ☀️";
+      lbl.textContent = themeLabels[HavalandApp.currentTheme] || "Mode Gelap (Modern) 🌙";
     }
+
+    document.querySelectorAll(".theme-mode-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.getAttribute("data-theme-mode") === HavalandApp.currentTheme);
+    });
   },
 
   openModal() {

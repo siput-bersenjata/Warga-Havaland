@@ -85,6 +85,31 @@
 }
 
 /* ==========================================================================
+   AMOLED Dark Mode System (Pure Black #000000 / True OLED)
+   ========================================================================== */
+[data-theme="amoled"] {
+  --primary-subtle: rgba(16, 185, 129, 0.16);
+  --bg-main: #000000;
+  --bg-subtle: #09090b;
+  --surface: #111113;
+  --surface-hover: #19191c;
+  --surface-trans: rgba(10, 10, 12, 0.92);
+  --surface-border: #27272a;
+  --surface-border-subtle: #18181b;
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #E4E4E7;
+  --text-muted: #A1A1AA;
+
+  --glass-bg: rgba(0, 0, 0, 0.90);
+  --glass-border: rgba(39, 39, 42, 0.9);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.8);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.9);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.95);
+  --shadow-emerald: 0 10px 25px -5px rgba(16, 185, 129, 0.35);
+}
+
+/* ==========================================================================
    Multi-Theme Palettes System
    ========================================================================== */
 /* 1. Sapphire Ocean */
@@ -97,7 +122,8 @@
   --accent: #2563EB;
   --shadow-emerald: 0 10px 25px -5px rgba(30, 64, 175, 0.25);
 }
-[data-theme="dark"][data-theme-palette="sapphire"] {
+[data-theme="dark"][data-theme-palette="sapphire"],
+[data-theme="amoled"][data-theme-palette="sapphire"] {
   --primary-subtle: rgba(37, 99, 235, 0.18);
   --accent: #60A5FA;
 }
@@ -112,7 +138,8 @@
   --accent: #D97706;
   --shadow-emerald: 0 10px 25px -5px rgba(180, 83, 9, 0.25);
 }
-[data-theme="dark"][data-theme-palette="amber"] {
+[data-theme="dark"][data-theme-palette="amber"],
+[data-theme="amoled"][data-theme-palette="amber"] {
   --primary-subtle: rgba(217, 119, 6, 0.18);
   --accent: #FBBF24;
 }
@@ -127,7 +154,8 @@
   --accent: #8B5CF6;
   --shadow-emerald: 0 10px 25px -5px rgba(109, 40, 217, 0.25);
 }
-[data-theme="dark"][data-theme-palette="amethyst"] {
+[data-theme="dark"][data-theme-palette="amethyst"],
+[data-theme="amoled"][data-theme-palette="amethyst"] {
   --primary-subtle: rgba(139, 92, 246, 0.18);
   --accent: #A78BFA;
 }
@@ -142,7 +170,8 @@
   --accent: #10B981;
   --shadow-emerald: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
 }
-[data-theme="dark"][data-theme-palette="obsidian"] {
+[data-theme="dark"][data-theme-palette="obsidian"],
+[data-theme="amoled"][data-theme-palette="obsidian"] {
   --primary-subtle: rgba(51, 65, 85, 0.35);
   --accent: #34D399;
 }
@@ -248,7 +277,8 @@ body.lite-mode .hero-badge-pill {
   color: var(--primary);
 }
 
-[data-theme="dark"] .user-auth-pill.logged-in {
+[data-theme="dark"] .user-auth-pill.logged-in,
+[data-theme="amoled"] .user-auth-pill.logged-in {
   color: var(--accent);
 }
 
@@ -285,7 +315,8 @@ body.lite-mode .hero-badge-pill {
   line-height: 1;
 }
 
-[data-theme="dark"] .admin-nav-pill {
+[data-theme="dark"] .admin-nav-pill,
+[data-theme="amoled"] .admin-nav-pill {
   color: var(--accent);
 }
 
@@ -508,7 +539,8 @@ svg {
   flex-shrink: 0;
 }
 
-[data-theme="dark"] .brand-tag {
+[data-theme="dark"] .brand-tag,
+[data-theme="amoled"] .brand-tag {
   color: var(--accent);
 }
 
@@ -576,7 +608,8 @@ svg {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-[data-theme="dark"] .nav-link:hover {
+[data-theme="dark"] .nav-link:hover,
+[data-theme="amoled"] .nav-link:hover {
   color: var(--text-primary);
   background: rgba(255, 255, 255, 0.08);
 }
@@ -720,7 +753,8 @@ svg {
   color: var(--primary);
 }
 
-[data-theme="dark"] .bottom-nav-item.active {
+[data-theme="dark"] .bottom-nav-item.active,
+[data-theme="amoled"] .bottom-nav-item.active {
   color: var(--accent);
 }
 
@@ -738,7 +772,8 @@ svg {
   background: var(--primary);
 }
 
-[data-theme="dark"] .bottom-nav-item.active::after {
+[data-theme="dark"] .bottom-nav-item.active::after,
+[data-theme="amoled"] .bottom-nav-item.active::after {
   background: var(--accent);
 }
 

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-  <meta name="theme-color" content="#065F46">
+  <meta name="theme-color" content="#0B1120">
   <meta name="description" content="Pusat Informasi Warga Perumahan Havaland - RT 04 / RW 08. Transparansi kas keuangan, jadwal siskamling & kegiatan rutin, direktori warga, serta layanan aspirasi warga.">
   <meta name="keywords" content="Havaland, Perumahan Havaland, Warga Havaland, Kas RT, Jadwal Ronda, Data Warga">
   <title>Portal Informasi Warga Perumahan Havaland - RT 04 / RW 08</title>
@@ -1256,17 +1256,52 @@
           </div>
         </div>
 
-        <!-- Pilihan Model Tema (Theme Palettes) -->
+        <!-- Mode Tampilan Tema (Terang, Gelap Modern, Gelap AMOLED) -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            Mode Tampilan Layar (Default: Gelap)
+          </div>
+          <p class="settings-section-desc">Pilih tampilan tema website sesuai kenyamanan mata atau jenis layar AMOLED Anda:</p>
+          <div class="theme-mode-grid">
+            <button type="button" class="theme-mode-btn" data-theme-mode="light" onclick="HavalandApp.setTheme('light', true)">
+              <div class="theme-mode-preview preview-light">
+                <span>☀️</span>
+              </div>
+              <div class="theme-mode-text">
+                <span class="theme-mode-title">Mode Terang</span>
+                <span class="theme-mode-desc">Latar putih bersih & segar</span>
+              </div>
+            </button>
+            <button type="button" class="theme-mode-btn active" data-theme-mode="dark" onclick="HavalandApp.setTheme('dark', true)">
+              <div class="theme-mode-preview preview-dark">
+                <span>🌙</span>
+              </div>
+              <div class="theme-mode-text">
+                <span class="theme-mode-title">Gelap Modern</span>
+                <span class="theme-mode-desc">Slate navy nyaman di mata</span>
+              </div>
+            </button>
+            <button type="button" class="theme-mode-btn" data-theme-mode="amoled" onclick="HavalandApp.setTheme('amoled', true)">
+              <div class="theme-mode-preview preview-amoled">
+                <span>🖤</span>
+              </div>
+              <div class="theme-mode-text">
+                <span class="theme-mode-title">Gelap AMOLED</span>
+                <span class="theme-mode-desc">Hitam pekat 100% OLED hemat daya</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pilihan Model Nuansa Warna (Theme Palettes) -->
         <div class="settings-section">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
             <div class="settings-section-title" style="margin-bottom: 0;">
               <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
-              Model Nuansa Tema Warna
+              Model Nuansa Aksen Warna
             </div>
-            <!-- Quick Dark / Light Switch -->
-            <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandApp.toggleTheme()" style="font-size: 0.75rem; height: 30px; padding: 0 10px;">
-              <span id="settings-theme-label">Mode Gelap: Nonaktif</span>
-            </button>
+            <span id="settings-theme-label" style="font-size: 0.72rem; font-weight: 700; color: var(--primary);">Mode Gelap (Modern) 🌙</span>
           </div>
           <p class="settings-section-desc">Ganti kombinasi aksen warna primer untuk menyesuaikan estetika Havaland favorit Anda.</p>
           <div class="palette-grid">
