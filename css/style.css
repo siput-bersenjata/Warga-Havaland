@@ -739,16 +739,17 @@ svg {
   margin-bottom: 0.25rem;
 }
 
-.footer-links {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-  font-weight: 600;
+.footer-copyright {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
-.footer-links a:hover {
-  color: var(--primary);
+@media (min-width: 768px) {
+  .footer-copyright {
+    text-align: right;
+    max-width: 440px;
+  }
 }
 
 /* ==========================================================================
