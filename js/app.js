@@ -12,6 +12,9 @@ const HavalandApp = {
   currentBlokFilter: "semua",
   activeAutocompleteIndex: -1,
   currentMatchingWarga: [],
+  currentFilterPeriode: "bulan-ini",
+  filterCustomStartDate: "",
+  filterCustomEndDate: "",
 
   // Inisialisasi Aplikasi
   init() {
@@ -334,14 +337,145 @@ const HavalandApp = {
   // =========================================================================
   // DETAIL RINCIAN KAS (FILTER, SEARCH, & RENDERING)
   // =========================================================================
+  getEffectiveDate() {
+    const now = new Date();
+    if (now.getFullYear() >= 2026) return now;
+    if (HavalandData.transaksi && HavalandData.transaksi.length > 0) {
+      const dates = HavalandData.transaksi
+        .map(t => new Date(t.tanggal).getTime())
+        .filter(t => !isNaN(t));
+      if (dates.length > 0) {
+        return new Date(Math.max(...dates));
+      }
+    }
+    return now;
+  },
+
+  getDateRangeForPreset(preset) {
+    const ref = this.getEffectiveDate();
+    const y = ref.getFullYear();
+    const m = ref.getMonth(); // 0 - 11
+
+    const toISO = (d) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    if (preset === "bulan-ini") {
+      const start = new Date(y, m, 1);
+      const end = new Date(y, m + 1, 0); // hari terakhir bulan ini
+      return { start: toISO(start), end: toISO(end), label: "Bulan Ini" };
+    }
+    if (preset === "bulan-kemarin") {
+      const start = new Date(y, m - 1, 1);
+      const end = new Date(y, m, 0); // hari terakhir bulan kemarin
+      return { start: toISO(start), end: toISO(end), label: "Bulan Kemarin" };
+    }
+    if (preset === "7-hari") {
+      const end = ref;
+      const start = new Date(ref.getTime() - 6 * 24 * 60 * 60 * 1000);
+      return { start: toISO(start), end: toISO(end), label: "7 Hari Terakhir" };
+    }
+    if (preset === "30-hari") {
+      const end = ref;
+      const start = new Date(ref.getTime() - 29 * 24 * 60 * 60 * 1000);
+      return { start: toISO(start), end: toISO(end), label: "30 Hari Terakhir" };
+    }
+    if (preset === "kustom") {
+      const start = document.getElementById("trx-date-start")?.value || this.filterCustomStartDate || "";
+      const end = document.getElementById("trx-date-end")?.value || this.filterCustomEndDate || "";
+      let label = "Rentang Tertentu";
+      if (start && end) {
+        label = `${HavalandUtils.formatTanggalSingkat(start)} s/d ${HavalandUtils.formatTanggalSingkat(end)}`;
+      } else if (start) {
+        label = `Sejak ${HavalandUtils.formatTanggalSingkat(start)}`;
+      } else if (end) {
+        label = `Hingga ${HavalandUtils.formatTanggalSingkat(end)}`;
+      }
+      return { start, end, label };
+    }
+    // "semua"
+    return { start: null, end: null, label: "Semua Waktu" };
+  },
+
+  setDatePreset(preset) {
+    this.currentFilterPeriode = preset;
+
+    // Sinkronisasi status active tombol pill
+    const pills = document.querySelectorAll("#trx-date-pills .pill-btn");
+    pills.forEach(btn => {
+      if (btn.getAttribute("data-preset") === preset) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+
+    // Sinkronisasi select dropdown periode
+    const selectPeriode = document.getElementById("trx-filter-periode");
+    if (selectPeriode && selectPeriode.value !== preset) {
+      selectPeriode.value = preset;
+    }
+
+    // Tampilkan / sembunyikan bar input tanggal kustom
+    const customContainer = document.getElementById("trx-custom-date-container");
+    if (customContainer) {
+      if (preset === "kustom") {
+        customContainer.style.display = "flex";
+        const startInput = document.getElementById("trx-date-start");
+        const endInput = document.getElementById("trx-date-end");
+        if (startInput && !startInput.value) {
+          const range = this.getDateRangeForPreset("bulan-ini");
+          startInput.value = range.start;
+          if (endInput && !endInput.value) endInput.value = range.end;
+        }
+      } else {
+        customContainer.style.display = "none";
+      }
+    }
+
+    // Sinkronkan nilai input tanggal jika preset bukan kustom
+    if (preset !== "kustom") {
+      const range = this.getDateRangeForPreset(preset);
+      const startInput = document.getElementById("trx-date-start");
+      const endInput = document.getElementById("trx-date-end");
+      if (startInput && range.start) startInput.value = range.start;
+      if (endInput && range.end) endInput.value = range.end;
+    }
+
+    this.filterTransaksi();
+  },
+
+  onCustomDateChange() {
+    this.currentFilterPeriode = "kustom";
+    const pills = document.querySelectorAll("#trx-date-pills .pill-btn");
+    pills.forEach(btn => {
+      if (btn.getAttribute("data-preset") === "kustom") {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+    const selectPeriode = document.getElementById("trx-filter-periode");
+    if (selectPeriode) selectPeriode.value = "kustom";
+    this.filterTransaksi();
+  },
+
+  applyCustomDateRange() {
+    this.setDatePreset("kustom");
+  },
+
   renderTransaksi() {
     this.filterTransaksi();
   },
 
   filterTransaksi() {
     const q = (document.getElementById("trx-search")?.value || "").toLowerCase().trim();
-    const filterJenis = document.getElementById("trx-filter-jenis")?.value || "semua";
+    const filterJenis = document.getElementById("trx-filter-jenis")?.value || "keluar";
     const filterKategori = document.getElementById("trx-filter-kategori")?.value || "semua";
+    const dateRange = this.getDateRangeForPreset(this.currentFilterPeriode || "bulan-ini");
 
     const filtered = HavalandData.transaksi.filter(t => {
       // Keyword search
@@ -358,7 +492,17 @@ const HavalandApp = {
       // Filter Kategori
       const matchKategori = filterKategori === "semua" || t.kategori.includes(filterKategori);
 
-      return matchSearch && matchJenis && matchKategori;
+      // Filter Rentang Tanggal
+      let matchTanggal = true;
+      if (dateRange.start && dateRange.end) {
+        matchTanggal = t.tanggal >= dateRange.start && t.tanggal <= dateRange.end;
+      } else if (dateRange.start) {
+        matchTanggal = t.tanggal >= dateRange.start;
+      } else if (dateRange.end) {
+        matchTanggal = t.tanggal <= dateRange.end;
+      }
+
+      return matchSearch && matchJenis && matchKategori && matchTanggal;
     });
 
     this.filteredTransaksi = filtered;
@@ -377,6 +521,22 @@ const HavalandApp = {
     if (elCount) elCount.textContent = filtered.length;
     if (elSubIn) elSubIn.textContent = HavalandUtils.formatRupiah(subtotalIn);
     if (elSubOut) elSubOut.textContent = HavalandUtils.formatRupiah(subtotalOut);
+
+    const elBadge = document.getElementById("trx-filter-info-badge");
+    if (elBadge) {
+      let jenisText = "Semua Aliran Kas";
+      if (filterJenis === "keluar") jenisText = "Pengeluaran";
+      else if (filterJenis === "masuk") jenisText = "Pemasukan";
+
+      elBadge.textContent = `${dateRange.label} • ${jenisText}`;
+      if (filterJenis === "keluar") {
+        elBadge.className = "badge badge-danger";
+      } else if (filterJenis === "masuk") {
+        elBadge.className = "badge badge-success";
+      } else {
+        elBadge.className = "badge badge-info";
+      }
+    }
 
     // Render ke Desktop Table Body
     const tbody = document.getElementById("trx-table-body");
@@ -1591,6 +1751,13 @@ END:VCALENDAR`;
     const today = new Date().toISOString().slice(0, 10);
     const dateInput = document.getElementById("new-trx-tanggal");
     if (dateInput) dateInput.value = today;
+
+    // Inisialisasi rentang tanggal filter transaksi ke Bulan Ini
+    const range = this.getDateRangeForPreset("bulan-ini");
+    const startInput = document.getElementById("trx-date-start");
+    const endInput = document.getElementById("trx-date-end");
+    if (startInput) startInput.value = range.start;
+    if (endInput) endInput.value = range.end;
   }
 };
 

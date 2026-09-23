@@ -444,6 +444,45 @@
 
       <!-- Filter Toolbar -->
       <div class="card toolbar-card">
+        <!-- Date Preset Filter Section -->
+        <div class="date-preset-section">
+          <div class="date-preset-header">
+            <span class="date-preset-label">
+              <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              Periode Waktu:
+            </span>
+            <div class="filter-pills" id="trx-date-pills">
+              <button type="button" class="pill-btn active" data-preset="bulan-ini" onclick="HavalandApp.setDatePreset('bulan-ini')" title="Bulan Ini (Default)">Bulan Ini</button>
+              <button type="button" class="pill-btn" data-preset="bulan-kemarin" onclick="HavalandApp.setDatePreset('bulan-kemarin')" title="Satu Bulan Sebelumnya">Bulan Kemarin</button>
+              <button type="button" class="pill-btn" data-preset="7-hari" onclick="HavalandApp.setDatePreset('7-hari')" title="7 Hari Terakhir">7 Hari Terakhir</button>
+              <button type="button" class="pill-btn" data-preset="30-hari" onclick="HavalandApp.setDatePreset('30-hari')" title="30 Hari Terakhir">30 Hari Terakhir</button>
+              <button type="button" class="pill-btn" data-preset="kustom" onclick="HavalandApp.setDatePreset('kustom')" title="Tentukan Rentang Tanggal Tertentu">
+                <svg class="w-3.5 h-3.5" style="margin-right: 4px; display: inline-block; vertical-align: -2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Rentang Tertentu
+              </button>
+              <button type="button" class="pill-btn" data-preset="semua" onclick="HavalandApp.setDatePreset('semua')" title="Seluruh Riwayat Transaksi">Semua Waktu</button>
+            </div>
+          </div>
+
+          <!-- Custom Date Range Expandable Container -->
+          <div id="trx-custom-date-container" class="custom-date-picker-row" style="display: none;">
+            <div class="custom-date-inputs">
+              <div class="date-input-group">
+                <label for="trx-date-start">Dari Tanggal:</label>
+                <input type="date" id="trx-date-start" class="filter-date-input" onchange="HavalandApp.onCustomDateChange()">
+              </div>
+              <div class="date-input-group">
+                <label for="trx-date-end">Sampai Tanggal:</label>
+                <input type="date" id="trx-date-end" class="filter-date-input" onchange="HavalandApp.onCustomDateChange()">
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+              <button type="button" class="btn btn-primary btn-xs" onclick="HavalandApp.applyCustomDateRange()">Terapkan Rentang</button>
+              <button type="button" class="btn btn-secondary btn-xs" onclick="HavalandApp.setDatePreset('bulan-ini')">Kembali ke Bulan Ini</button>
+            </div>
+          </div>
+        </div>
+
         <div class="toolbar-layout">
           <!-- Search box -->
           <div class="search-box">
@@ -453,13 +492,22 @@
 
           <!-- Filter Group Selectors -->
           <div class="filter-groups">
-            <select id="trx-filter-jenis" class="filter-select" onchange="HavalandApp.filterTransaksi()">
-              <option value="semua">Semua Aliran Kas</option>
-              <option value="masuk">Pemasukan (+)</option>
-              <option value="keluar">Pengeluaran (-)</option>
+            <select id="trx-filter-periode" class="filter-select" onchange="HavalandApp.setDatePreset(this.value)" title="Pilih Periode Waktu">
+              <option value="bulan-ini" selected>📅 Bulan Ini</option>
+              <option value="bulan-kemarin">📅 Bulan Kemarin</option>
+              <option value="7-hari">⚡ 7 Hari Terakhir</option>
+              <option value="30-hari">🗓️ 30 Hari Terakhir</option>
+              <option value="kustom">📆 Rentang Tertentu...</option>
+              <option value="semua">♾️ Semua Waktu</option>
             </select>
 
-            <select id="trx-filter-kategori" class="filter-select" onchange="HavalandApp.filterTransaksi()">
+            <select id="trx-filter-jenis" class="filter-select" onchange="HavalandApp.filterTransaksi()" title="Filter Jenis Aliran Kas">
+              <option value="keluar" selected>Pengeluaran (-)</option>
+              <option value="masuk">Pemasukan (+)</option>
+              <option value="semua">Semua Aliran Kas</option>
+            </select>
+
+            <select id="trx-filter-kategori" class="filter-select" onchange="HavalandApp.filterTransaksi()" title="Filter Kategori">
               <option value="semua">Semua Kategori</option>
               <option value="Iuran Warga">Iuran Warga</option>
               <option value="Keamanan & Satpam">Keamanan & Satpam</option>
@@ -473,13 +521,14 @@
         </div>
 
         <!-- Filter Summary Badge -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--surface-border); font-size: 0.8rem; color: var(--text-muted);">
-          <div>
-            Menampilkan <strong id="trx-count-display" style="color: var(--text-primary);">0</strong> transaksi
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--surface-border); font-size: 0.8rem; color: var(--text-muted); flex-wrap: wrap; gap: 0.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <div>Menampilkan <strong id="trx-count-display" style="color: var(--text-primary);">0</strong> transaksi</div>
+            <span id="trx-filter-info-badge" class="badge badge-danger" style="font-size: 0.75rem;">Bulan Ini • Pengeluaran</span>
           </div>
-          <div style="display: flex; gap: 1rem;">
-            <span>Masuk: <strong id="trx-subtotal-in" style="color: var(--accent);">Rp 0</strong></span>
-            <span>Keluar: <strong id="trx-subtotal-out" style="color: var(--danger);">Rp 0</strong></span>
+          <div style="display: flex; gap: 1rem; align-items: center;">
+            <span id="trx-wrap-in">Masuk: <strong id="trx-subtotal-in" style="color: var(--accent);">Rp 0</strong></span>
+            <span id="trx-wrap-out">Keluar: <strong id="trx-subtotal-out" style="color: var(--danger);">Rp 0</strong></span>
           </div>
         </div>
       </div>
