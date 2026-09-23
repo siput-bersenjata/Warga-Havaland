@@ -13,6 +13,9 @@ const HavalandApp = {
   // Inisialisasi Aplikasi
   init() {
     this.initTheme();
+    HavalandSettings.init();
+    HavalandAuth.init();
+    HavalandProposals.init();
     this.loadPersistedData();
     this.renderKPIs();
     this.renderMiniChart();
@@ -111,13 +114,22 @@ const HavalandApp = {
     }
   },
 
-  // Muat data lokal tambahan (jika ada transaksi/aspirasi baru di localStorage)
+  // Muat data lokal tambahan (jika ada transaksi/aspirasi/kegiatan/usulan baru di localStorage)
   loadPersistedData() {
     const customTrx = HavalandUtils.loadStorage("custom_transaksi", []);
     if (customTrx && customTrx.length > 0) {
       HavalandData.transaksi = [...customTrx, ...HavalandData.transaksi];
-      // Recalculate summary
       this.recalculateSummary();
+    }
+
+    const customKeg = HavalandUtils.loadStorage("custom_kegiatan", []);
+    if (customKeg && customKeg.length > 0) {
+      HavalandData.kegiatan = [...customKeg, ...HavalandData.kegiatan];
+    }
+
+    const customUsulan = HavalandUtils.loadStorage("custom_usulan", []);
+    if (customUsulan && customUsulan.length > 0) {
+      HavalandData.usulanIde = [...customUsulan, ...HavalandData.usulanIde];
     }
 
     const customAsp = HavalandUtils.loadStorage("custom_aspirasi", []);
@@ -380,7 +392,10 @@ const HavalandApp = {
               </td>
               <td>
                 <div style="font-weight: 700; color: var(--text-primary);">${t.uraian}</div>
-                <div style="font-size: 0.75rem; color: var(--primary-light); font-weight: 600;">${t.kategori}</div>
+                <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; margin-top: 3px;">
+                  <span style="font-size: 0.75rem; color: var(--primary-light); font-weight: 600;">${t.kategori}</span>
+                  <span class="audit-badge" title="Pencatat Transaksi">👤 ${t.createdBy || t.pj}</span>
+                </div>
               </td>
               <td>
                 <div style="font-size: 0.82rem;">${t.metode}</div>
@@ -391,11 +406,16 @@ const HavalandApp = {
                   ${isMasuk ? '+' : '-'} ${HavalandUtils.formatRupiah(t.nominal)}
                 </span>
               </td>
-              <td style="text-align: center;">
-                <button class="btn btn-secondary btn-sm" onclick="HavalandApp.openKwitansi('${t.id}')" title="Buka Struk Kwitansi Digital">
-                  <svg class="w-4 h-4 mr-1 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                  Kwitansi
-                </button>
+              <td style="text-align: center; white-space: nowrap;">
+                <div style="display: inline-flex; gap: 4px; align-items: center;">
+                  <button class="btn btn-secondary btn-sm" onclick="HavalandApp.openKwitansi('${t.id}')" title="Buka Struk Kwitansi Digital">
+                    <svg class="w-4 h-4 mr-1 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    Kwitansi
+                  </button>
+                  <button class="btn btn-sm" style="color: var(--danger); padding: 4px 6px; border: 1px solid rgba(239, 68, 68, 0.25); background: transparent;" onclick="HavalandApp.hapusTransaksi('${t.id}', event)" title="Hapus Transaksi (Khusus Warga/Admin Login)">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </div>
               </td>
             </tr>
           `;
@@ -425,6 +445,7 @@ const HavalandApp = {
                 <div class="trx-info">
                   <h4>${t.uraian}</h4>
                   <p>${HavalandUtils.formatTanggalSingkat(t.tanggal)} • ${t.kategori}</p>
+                  <div style="margin-top: 3px;"><span class="audit-badge">👤 ${t.createdBy || t.pj}</span></div>
                 </div>
               </div>
               <div class="trx-right">
@@ -539,6 +560,7 @@ const HavalandApp = {
                 <span>📍 Lokasi: <strong>${k.lokasi}</strong></span>
                 <span>👤 Koordinator: <strong>${k.koordinator}</strong></span>
                 <span>🔄 Frekuensi: ${k.frekuensi}</span>
+                <span class="audit-badge">📝 Pencatat: ${k.createdBy || k.koordinator}</span>
               </div>
 
               ${piketTableHtml}
@@ -552,6 +574,10 @@ const HavalandApp = {
             <button class="btn btn-secondary btn-sm" onclick="HavalandApp.simpanKalender('${k.id}')">
               <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
               Simpan ke Kalender
+            </button>
+            <button class="btn btn-sm" style="color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.25); background: transparent; font-size: 0.75rem;" onclick="HavalandApp.hapusKegiatan('${k.id}')" title="Hapus Jadwal Kegiatan">
+              <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              Hapus
             </button>
           </div>
         </div>
@@ -885,15 +911,26 @@ END:VCALENDAR`;
   },
 
   // =========================================================================
-  // TAMBAH TRANSAKSI KAS BARU (SIMULASI PENGURUS)
+  // TAMBAH & KELOLA TRANSAKSI KAS (CRUD WARGA & PENGURUS DENGAN AUDIT PENCATAT)
   // =========================================================================
   openTambahTransaksiModal() {
+    if (!HavalandAuth.isLoggedIn()) {
+      HavalandUtils.showToast("Akses Diperlukan", "Silakan masuk akun terlebih dahulu untuk mencatat transaksi dan menyertakan nama pencatat", "info");
+      HavalandAuth.openLoginModal();
+      return;
+    }
+    const user = HavalandAuth.getCurrentUser();
+    const pjInput = document.getElementById("new-trx-pj");
+    if (pjInput && user) {
+      pjInput.value = `${user.nama} (${user.role})`;
+    }
     document.getElementById("new-trx-tanggal").value = new Date().toISOString().slice(0, 10);
     this.openModal("modal-tambah-trx");
   },
 
   async handleTambahTransaksi(event) {
     event.preventDefault();
+    const user = HavalandAuth.getCurrentUser();
     const jenis = document.getElementById("new-trx-jenis").value;
     const tanggal = document.getElementById("new-trx-tanggal").value;
     const kategori = document.getElementById("new-trx-kategori").value;
@@ -908,6 +945,8 @@ END:VCALENDAR`;
       return;
     }
 
+    const pencatatInfo = user ? `${user.nama} (${user.role})` : "Pengurus RT 04";
+
     const newTrx = {
       id: `TRX-${tanggal.replace(/-/g, '').slice(0, 6)}-${(HavalandData.transaksi.length + 1).toString().padStart(3, '0')}`,
       tanggal: tanggal,
@@ -919,7 +958,9 @@ END:VCALENDAR`;
       pj: pj,
       bukti: bukti,
       status: "Verified",
-      catatan: "Dicatat oleh pengurus RT 04"
+      createdBy: pencatatInfo,
+      createdAt: new Date().toISOString(),
+      catatan: `Dicatat oleh ${pencatatInfo}`
     };
 
     HavalandData.transaksi.unshift(newTrx);
@@ -937,7 +978,12 @@ END:VCALENDAR`;
     this.closeModal("modal-tambah-trx");
     document.getElementById("form-tambah-trx").reset();
 
-    HavalandUtils.showToast("Berhasil Dicatat", `Transaksi ${newTrx.id} senilai ${HavalandUtils.formatRupiah(nominal)} berhasil masuk buku kas!`, "success");
+    // Trigger auto snapshot backup jika aktif
+    if (typeof HavalandBackup !== "undefined") {
+      HavalandBackup.autoSnapshot();
+    }
+
+    HavalandUtils.showToast("Berhasil Dicatat", `Transaksi ${newTrx.id} dicatat oleh ${pencatatInfo}!`, "success");
 
     // Kirim ke Vercel Cloud Database jika API tersedia
     try {
@@ -948,6 +994,115 @@ END:VCALENDAR`;
       });
     } catch (e) {
       console.log("Cloud sync transaksi dilewati (mode offline).");
+    }
+  },
+
+  hapusTransaksi(trxId, e) {
+    if (e) e.stopPropagation();
+    if (!HavalandAuth.isLoggedIn()) {
+      HavalandUtils.showToast("Akses Terbatas", "Silakan masuk akun terlebih dahulu untuk menghapus transaksi kas", "warning");
+      HavalandAuth.openLoginModal();
+      return;
+    }
+    const user = HavalandAuth.getCurrentUser();
+    if (!confirm(`Hapus catatan transaksi ${trxId}? Tindakan ini akan dicatat atas nama ${user.nama}.`)) return;
+
+    HavalandData.transaksi = HavalandData.transaksi.filter(t => t.id !== trxId);
+    HavalandUtils.saveStorage("custom_transaksi", HavalandData.transaksi);
+    this.recalculateSummary();
+    this.renderKPIs();
+    this.filterTransaksi();
+    this.renderBerandaHighlights();
+    if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+    HavalandUtils.showToast("Dihapus", `Transaksi ${trxId} berhasil dihapus oleh ${user.nama}`, "info");
+  },
+
+  // =========================================================================
+  // TAMBAH & KELOLA JADWAL KEGIATAN (CRUD)
+  // =========================================================================
+  openTambahKegiatanModal() {
+    if (!HavalandAuth.isLoggedIn()) {
+      HavalandUtils.showToast("Akses Diperlukan", "Silakan masuk akun terlebih dahulu untuk menambah jadwal kegiatan", "info");
+      HavalandAuth.openLoginModal();
+      return;
+    }
+    const user = HavalandAuth.getCurrentUser();
+    const pjInput = document.getElementById("keg-pj");
+    if (pjInput && user) {
+      pjInput.value = `${user.nama} (${user.role})`;
+    }
+    this.openModal("modal-tambah-kegiatan");
+  },
+
+  handleTambahKegiatan(event) {
+    event.preventDefault();
+    if (!HavalandAuth.isLoggedIn()) {
+      HavalandAuth.openLoginModal();
+      return;
+    }
+    const user = HavalandAuth.getCurrentUser();
+    const nama = document.getElementById("keg-nama").value.trim();
+    const kategori = document.getElementById("keg-kategori").value;
+    const status = document.getElementById("keg-status").value;
+    const jadwal = document.getElementById("keg-jadwal").value.trim();
+    const waktu = document.getElementById("keg-waktu").value.trim();
+    const lokasi = document.getElementById("keg-lokasi").value.trim();
+    const pj = document.getElementById("keg-pj").value.trim();
+    const deskripsi = document.getElementById("keg-deskripsi").value.trim();
+
+    const pencatatInfo = `${user.nama} (${user.role})`;
+
+    const newKeg = {
+      id: `ACT-${Date.now().toString().slice(-4)}`,
+      tipe: "Agenda Khusus",
+      kategori: kategori,
+      judul: nama,
+      waktuNext: `${jadwal} • ${waktu}`,
+      lokasi: lokasi,
+      koordinator: pj,
+      frekuensi: status,
+      statusBadge: status,
+      deskripsi: deskripsi,
+      createdBy: pencatatInfo,
+      createdAt: new Date().toISOString()
+    };
+
+    HavalandData.kegiatan.unshift(newKeg);
+    const saved = HavalandUtils.loadStorage("custom_kegiatan", []);
+    saved.unshift(newKeg);
+    HavalandUtils.saveStorage("custom_kegiatan", saved);
+
+    this.renderKegiatan("semua");
+    this.renderBerandaHighlights();
+    this.closeModal("modal-tambah-kegiatan");
+    document.getElementById("form-tambah-kegiatan").reset();
+
+    if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+    HavalandUtils.showToast("Jadwal Ditambahkan", `Agenda '${nama}' dicatat oleh ${user.nama}!`, "success");
+  },
+
+  hapusKegiatan(kegId) {
+    if (!HavalandAuth.isLoggedIn()) {
+      HavalandUtils.showToast("Akses Terbatas", "Silakan login untuk menghapus jadwal kegiatan", "warning");
+      HavalandAuth.openLoginModal();
+      return;
+    }
+    const user = HavalandAuth.getCurrentUser();
+    if (!confirm(`Hapus jadwal kegiatan ini? Tindakan ini akan dicatat atas nama ${user.nama}.`)) return;
+
+    HavalandData.kegiatan = HavalandData.kegiatan.filter(k => k.id !== kegId);
+    HavalandUtils.saveStorage("custom_kegiatan", HavalandData.kegiatan);
+    this.renderKegiatan("semua");
+    this.renderBerandaHighlights();
+    if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+    HavalandUtils.showToast("Agenda Dihapus", `Kegiatan berhasil dihapus oleh ${user.nama}`, "info");
+  },
+
+  openSettingsModal() {
+    if (typeof HavalandSettings !== "undefined") {
+      HavalandSettings.openModal();
+    } else {
+      this.openModal("modal-pengaturan");
     }
   },
 
@@ -1065,6 +1220,728 @@ END:VCALENDAR`;
   }
 };
 
+// =============================================================================
+// MODUL 1: AUTENTIKASI PENGGUNA (WARGA & PENGURUS RT)
+// =============================================================================
+const HavalandAuth = {
+  currentUser: null,
+
+  init() {
+    try {
+      const savedUser = localStorage.getItem("havaland_auth_user");
+      if (savedUser) {
+        this.currentUser = JSON.parse(savedUser);
+      }
+    } catch (e) {
+      this.currentUser = null;
+    }
+    this.updateUI();
+  },
+
+  isLoggedIn() {
+    return !!this.currentUser;
+  },
+
+  isAdmin() {
+    return !!(this.currentUser && this.currentUser.isAdmin);
+  },
+
+  getCurrentUser() {
+    return this.currentUser;
+  },
+
+  openLoginModal(targetRole = null) {
+    const userInput = document.getElementById("login-username");
+    const passInput = document.getElementById("login-password");
+    const errMsg = document.getElementById("login-error-msg");
+
+    if (userInput) userInput.value = targetRole === 'admin' ? "admin" : "";
+    if (passInput) passInput.value = targetRole === 'admin' ? "havaland2026" : "";
+    if (errMsg) errMsg.style.display = "none";
+
+    HavalandApp.openModal("modal-login");
+  },
+
+  handleFormLogin(event) {
+    event.preventDefault();
+    const userVal = document.getElementById("login-username").value.trim().toLowerCase();
+    const passVal = document.getElementById("login-password").value.trim();
+    const errMsg = document.getElementById("login-error-msg");
+
+    const matched = HavalandData.akunPengguna.find(u => 
+      u.username.toLowerCase() === userVal && u.password === passVal
+    );
+
+    if (matched) {
+      this.currentUser = matched;
+      localStorage.setItem("havaland_auth_user", JSON.stringify(matched));
+      this.updateUI();
+      HavalandApp.closeModal("modal-login");
+      HavalandUtils.showToast(
+        "Berhasil Masuk",
+        `Selamat datang, ${matched.nama}! Anda masuk sebagai ${matched.role}.`,
+        "success"
+      );
+      if (typeof HavalandSettings !== "undefined") {
+        HavalandSettings.renderBackupSection();
+      }
+    } else {
+      if (errMsg) {
+        errMsg.textContent = "Nama pengguna atau kata sandi tidak cocok. Silakan coba lagi.";
+        errMsg.style.display = "block";
+      }
+    }
+  },
+
+  quickLogin(accountKey) {
+    let target = null;
+    if (accountKey === "admin") {
+      target = HavalandData.akunPengguna.find(u => u.isAdmin && (u.username === "ketua_rt" || u.username === "admin"));
+    } else if (accountKey === "bendahara") {
+      target = HavalandData.akunPengguna.find(u => u.username === "admin");
+    } else if (accountKey === "warga-bambang") {
+      target = HavalandData.akunPengguna.find(u => u.username === "bambang_a01");
+    } else if (accountKey === "warga-michael") {
+      target = HavalandData.akunPengguna.find(u => u.username === "kevin_a03" || u.username === "wisnu_c06");
+    } else {
+      target = HavalandData.akunPengguna.find(u => u.username === accountKey);
+    }
+
+    if (target) {
+      this.currentUser = target;
+      localStorage.setItem("havaland_auth_user", JSON.stringify(target));
+      this.updateUI();
+      HavalandApp.closeModal("modal-login");
+      HavalandUtils.showToast(
+        "Simulasi Masuk Berhasil",
+        `Masuk sebagai ${target.nama} (${target.role})`,
+        "success"
+      );
+      if (typeof HavalandSettings !== "undefined") {
+        HavalandSettings.renderBackupSection();
+      }
+    }
+  },
+
+  logout() {
+    this.currentUser = null;
+    localStorage.removeItem("havaland_auth_user");
+    this.updateUI();
+    if (typeof HavalandSettings !== "undefined") {
+      HavalandSettings.renderBackupSection();
+    }
+    HavalandUtils.showToast("Keluar Akun", "Anda telah keluar dari akun. Berjalan dalam mode pengunjung.", "info");
+  },
+
+  handleClickAuth() {
+    if (this.currentUser) {
+      const msg = `Halo ${this.currentUser.nama} (${this.currentUser.role})!\n\nApakah Anda ingin keluar (Logout) atau mengganti akun?`;
+      if (confirm(msg)) {
+        this.logout();
+      }
+    } else {
+      this.openLoginModal();
+    }
+  },
+
+  updateUI() {
+    const btn = document.getElementById("user-auth-indicator");
+    const nameLabel = document.getElementById("user-auth-name");
+    if (!btn || !nameLabel) return;
+
+    if (this.currentUser) {
+      const roleIcon = this.currentUser.isAdmin ? "👑" : "👤";
+      const shortName = this.currentUser.nama.split(",")[0].split(" ")[0];
+      const roleBadge = this.currentUser.isAdmin ? "Admin" : "Warga";
+      nameLabel.innerHTML = `${roleIcon} ${shortName} <span style="font-size: 0.7rem; opacity: 0.85;">(${roleBadge})</span>`;
+      btn.classList.add("logged-in");
+      btn.setAttribute("title", `Masuk sebagai: ${this.currentUser.nama} (${this.currentUser.role}) • Klik untuk keluar`);
+    } else {
+      nameLabel.textContent = "Masuk Akun";
+      btn.classList.remove("logged-in");
+      btn.setAttribute("title", "Klik untuk masuk akun warga / pengurus RT");
+    }
+  }
+};
+
+// =============================================================================
+// MODUL 2: PENGATURAN TAMPILAN, MODEL TEMA, BAYANGAN & MODE RINGAN
+// =============================================================================
+const HavalandSettings = {
+  palette: "emerald",
+  shadow: "medium",
+  liteMode: false,
+
+  init() {
+    const savedPalette = localStorage.getItem("havaland_palette") || "emerald";
+    const savedShadow = localStorage.getItem("havaland_card_shadow") || "medium";
+    const savedLite = localStorage.getItem("havaland_litemode") === "true";
+
+    this.setPalette(savedPalette, false);
+    this.setShadow(savedShadow, false);
+    this.toggleLiteMode(savedLite, false);
+    this.updateThemeLabel();
+  },
+
+  setPalette(paletteName, notify = true) {
+    this.palette = paletteName;
+    document.documentElement.setAttribute("data-theme-palette", paletteName);
+    localStorage.setItem("havaland_palette", paletteName);
+
+    document.querySelectorAll(".palette-item").forEach(item => {
+      item.classList.toggle("active", item.getAttribute("data-palette") === paletteName);
+    });
+
+    if (notify) {
+      HavalandUtils.showToast(
+        "Nuansa Tema Diubah",
+        `Model tema ${paletteName.toUpperCase()} aktif`,
+        "info"
+      );
+    }
+  },
+
+  setShadow(shadowLevel, notify = true) {
+    this.shadow = shadowLevel;
+    document.documentElement.setAttribute("data-card-shadow", shadowLevel);
+    localStorage.setItem("havaland_card_shadow", shadowLevel);
+
+    document.querySelectorAll(".shadow-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.getAttribute("data-shadow") === shadowLevel);
+    });
+
+    if (notify) {
+      HavalandUtils.showToast(
+        "Bayangan Kartu Diubah",
+        `Tingkat bayangan kartu: ${shadowLevel.toUpperCase()}`,
+        "info"
+      );
+    }
+  },
+
+  toggleLiteMode(forceVal = null, notify = true) {
+    if (forceVal !== null) {
+      this.liteMode = !!forceVal;
+    } else {
+      this.liteMode = !this.liteMode;
+    }
+
+    localStorage.setItem("havaland_litemode", this.liteMode ? "true" : "false");
+    document.body.classList.toggle("lite-mode", this.liteMode);
+
+    const switchEl = document.getElementById("switch-lite-mode");
+    if (switchEl) {
+      switchEl.classList.toggle("active", this.liteMode);
+    }
+
+    if (notify) {
+      if (this.liteMode) {
+        HavalandUtils.showToast(
+          "Mode Ringan Aktif",
+          "Semua animasi scroll, efek hover, dan transisi dimatikan untuk performa hemat daya.",
+          "info"
+        );
+      } else {
+        HavalandUtils.showToast(
+          "Mode Ringan Dinonaktifkan",
+          "Website kembali menampilkan animasi visual penuh.",
+          "info"
+        );
+      }
+    }
+  },
+
+  updateThemeLabel() {
+    const lbl = document.getElementById("settings-theme-label");
+    if (lbl) {
+      lbl.textContent = HavalandApp.currentTheme === "dark" ? "Mode Gelap: Aktif 🌙" : "Mode Gelap: Nonaktif ☀️";
+    }
+  },
+
+  openModal() {
+    this.renderBackupSection();
+    this.updateThemeLabel();
+    HavalandApp.openModal("modal-pengaturan");
+  },
+
+  renderBackupSection() {
+    const container = document.getElementById("backup-controls-container");
+    if (!container) return;
+
+    const isAdmin = HavalandAuth.isAdmin();
+    const folder = localStorage.getItem("havaland_backup_folder") || "D:\\koding\\Warga Havaland\\backups";
+    const autoBackup = localStorage.getItem("havaland_auto_backup") === "true";
+    const lastSnapshot = localStorage.getItem("havaland_last_snapshot_time") || "Belum ada snapshot";
+
+    if (!isAdmin) {
+      container.innerHTML = `
+        <div class="admin-locked-box">
+          <svg class="w-5 h-5" style="color: var(--accent-gold); flex-shrink: 0; margin-top: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">Fitur Khusus Administrator / Pengurus RT</div>
+            <div style="margin-bottom: 0.6rem; line-height: 1.4;">Pengaturan cadangan (backup), pemulihan data (restore), dan penunjukan folder otomatis hanya dapat diakses oleh Admin RT / Bendahara demi keamanan data warga.</div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandAuth.openLoginModal('admin')" style="font-size: 0.75rem;">
+              🔐 Masuk Sebagai Admin RT (Pak RT / Bendahara)
+            </button>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // Tampilan Admin Terverifikasi
+    container.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent); padding: 0.6rem 0.85rem; border-radius: var(--radius-md);">
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; color: var(--primary);">
+            <span>🛡️ Akses Terverifikasi:</span>
+            <span>${HavalandAuth.getCurrentUser()?.nama} (${HavalandAuth.getCurrentUser()?.role})</span>
+          </div>
+          <span class="badge badge-success" style="font-size: 0.7rem;">Akses Penuh</span>
+        </div>
+
+        <!-- Tombol Backup Manual & Restore -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
+          <button type="button" class="btn btn-primary btn-sm" onclick="HavalandBackup.exportJSON()" style="justify-content: center;">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Unduh Backup JSON
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandBackup.triggerFileInput()" style="justify-content: center;">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12"/></svg>
+            Pulihkan Data JSON
+          </button>
+        </div>
+
+        <!-- Folder Penunjukan & Auto Backup -->
+        <div class="card" style="background: var(--bg-subtle); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--surface-border);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+            <div>
+              <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary);">📁 Lokasi Folder Penyimpanan Cadangan:</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); word-break: break-all;" id="backup-folder-display">${folder}</div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandBackup.selectFolder()" style="font-size: 0.72rem; padding: 3px 8px; flex-shrink: 0;">
+              Ganti Folder
+            </button>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px dashed var(--surface-border); padding-top: 0.6rem; margin-top: 0.6rem;">
+            <div>
+              <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary);">Otomatis Cadangkan Setiap Ada CRUD</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Simpan snapshot lokal otomatis saat ada transaksi, kegiatan, atau usulan baru</div>
+            </div>
+            <div class="switch-input ${autoBackup ? 'active' : ''}" style="cursor: pointer;" onclick="HavalandBackup.toggleAutoBackup()"></div>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px dashed var(--surface-border); padding-top: 0.6rem; margin-top: 0.6rem; font-size: 0.75rem;">
+            <span style="color: var(--text-muted);">Snapshot Terakhir: <strong style="color: var(--text-primary);">${lastSnapshot}</strong></span>
+            <button type="button" class="btn btn-sm" style="font-size: 0.72rem; color: var(--primary); text-decoration: underline; background: transparent; padding: 0;" onclick="HavalandBackup.restoreLastSnapshot()">
+              Pulihkan dari Snapshot
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+};
+
+// =============================================================================
+// MODUL 3: CADANGAN & PEMULIHAN DATA (BACKUP & RESTORE DENGAN HAK ADMIN)
+// =============================================================================
+const HavalandBackup = {
+  directoryHandle: null,
+
+  exportJSON() {
+    if (!HavalandAuth.isAdmin()) {
+      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang berhak mengunduh cadangan data.", "error");
+      return;
+    }
+
+    const payload = {
+      havalandMeta: {
+        portal: "Pusat Informasi Warga Havaland RT 04 / RW 12",
+        versi: "2.1",
+        diexportPada: new Date().toISOString(),
+        diexportOleh: HavalandAuth.getCurrentUser()?.nama || "Admin RT"
+      },
+      transaksi: HavalandData.transaksi,
+      kegiatan: HavalandData.kegiatan,
+      warga: HavalandData.warga,
+      aspirasi: HavalandData.aspirasi,
+      usulanIde: HavalandData.usulanIde,
+      kasSummary: HavalandData.kasSummary
+    };
+
+    const jsonString = JSON.stringify(payload, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
+    const filename = `havaland_backup_${new Date().toISOString().slice(0, 10)}.json`;
+
+    // Download trigger
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Save as latest snapshot
+    localStorage.setItem("havaland_latest_snapshot", jsonString);
+    localStorage.setItem("havaland_last_snapshot_time", new Date().toLocaleString("id-ID"));
+    if (typeof HavalandSettings !== "undefined") {
+      HavalandSettings.renderBackupSection();
+    }
+
+    HavalandUtils.showToast("Backup Berhasil", `Berkas cadangan ${filename} berhasil diunduh!`, "success");
+  },
+
+  triggerFileInput() {
+    if (!HavalandAuth.isAdmin()) {
+      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang berhak memulihkan data.", "error");
+      return;
+    }
+    const input = document.getElementById("backup-file-input");
+    if (input) {
+      input.value = "";
+      input.click();
+    }
+  },
+
+  handleFileSelected(event) {
+    if (!HavalandAuth.isAdmin()) {
+      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang berhak memulihkan data.", "error");
+      return;
+    }
+
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+
+        // Validasi struktur data
+        if (!parsed.transaksi && !parsed.kegiatan && !parsed.data) {
+          throw new Error("Format berkas backup tidak valid.");
+        }
+
+        const dataSrc = parsed.data ? parsed.data : parsed;
+
+        if (dataSrc.transaksi && Array.isArray(dataSrc.transaksi)) {
+          HavalandData.transaksi = dataSrc.transaksi;
+          HavalandUtils.saveStorage("custom_transaksi", dataSrc.transaksi);
+        }
+        if (dataSrc.kegiatan && Array.isArray(dataSrc.kegiatan)) {
+          HavalandData.kegiatan = dataSrc.kegiatan;
+          HavalandUtils.saveStorage("custom_kegiatan", dataSrc.kegiatan);
+        }
+        if (dataSrc.usulanIde && Array.isArray(dataSrc.usulanIde)) {
+          HavalandData.usulanIde = dataSrc.usulanIde;
+          HavalandUtils.saveStorage("custom_usulan", dataSrc.usulanIde);
+        }
+        if (dataSrc.warga && Array.isArray(dataSrc.warga)) {
+          HavalandData.warga = dataSrc.warga;
+        }
+        if (dataSrc.aspirasi && Array.isArray(dataSrc.aspirasi)) {
+          HavalandData.aspirasi = dataSrc.aspirasi;
+          HavalandUtils.saveStorage("custom_aspirasi", dataSrc.aspirasi);
+        }
+
+        // Re-render semua antarmuka
+        HavalandApp.recalculateSummary();
+        HavalandApp.renderKPIs();
+        HavalandApp.renderMiniChart();
+        HavalandApp.renderExpenseAllocations();
+        HavalandApp.renderBerandaHighlights();
+        HavalandApp.renderTransaksi();
+        HavalandApp.renderKegiatan("semua");
+        HavalandApp.renderWarga();
+        HavalandProposals.renderSlider();
+
+        HavalandUtils.showToast(
+          "Pemulihan Berhasil",
+          "Seluruh data transaksi, kegiatan, dan usulan berhasil dipulihkan dari berkas backup!",
+          "success"
+        );
+      } catch (err) {
+        alert("Gagal membaca file backup: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+  },
+
+  async selectFolder() {
+    if (!HavalandAuth.isAdmin()) {
+      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang berhak mengatur lokasi folder backup.", "error");
+      return;
+    }
+
+    if ("showDirectoryPicker" in window) {
+      try {
+        const dirHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+        this.directoryHandle = dirHandle;
+        localStorage.setItem("havaland_backup_folder", dirHandle.name);
+        HavalandUtils.showToast(
+          "Folder Ditunjuk",
+          `Folder '${dirHandle.name}' berhasil ditetapkan sebagai lokasi backup otomatis.`,
+          "success"
+        );
+        HavalandSettings.renderBackupSection();
+      } catch (e) {
+        // User cancelled picker
+      }
+    } else {
+      const cur = localStorage.getItem("havaland_backup_folder") || "D:\\koding\\Warga Havaland\\backups";
+      const manual = prompt("Tentukan path folder lokasi pencadangan otomatis di komputer Anda:", cur);
+      if (manual && manual.trim()) {
+        localStorage.setItem("havaland_backup_folder", manual.trim());
+        HavalandUtils.showToast("Lokasi Disimpan", `Lokasi folder disetel ke: ${manual.trim()}`, "info");
+        HavalandSettings.renderBackupSection();
+      }
+    }
+  },
+
+  toggleAutoBackup() {
+    if (!HavalandAuth.isAdmin()) {
+      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat mengubah pengaturan backup otomatis.", "error");
+      return;
+    }
+
+    const current = localStorage.getItem("havaland_auto_backup") === "true";
+    const nextVal = !current;
+    localStorage.setItem("havaland_auto_backup", nextVal ? "true" : "false");
+    HavalandSettings.renderBackupSection();
+    HavalandUtils.showToast(
+      "Backup Otomatis",
+      nextVal ? "Pencadangan otomatis setiap operasi CRUD diaktifkan!" : "Pencadangan otomatis dinonaktifkan.",
+      "info"
+    );
+  },
+
+  autoSnapshot() {
+    const isAuto = localStorage.getItem("havaland_auto_backup") === "true";
+    if (!isAuto) return;
+
+    const payload = {
+      timestamp: new Date().toISOString(),
+      transaksi: HavalandData.transaksi,
+      kegiatan: HavalandData.kegiatan,
+      usulanIde: HavalandData.usulanIde,
+      kasSummary: HavalandData.kasSummary
+    };
+
+    localStorage.setItem("havaland_latest_snapshot", JSON.stringify(payload));
+    localStorage.setItem("havaland_last_snapshot_time", new Date().toLocaleString("id-ID"));
+    console.log("Auto-snapshot data Havaland berhasil disimpan.");
+  },
+
+  restoreLastSnapshot() {
+    if (!HavalandAuth.isAdmin()) {
+      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat memulihkan snapshot.", "error");
+      return;
+    }
+
+    const snap = localStorage.getItem("havaland_latest_snapshot");
+    if (!snap) {
+      HavalandUtils.showToast("Snapshot Kosong", "Belum ada snapshot cadangan yang tersimpan.", "warning");
+      return;
+    }
+
+    if (!confirm("Pulihkan data dari snapshot terakhir yang tersimpan secara lokal?")) return;
+
+    try {
+      const parsed = JSON.parse(snap);
+      if (parsed.transaksi) HavalandData.transaksi = parsed.transaksi;
+      if (parsed.kegiatan) HavalandData.kegiatan = parsed.kegiatan;
+      if (parsed.usulanIde) HavalandData.usulanIde = parsed.usulanIde;
+
+      HavalandApp.recalculateSummary();
+      HavalandApp.renderKPIs();
+      HavalandApp.renderTransaksi();
+      HavalandApp.renderKegiatan("semua");
+      HavalandProposals.renderSlider();
+
+      HavalandUtils.showToast("Dipulihkan", "Data berhasil dikembalikan dari snapshot terakhir!", "success");
+    } catch (e) {
+      HavalandUtils.showToast("Gagal", "Format snapshot rusak.", "error");
+    }
+  }
+};
+
+// =============================================================================
+// MODUL 4: KOTAK SUARA & USULAN IDE WARGA (SLIDER DI BERANDA)
+// =============================================================================
+const HavalandProposals = {
+  init() {
+    this.renderSlider();
+  },
+
+  renderSlider() {
+    const track = document.getElementById("ideas-track");
+    if (!track) return;
+
+    const list = HavalandData.usulanIde || [];
+    if (list.length === 0) {
+      track.innerHTML = `<div style="padding: 1.5rem; color: var(--text-muted); font-size: 0.85rem;">Belum ada usulan ide warga yang terdaftar. Jadilah yang pertama mengajukan ide!</div>`;
+      return;
+    }
+
+    const votedIds = JSON.parse(localStorage.getItem("havaland_voted_ideas") || "[]");
+
+    let html = "";
+    list.forEach(item => {
+      const hasVoted = votedIds.includes(item.id);
+      let statusBadgeClass = "badge-info";
+      if (item.status === "Disetujui") statusBadgeClass = "badge-success";
+      if (item.status === "Masuk Anggaran") statusBadgeClass = "badge-warning";
+
+      html += `
+        <div class="idea-card">
+          <div>
+            <div class="idea-top">
+              <span class="badge" style="background: var(--bg-subtle); color: var(--primary); font-size: 0.72rem;">${item.kategori}</span>
+              <span class="badge ${statusBadgeClass}" style="font-size: 0.7rem;">${item.status}</span>
+            </div>
+            <h4 class="idea-title">${item.judul}</h4>
+            <p class="idea-desc">${item.deskripsi}</p>
+          </div>
+
+          <div>
+            <div class="idea-author">
+              <div class="quick-action-icon icon-emerald" style="width: 26px; height: 26px; min-width: 26px; min-height: 26px; border-radius: 50%;">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              </div>
+              <div style="flex: 1;">
+                <div>Pengusul: <strong>${item.pengusul}</strong> (${item.blok})</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted);">${HavalandUtils.formatTanggalSingkat(item.tanggal)}</div>
+              </div>
+            </div>
+
+            <div class="idea-footer">
+              <button type="button" class="btn-vote ${hasVoted ? 'voted' : ''}" onclick="HavalandProposals.vote('${item.id}')" title="Beri dukungan untuk usulan ini">
+                <span>👍</span>
+                <span>${hasVoted ? 'Didukung' : 'Dukung'}</span>
+                <strong>(${item.dukungan || 0})</strong>
+              </button>
+              <button type="button" class="btn btn-sm" style="font-size: 0.72rem; color: var(--primary); background: transparent; padding: 0;" onclick="HavalandProposals.shareIdeaWA('${item.id}')">
+                Bagikan WA →
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    track.innerHTML = html;
+  },
+
+  slide(direction) {
+    const track = document.getElementById("ideas-track");
+    if (!track) return;
+    track.scrollBy({ left: direction * 350, behavior: "smooth" });
+  },
+
+  vote(ideaId) {
+    const votedIds = JSON.parse(localStorage.getItem("havaland_voted_ideas") || "[]");
+    const item = HavalandData.usulanIde.find(u => u.id === ideaId);
+    if (!item) return;
+
+    if (votedIds.includes(ideaId)) {
+      // Batal vote
+      item.dukungan = Math.max(0, (item.dukungan || 1) - 1);
+      const idx = votedIds.indexOf(ideaId);
+      votedIds.splice(idx, 1);
+      localStorage.setItem("havaland_voted_ideas", JSON.stringify(votedIds));
+      HavalandUtils.showToast("Dukungan Dibatalkan", `Dukungan untuk '${item.judul}' dibatalkan.`, "info");
+    } else {
+      // Tambah vote
+      item.dukungan = (item.dukungan || 0) + 1;
+      votedIds.push(ideaId);
+      localStorage.setItem("havaland_voted_ideas", JSON.stringify(votedIds));
+      HavalandUtils.showToast("Terima Kasih", `Dukungan Anda untuk '${item.judul}' berhasil dicatat!`, "success");
+    }
+
+    HavalandUtils.saveStorage("custom_usulan", HavalandData.usulanIde);
+    this.renderSlider();
+  },
+
+  shareIdeaWA(ideaId) {
+    const item = HavalandData.usulanIde.find(u => u.id === ideaId);
+    if (!item) return;
+    const pesan = `*USULAN IDE WARGA HAVALAND*%0A%0A*Judul:* ${item.judul}%0A*Kategori:* ${item.kategori}%0A*Pengusul:* ${item.pengusul} (${item.blok})%0A*Status:* ${item.status}%0A%0A"${item.deskripsi}"%0A%0AMari berikan dukungan di portal warga Havaland! 🏡🌿`;
+    window.open(`https://api.whatsapp.com/send?text=${pesan}`, "_blank");
+  },
+
+  openTambahModal() {
+    if (!HavalandAuth.isLoggedIn()) {
+      HavalandUtils.showToast(
+        "Akses Masuk Diperlukan",
+        "Silakan masuk akun warga terlebih dahulu untuk mengajukan usulan ide.",
+        "info"
+      );
+      HavalandAuth.openLoginModal();
+      return;
+    }
+
+    const user = HavalandAuth.getCurrentUser();
+    const nameEl = document.getElementById("usulan-pengusul-name");
+    const blokEl = document.getElementById("usulan-pengusul-blok");
+    if (nameEl) nameEl.textContent = user.nama;
+    if (blokEl) blokEl.textContent = `Blok ${user.blok || "Havaland"}`;
+
+    HavalandApp.openModal("modal-tambah-usulan");
+  },
+
+  handleSubmit(event) {
+    event.preventDefault();
+    if (!HavalandAuth.isLoggedIn()) {
+      HavalandAuth.openLoginModal();
+      return;
+    }
+
+    const user = HavalandAuth.getCurrentUser();
+    const judul = document.getElementById("usulan-judul").value.trim();
+    const kategori = document.getElementById("usulan-kategori").value;
+    const deskripsi = document.getElementById("usulan-deskripsi").value.trim();
+    const manfaat = document.getElementById("usulan-manfaat").value.trim();
+
+    if (!judul || !deskripsi) {
+      HavalandUtils.showToast("Gagal", "Mohon lengkapi judul dan deskripsi usulan ide Anda", "error");
+      return;
+    }
+
+    const newIdea = {
+      id: `IDE-${Date.now().toString().slice(-4)}`,
+      judul: judul,
+      kategori: kategori,
+      deskripsi: `${deskripsi} (Manfaat: ${manfaat})`,
+      pengusul: user.nama,
+      blok: user.blok || "Warga",
+      tanggal: new Date().toISOString().slice(0, 10),
+      dukungan: 1,
+      status: "Dalam Diskusi"
+    };
+
+    HavalandData.usulanIde.unshift(newIdea);
+    const saved = HavalandUtils.loadStorage("custom_usulan", []);
+    saved.unshift(newIdea);
+    HavalandUtils.saveStorage("custom_usulan", saved);
+
+    this.renderSlider();
+    HavalandApp.closeModal("modal-tambah-usulan");
+    document.getElementById("form-tambah-usulan").reset();
+
+    if (typeof HavalandBackup !== "undefined") {
+      HavalandBackup.autoSnapshot();
+    }
+
+    HavalandUtils.showToast(
+      "Usulan Terkirim",
+      `Gagasan '${judul}' dari ${user.nama} berhasil dicatat dan masuk ke kotak suara warga!`,
+      "success"
+    );
+  }
+};
+
 // Start application when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   HavalandApp.init();
@@ -1073,4 +1950,9 @@ document.addEventListener("DOMContentLoaded", () => {
 // Export to window
 if (typeof window !== "undefined") {
   window.HavalandApp = HavalandApp;
+  window.HavalandAuth = HavalandAuth;
+  window.HavalandSettings = HavalandSettings;
+  window.HavalandBackup = HavalandBackup;
+  window.HavalandProposals = HavalandProposals;
 }
+

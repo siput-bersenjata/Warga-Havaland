@@ -85,6 +85,174 @@
 }
 
 /* ==========================================================================
+   Multi-Theme Palettes System
+   ========================================================================== */
+/* 1. Sapphire Ocean */
+[data-theme-palette="sapphire"] {
+  --primary: #1E40AF;
+  --primary-light: #2563EB;
+  --primary-dark: #172554;
+  --primary-subtle: #EFF6FF;
+  --primary-gradient: linear-gradient(135deg, #1E40AF 0%, #0284C7 100%);
+  --accent: #2563EB;
+  --shadow-emerald: 0 10px 25px -5px rgba(30, 64, 175, 0.25);
+}
+[data-theme="dark"][data-theme-palette="sapphire"] {
+  --primary-subtle: rgba(37, 99, 235, 0.18);
+  --accent: #60A5FA;
+}
+
+/* 2. Sunset Amber */
+[data-theme-palette="amber"] {
+  --primary: #B45309;
+  --primary-light: #D97706;
+  --primary-dark: #78350F;
+  --primary-subtle: #FFFBEB;
+  --primary-gradient: linear-gradient(135deg, #B45309 0%, #EA580C 100%);
+  --accent: #D97706;
+  --shadow-emerald: 0 10px 25px -5px rgba(180, 83, 9, 0.25);
+}
+[data-theme="dark"][data-theme-palette="amber"] {
+  --primary-subtle: rgba(217, 119, 6, 0.18);
+  --accent: #FBBF24;
+}
+
+/* 3. Amethyst Royal */
+[data-theme-palette="amethyst"] {
+  --primary: #6D28D9;
+  --primary-light: #8B5CF6;
+  --primary-dark: #4C1D95;
+  --primary-subtle: #F5F3FF;
+  --primary-gradient: linear-gradient(135deg, #6D28D9 0%, #A855F7 100%);
+  --accent: #8B5CF6;
+  --shadow-emerald: 0 10px 25px -5px rgba(109, 40, 217, 0.25);
+}
+[data-theme="dark"][data-theme-palette="amethyst"] {
+  --primary-subtle: rgba(139, 92, 246, 0.18);
+  --accent: #A78BFA;
+}
+
+/* 4. Obsidian Dark / Onyx */
+[data-theme-palette="obsidian"] {
+  --primary: #0F172A;
+  --primary-light: #334155;
+  --primary-dark: #020617;
+  --primary-subtle: #F1F5F9;
+  --primary-gradient: linear-gradient(135deg, #0F172A 0%, #334155 100%);
+  --accent: #10B981;
+  --shadow-emerald: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+}
+[data-theme="dark"][data-theme-palette="obsidian"] {
+  --primary-subtle: rgba(51, 65, 85, 0.35);
+  --accent: #34D399;
+}
+
+/* ==========================================================================
+   Card Shadow Customization
+   ========================================================================== */
+[data-card-shadow="none"] .card, 
+[data-card-shadow="none"] .stat-card, 
+[data-card-shadow="none"] .resident-card, 
+[data-card-shadow="none"] .activity-card, 
+[data-card-shadow="none"] .quick-action-btn,
+[data-card-shadow="none"] .idea-card { 
+  box-shadow: none !important; 
+}
+
+[data-card-shadow="soft"] .card, 
+[data-card-shadow="soft"] .stat-card, 
+[data-card-shadow="soft"] .resident-card, 
+[data-card-shadow="soft"] .activity-card, 
+[data-card-shadow="soft"] .quick-action-btn,
+[data-card-shadow="soft"] .idea-card { 
+  box-shadow: var(--shadow-sm) !important; 
+}
+
+[data-card-shadow="medium"] .card, 
+[data-card-shadow="medium"] .stat-card, 
+[data-card-shadow="medium"] .resident-card, 
+[data-card-shadow="medium"] .activity-card, 
+[data-card-shadow="medium"] .quick-action-btn,
+[data-card-shadow="medium"] .idea-card { 
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05) !important; 
+}
+
+[data-card-shadow="strong"] .card, 
+[data-card-shadow="strong"] .stat-card, 
+[data-card-shadow="strong"] .resident-card, 
+[data-card-shadow="strong"] .activity-card, 
+[data-card-shadow="strong"] .quick-action-btn,
+[data-card-shadow="strong"] .idea-card { 
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.16), 0 4px 8px -2px rgba(0, 0, 0, 0.06) !important; 
+}
+
+/* ==========================================================================
+   Mode Ringan (Lite Mode) - Disable All Heavy Animations
+   ========================================================================== */
+body.lite-mode,
+body.lite-mode *,
+body.lite-mode *::before,
+body.lite-mode *::after {
+  animation: none !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition: none !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+body.lite-mode .bar-in,
+body.lite-mode .bar-out {
+  transition: none !important;
+}
+
+body.lite-mode .pulse-dot {
+  animation: none !important;
+}
+
+body.lite-mode .site-header,
+body.lite-mode .bottom-nav,
+body.lite-mode .modal-overlay,
+body.lite-mode .hero-badge-pill {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* User Auth Indicator in Header */
+.user-auth-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--bg-subtle);
+  border: 1px solid var(--surface-border);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.user-auth-pill:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+}
+
+.user-auth-pill.logged-in {
+  background: var(--primary-subtle);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: var(--primary);
+}
+
+[data-theme="dark"] .user-auth-pill.logged-in {
+  color: var(--accent);
+}
+
+/* ==========================================================================
    Base & Reset
    ========================================================================== */
 *, *::before, *::after {

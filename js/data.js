@@ -728,6 +728,114 @@ const HavalandData = {
       tanggapan: "Akan dibahas pada Rapat Pleno Triwulan 17 Oktober 2026.",
       urgensi: "Rendah"
     }
+  ],
+
+  // USULAN & IDE INISIATIF WARGA (SLIDER CAROUSEL BERANDA)
+  usulanIde: [
+    {
+      id: "IDE-001",
+      judul: "Turnamen Badminton & Tenis Meja Havaland Cup 2026",
+      kategori: "Olahraga & Guyub",
+      deskripsi: "Mengadakan kompetisi olahraga santai antar blok A, B, C, D di lapangan fasum setiap Sabtu malam untuk mempererat keakraban antar warga.",
+      pengusul: "dr. Kevin Sanjaya",
+      blok: "A-03",
+      tanggal: "2026-09-20",
+      dukungan: 31,
+      status: "Disetujui"
+    },
+    {
+      id: "IDE-002",
+      judul: "Pemasangan Karet Speed Bump (Polisi Tidur) Blok C",
+      kategori: "Keamanan Lingkungan",
+      deskripsi: "Pemasangan 2 titik speed bump karet ramah kendaraan di depan taman Blok C agar kendaraan kurir paket melambat saat anak-anak bermain.",
+      pengusul: "Wisnu Wardhana",
+      blok: "C-06",
+      tanggal: "2026-09-17",
+      dukungan: 24,
+      status: "Masuk Anggaran"
+    },
+    {
+      id: "IDE-003",
+      judul: "Penanaman Pohon Tabebuya Bunga Kuning di Boulevard",
+      kategori: "Estetika & Taman",
+      deskripsi: "Penghijauan tepi jalan boulevard utama dengan bibit pohon tabebuya kuning agar lingkungan perumahan lebih teduh, asri, dan indah saat mekar.",
+      pengusul: "Ibu Citra Lestari",
+      blok: "B-01",
+      tanggal: "2026-09-15",
+      dukungan: 28,
+      status: "Disetujui"
+    },
+    {
+      id: "IDE-004",
+      judul: "Pengadaan Tabung APAR (Pemadam Api) Tiap Sudut Blok",
+      kategori: "Tanggap Darurat",
+      deskripsi: "Menempatkan 1 tabung pemadam api powder 6kg di tiang utama setiap blok lengkap dengan kotak pelindung untuk antisipasi dini kebakaran.",
+      pengusul: "Kapten Anton",
+      blok: "Pos Satpam",
+      tanggal: "2026-09-11",
+      dukungan: 22,
+      status: "Dalam Diskusi"
+    },
+    {
+      id: "IDE-005",
+      judul: "Filter Air Sumur Resapan & Pembuatan 30 Lubang Biopori",
+      kategori: "Fasilitas Warga",
+      deskripsi: "Optimalisasi resapan air hujan di area taman barat guna mengantisipasi genangan saat musim penghujan dan menjaga kejernihan air tanah.",
+      pengusul: "Ir. Bambang Sujarwo",
+      blok: "A-01",
+      tanggal: "2026-09-08",
+      dukungan: 19,
+      status: "Dalam Diskusi"
+    }
+  ],
+
+  // AKUN PENGGUNA DEMO UNTUK LOGIN & AUDIT TRAIL CRUD
+  akunPengguna: [
+    {
+      username: "admin",
+      password: "havaland2026",
+      nama: "Citra Lestari, S.E.",
+      role: "Bendahara RT 04",
+      blok: "B-01",
+      kontak: "0812-6001-9983",
+      isAdmin: true
+    },
+    {
+      username: "ketua_rt",
+      password: "havaland2026",
+      nama: "Ir. Bambang Sujarwo",
+      role: "Ketua RT 04",
+      blok: "A-01",
+      kontak: "0812-6001-9982",
+      isAdmin: true
+    },
+    {
+      username: "bambang_a01",
+      password: "123",
+      nama: "Ir. Bambang Sujarwo",
+      role: "Warga Tetap",
+      blok: "A-01",
+      kontak: "0812-6001-9982",
+      isAdmin: false
+    },
+    {
+      username: "kevin_a03",
+      password: "123",
+      nama: "dr. Kevin Sanjaya, Sp.A",
+      role: "Warga Tetap",
+      blok: "A-03",
+      kontak: "0811-2233-4455",
+      isAdmin: false
+    },
+    {
+      username: "wisnu_c06",
+      password: "123",
+      nama: "Wisnu Wardhana",
+      role: "Warga Tetap",
+      blok: "C-06",
+      kontak: "0812-3344-5566",
+      isAdmin: false
+    }
   ]
 };
 

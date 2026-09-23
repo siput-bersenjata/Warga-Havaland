@@ -1190,3 +1190,387 @@ textarea.form-control {
   from { opacity: 0; transform: translateY(-12px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ==========================================================================
+   Carousel Slider: Usulan & Ide Inisiatif Warga (Beranda)
+   ========================================================================== */
+.ideas-section {
+  margin-bottom: 2rem;
+}
+
+.ideas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ideas-carousel-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.ideas-track {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 0.5rem 0.25rem 1rem 0.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ideas-track::-webkit-scrollbar {
+  height: 6px;
+}
+
+.ideas-track::-webkit-scrollbar-track {
+  background: var(--bg-subtle);
+  border-radius: var(--radius-full);
+}
+
+.ideas-track::-webkit-scrollbar-thumb {
+  background: var(--surface-border);
+  border-radius: var(--radius-full);
+}
+
+.idea-card {
+  flex: 0 0 calc(100% - 1rem);
+  max-width: 380px;
+  min-width: 300px;
+  scroll-snap-align: start;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  padding: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all var(--transition-fast);
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .idea-card {
+    flex: 0 0 360px;
+  }
+}
+
+.idea-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-light);
+}
+
+.idea-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.idea-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+  line-height: 1.3;
+}
+
+.idea-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.idea-author {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  border-top: 1px dashed var(--surface-border);
+  padding-top: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.idea-author strong {
+  color: var(--text-primary);
+}
+
+.idea-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.btn-vote {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: var(--bg-subtle);
+  border: 1px solid var(--surface-border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-vote:hover {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--primary);
+  border-color: var(--primary-light);
+}
+
+.btn-vote.voted {
+  background: var(--primary-subtle);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.carousel-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.carousel-nav-btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+}
+
+/* ==========================================================================
+   Settings Modal Elements
+   ========================================================================== */
+.settings-section {
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.settings-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.settings-section-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.settings-section-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 0.85rem;
+}
+
+/* Theme Palette Swatches */
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.6rem;
+}
+
+.palette-item {
+  border: 2px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  padding: 0.6rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--surface);
+  transition: all var(--transition-fast);
+}
+
+.palette-item:hover {
+  border-color: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.palette-item.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-subtle);
+  background: var(--bg-subtle);
+}
+
+.palette-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+}
+
+.palette-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Shadow Option Radio Group */
+.shadow-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.shadow-btn {
+  height: 38px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.shadow-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.shadow-btn.active {
+  background: var(--primary);
+  color: #FFFFFF;
+  border-color: var(--primary);
+}
+
+/* Switch Toggle UI */
+.switch-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-border);
+  cursor: pointer;
+}
+
+.switch-label-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.switch-label-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.switch-input {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: #CBD5E1;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.switch-input::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: #FFFFFF;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.switch-control.active .switch-input {
+  background: var(--accent);
+}
+
+.switch-control.active .switch-input::after {
+  transform: translateX(20px);
+}
+
+/* Admin Lock Notice Box */
+.admin-locked-box {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px dashed var(--accent-gold);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+/* Audit Trail Badge */
+.audit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--surface-border);
+}
+
+/* Demo Accounts Quick Login Chips */
+.demo-accounts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .demo-accounts-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.demo-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.85rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.demo-chip:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}

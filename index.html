@@ -75,10 +75,15 @@
           <span>Portal Live</span>
         </div>
 
-        <!-- Dark Mode Toggle Button -->
-        <button id="theme-toggle-btn" class="icon-btn" onclick="HavalandApp.toggleTheme()" aria-label="Ubah Tema Gelap/Terang" title="Ubah Tema">
-          <svg id="theme-icon-sun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-          <svg id="theme-icon-moon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        <!-- User Authentication Indicator / Login Button -->
+        <button id="user-auth-indicator" class="user-auth-pill" onclick="HavalandAuth.handleClickAuth()" title="Status Pengguna">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          <span id="user-auth-name">Masuk Akun</span>
+        </button>
+
+        <!-- Settings Modal Trigger (Replaces old Theme toggle button) -->
+        <button id="btn-open-settings" class="icon-btn" onclick="HavalandApp.openSettingsModal()" aria-label="Buka Pengaturan Tampilan & Sistem" title="Pengaturan Tampilan, Tema & Backup">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         </button>
 
         <!-- Emergency Satpam Shortcut -->
@@ -250,7 +255,37 @@
           <div class="stat-value" id="kpi-partisipasi">91.1%</div>
           <div class="stat-meta">
             <span class="trend-up" id="kpi-kk-count">41 dari 45 KK</span>
-            <span>sudah bayar</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Usulan Ide & Aspirasi Kreatif Warga (Slide Card Carousel) -->
+      <div class="ideas-section card" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+        <div class="ideas-header">
+          <div>
+            <h3 class="section-title">
+              <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+              Kotak Suara & Usulan Ide Warga Havaland
+            </h3>
+            <p class="section-subtitle">Aspirasi fasilitas, keamanan, dan perbaikan lingkungan langsung dari warga untuk dimusyawarahkan</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="carousel-nav-btn" onclick="HavalandProposals.slide(-1)" title="Geser ke kiri" aria-label="Geser ke kiri">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <button class="carousel-nav-btn" onclick="HavalandProposals.slide(1)" title="Geser ke kanan" aria-label="Geser ke kanan">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="HavalandProposals.openTambahModal()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              + Usulkan Ide Baru
+            </button>
+          </div>
+        </div>
+
+        <div class="ideas-carousel-wrapper">
+          <div id="ideas-track" class="ideas-track">
+            <!-- Dynamically populated proposal cards rendered by HavalandProposals.renderSlider() -->
           </div>
         </div>
       </div>
@@ -498,6 +533,14 @@
           </h2>
           <p class="section-subtitle">Jadwal ronda malam siskamling bergilir, senam bersama, pengangkutan sampah, dan pertemuan warga</p>
         </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+          <button class="btn btn-primary btn-sm" onclick="HavalandApp.openTambahKegiatanModal()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            + Tambah Jadwal Kegiatan
+          </button>
+        </div>
+      </div>
+      <div style="margin-bottom: 1.25rem;">
         <!-- Filter pills kegiatan -->
         <div class="filter-pills" id="kegiatan-filter-pills">
           <button class="pill-btn active" onclick="HavalandApp.filterKegiatan('semua', this)">Semua</button>
@@ -929,6 +972,343 @@
       </form>
     </div>
   </div>
+
+  <!-- 6. Modal Pengaturan Tampilan & Sistem -->
+  <div id="modal-pengaturan" class="modal-overlay" onclick="HavalandApp.handleBackdropClick(event, 'modal-pengaturan')">
+    <div class="modal-container" style="max-width: 620px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <div class="quick-action-icon icon-emerald" style="width: 34px; height: 34px; min-width: 34px; min-height: 34px;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.1rem;">Pengaturan Tampilan & Sistem</h3>
+            <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);">Personalisasi kenyamanan visual, performa HP, dan kelola data</p>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="HavalandApp.closeModal('modal-pengaturan')" aria-label="Tutup">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+        <!-- Pengaturan Bayangan (Card Shadows) -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+            Efek Bayangan Kartu (Card Shadow)
+          </div>
+          <p class="settings-section-desc">Pilih tingkat kedalaman bayangan pada semua kartu widget dan kotak informasi di seluruh website.</p>
+          <div class="shadow-options">
+            <button type="button" class="shadow-btn" data-shadow="none" onclick="HavalandSettings.setShadow('none')">Tanpa Bayangan</button>
+            <button type="button" class="shadow-btn" data-shadow="soft" onclick="HavalandSettings.setShadow('soft')">Lembut</button>
+            <button type="button" class="shadow-btn" data-shadow="medium" onclick="HavalandSettings.setShadow('medium')">Standar</button>
+            <button type="button" class="shadow-btn" data-shadow="strong" onclick="HavalandSettings.setShadow('strong')">Tegas 3D</button>
+          </div>
+        </div>
+
+        <!-- Pilihan Model Tema (Theme Palettes) -->
+        <div class="settings-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+            <div class="settings-section-title" style="margin-bottom: 0;">
+              <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+              Model Nuansa Tema Warna
+            </div>
+            <!-- Quick Dark / Light Switch -->
+            <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandApp.toggleTheme()" style="font-size: 0.75rem; height: 30px; padding: 0 10px;">
+              <span id="settings-theme-label">Mode Gelap: Nonaktif</span>
+            </button>
+          </div>
+          <p class="settings-section-desc">Ganti kombinasi aksen warna primer untuk menyesuaikan estetika Havaland favorit Anda.</p>
+          <div class="palette-grid">
+            <div class="palette-item active" data-palette="emerald" onclick="HavalandSettings.setPalette('emerald')">
+              <div class="palette-circle" style="background: linear-gradient(135deg, #065F46, #10B981);"></div>
+              <span class="palette-label">Emerald Haven</span>
+            </div>
+            <div class="palette-item" data-palette="sapphire" onclick="HavalandSettings.setPalette('sapphire')">
+              <div class="palette-circle" style="background: linear-gradient(135deg, #1E40AF, #3B82F6);"></div>
+              <span class="palette-label">Sapphire Ocean</span>
+            </div>
+            <div class="palette-item" data-palette="amber" onclick="HavalandSettings.setPalette('amber')">
+              <div class="palette-circle" style="background: linear-gradient(135deg, #B45309, #F59E0B);"></div>
+              <span class="palette-label">Sunset Amber</span>
+            </div>
+            <div class="palette-item" data-palette="amethyst" onclick="HavalandSettings.setPalette('amethyst')">
+              <div class="palette-circle" style="background: linear-gradient(135deg, #6D28D9, #8B5CF6);"></div>
+              <span class="palette-label">Amethyst Royal</span>
+            </div>
+            <div class="palette-item" data-palette="obsidian" onclick="HavalandSettings.setPalette('obsidian')">
+              <div class="palette-circle" style="background: linear-gradient(135deg, #0F172A, #475569);"></div>
+              <span class="palette-label">Obsidian Slate</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mode Ringan (Lite Mode - Disable Animations) -->
+        <div class="settings-section">
+          <div class="switch-control" id="switch-lite-mode" onclick="HavalandSettings.toggleLiteMode()">
+            <div>
+              <div class="switch-label-title" style="display: flex; align-items: center; gap: 0.4rem;">
+                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                Mode Ringan (Matikan Semua Animasi)
+              </div>
+              <div class="switch-label-sub">
+                Mematikan semua animasi scroll, transisi halaman, efek hover, dan animasi grafik agar website super responsif & hemat baterai HP.
+              </div>
+            </div>
+            <div class="switch-input"></div>
+          </div>
+        </div>
+
+        <!-- Backup & Restore Data (Role-Based: Admin RT Only) -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7M4 7c0-2 1-3 3-3h10c2 0 3 1 3 3M4 7h16m-5 4l-3 3-3-3m3 3V11"/></svg>
+            Backup & Restore Data Lingkungan
+          </div>
+          <p class="settings-section-desc">Pencadangan dan pemulihan data transaksi kas, jadwal kegiatan, dan direktori warga secara aman.</p>
+
+          <!-- Dynamic Container for Backup Controls depending on Admin auth -->
+          <div id="backup-controls-container">
+            <!-- Rendered by HavalandSettings.renderBackupSection() -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="justify-content: space-between;">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Perubahan otomatis tersimpan di peramban</span>
+        <button type="button" class="btn btn-primary btn-sm" onclick="HavalandApp.closeModal('modal-pengaturan')">Selesai</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Modal Login Pengguna / Warga -->
+  <div id="modal-login" class="modal-overlay" onclick="HavalandApp.handleBackdropClick(event, 'modal-login')">
+    <div class="modal-container" style="max-width: 480px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <div class="quick-action-icon icon-blue" style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.1rem;">Masuk Portal Warga Havaland</h3>
+            <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);">Login untuk menambah transaksi kas, kegiatan, dan usulan ide</p>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="HavalandApp.closeModal('modal-login')" aria-label="Tutup">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="form-login" onsubmit="HavalandAuth.handleFormLogin(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="login-username">Nama Pengguna / Username:</label>
+            <input type="text" id="login-username" class="form-control" placeholder="Contoh: admin atau bambang" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-password">Kata Sandi / Password:</label>
+            <input type="password" id="login-password" class="form-control" placeholder="Masukkan password Anda" required autocomplete="current-password">
+          </div>
+
+          <div id="login-error-msg" style="display: none; color: var(--danger); font-size: 0.8rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--danger); margin-bottom: 0.75rem;">
+            Username atau kata sandi tidak cocok.
+          </div>
+
+          <!-- 1-Click Simulation Account Chips -->
+          <div style="margin-top: 1rem; border-top: 1px solid var(--surface-border); padding-top: 0.85rem;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">
+              Atau Pilih Akun Simulasi Sekali Klik:
+            </div>
+            <div class="demo-accounts-grid">
+              <div class="demo-chip" onclick="HavalandAuth.quickLogin('admin')">
+                <div>
+                  <div style="font-weight: 700; font-size: 0.82rem; color: var(--primary);">👑 Pak RT Handoko</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Admin RT (Akses Penuh)</div>
+                </div>
+                <span class="badge badge-success" style="font-size: 0.65rem;">Admin</span>
+              </div>
+              <div class="demo-chip" onclick="HavalandAuth.quickLogin('bendahara')">
+                <div>
+                  <div style="font-weight: 700; font-size: 0.82rem; color: var(--primary);">💼 Ibu Citra Lestari</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Bendahara Kas RT</div>
+                </div>
+                <span class="badge badge-info" style="font-size: 0.65rem;">Keuangan</span>
+              </div>
+              <div class="demo-chip" onclick="HavalandAuth.quickLogin('warga-bambang')">
+                <div>
+                  <div style="font-weight: 700; font-size: 0.82rem; color: var(--text-primary);">👤 Bpk. Bambang S.</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Warga Blok A-01</div>
+                </div>
+                <span class="badge" style="background: var(--bg-subtle); font-size: 0.65rem;">Warga</span>
+              </div>
+              <div class="demo-chip" onclick="HavalandAuth.quickLogin('warga-michael')">
+                <div>
+                  <div style="font-weight: 700; font-size: 0.82rem; color: var(--text-primary);">👤 Bpk. Michael Tan</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Warga Blok A-07</div>
+                </div>
+                <span class="badge" style="background: var(--bg-subtle); font-size: 0.65rem;">Warga</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandApp.closeModal('modal-login')">Batal</button>
+          <button type="submit" class="btn btn-primary btn-sm">Masuk Sekarang</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 8. Modal Usulkan Ide & Inovasi Warga -->
+  <div id="modal-tambah-usulan" class="modal-overlay" onclick="HavalandApp.handleBackdropClick(event, 'modal-tambah-usulan')">
+    <div class="modal-container" style="max-width: 520px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <div class="quick-action-icon icon-gold" style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.1rem;">Kirim Usulan Ide Warga</h3>
+            <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);">Sampaikan usulan perbaikan lingkungan untuk kemajuan bersama</p>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="HavalandApp.closeModal('modal-tambah-usulan')" aria-label="Tutup">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="form-tambah-usulan" onsubmit="HavalandProposals.handleSubmit(event)">
+        <div class="modal-body">
+          <!-- Proposer Identity Box -->
+          <div class="card" style="background: var(--bg-subtle); padding: 0.75rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Pengusul Terdata:</span>
+              <div style="font-weight: 700; font-size: 0.9rem;" id="usulan-pengusul-name">Nama Warga</div>
+            </div>
+            <span class="badge badge-info" id="usulan-pengusul-blok">Blok A-01</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="usulan-judul">Judul Usulan / Inovasi:</label>
+            <input type="text" id="usulan-judul" class="form-control" placeholder="Contoh: Pengadaan Palang Pintu Otomatis RFID" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="usulan-kategori">Kategori Usulan:</label>
+            <select id="usulan-kategori" class="form-control" required>
+              <option value="Fasilitas & PJU">Fasilitas & PJU</option>
+              <option value="Keamanan & Satpam">Keamanan & Satpam</option>
+              <option value="Kebersihan & Taman">Kebersihan & Taman</option>
+              <option value="Olahraga & Sosial">Olahraga & Sosial</option>
+              <option value="Inovasi Digital">Inovasi Digital</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="usulan-deskripsi">Deskripsi & Rincian Ide:</label>
+            <textarea id="usulan-deskripsi" class="form-control" rows="3" placeholder="Jelaskan gagasan Anda secara rinci, lokasi penempatan, atau mekanisme pelaksanaannya..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="usulan-manfaat">Estimasi Manfaat Bagi Warga:</label>
+            <input type="text" id="usulan-manfaat" class="form-control" placeholder="Contoh: Mengurangi lalu lintas kendaraan liar dan meningkatkan keamanan komplek" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandApp.closeModal('modal-tambah-usulan')">Batal</button>
+          <button type="submit" class="btn btn-primary btn-sm">Kirim Usulan Ide</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 9. Modal Tambah Kegiatan Rutin Baru -->
+  <div id="modal-tambah-kegiatan" class="modal-overlay" onclick="HavalandApp.handleBackdropClick(event, 'modal-tambah-kegiatan')">
+    <div class="modal-container" style="max-width: 520px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <div class="quick-action-icon icon-emerald" style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.1rem;">Tambah Jadwal Agenda / Kegiatan</h3>
+            <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);">Agenda baru akan tampil di tab kegiatan dan preview beranda</p>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="HavalandApp.closeModal('modal-tambah-kegiatan')" aria-label="Tutup">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="form-tambah-kegiatan" onsubmit="HavalandApp.handleTambahKegiatan(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="keg-nama">Nama Kegiatan / Agenda:</label>
+            <input type="text" id="keg-nama" class="form-control" placeholder="Contoh: Kerja Bakti Massal Saluran Air" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="keg-kategori">Kategori:</label>
+              <select id="keg-kategori" class="form-control" required>
+                <option value="Keamanan">Keamanan & Satpam</option>
+                <option value="Olahraga">Olahraga & Senam</option>
+                <option value="Kebersihan">Kebersihan & Taman</option>
+                <option value="Keagamaan">Keagamaan & Sosial</option>
+                <option value="Pertemuan">Pertemuan & Rapat RT</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="keg-status">Status Jadwal:</label>
+              <select id="keg-status" class="form-control">
+                <option value="Rutin Mingguan">Rutin Mingguan</option>
+                <option value="Akan Datang">Akan Datang</option>
+                <option value="Agenda Khusus">Agenda Khusus</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="keg-jadwal">Hari & Tanggal:</label>
+              <input type="text" id="keg-jadwal" class="form-control" placeholder="Contoh: Minggu, 27 Sep 2026" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="keg-waktu">Waktu / Pukul:</label>
+              <input type="text" id="keg-waktu" class="form-control" placeholder="Contoh: 07.30 - 10.00 WIB" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="keg-lokasi">Lokasi Pelaksanaan:</label>
+              <input type="text" id="keg-lokasi" class="form-control" placeholder="Contoh: Lapangan Fasum & Blok B" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="keg-pj">Penanggung Jawab:</label>
+              <input type="text" id="keg-pj" class="form-control" placeholder="Contoh: Sie Kebersihan RT" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="keg-deskripsi">Deskripsi & Perlengkapan yang Dibawa:</label>
+            <textarea id="keg-deskripsi" class="form-control" rows="2" placeholder="Catatan informasi tambahan bagi warga..." required></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandApp.closeModal('modal-tambah-kegiatan')">Batal</button>
+          <button type="submit" class="btn btn-primary btn-sm">Simpan Jadwal Kegiatan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Hidden File Input for Data Restore -->
+  <input type="file" id="backup-file-input" accept=".json" style="display: none;" onchange="HavalandBackup.handleFileSelected(event)">
 
   <!-- Scripts -->
   <script src="js/data.js"></script>
