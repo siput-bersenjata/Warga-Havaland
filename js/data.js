@@ -1,12 +1,12 @@
 /**
  * Data Terpusat Warga Perumahan Havaland
- * Lingkungan RT 04 / RW 12, Kelurahan Havaland Asri
+ * Lingkungan RT 04 / RW 08, Kelurahan Havaland Asri
  */
 
 const HavalandData = {
   profile: {
     namaPerumahan: "Perumahan Havaland",
-    lingkungan: "RT 04 / RW 12",
+    lingkungan: "RT 04 / RW 08",
     kelurahan: "Havaland Asri",
     kecamatan: "Medan Sunggal",
     kota: "Medan",

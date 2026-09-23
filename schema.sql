@@ -1,5 +1,5 @@
 -- ==============================================================================
--- DATABASE SCHEMA UNTUK SISTEM INFORMASI WARGA PERUMAHAN HAVALAND (RT 04 / RW 12)
+-- DATABASE SCHEMA UNTUK SISTEM INFORMASI WARGA PERUMAHAN HAVALAND (RT 04 / RW 08)
 -- Kompatibel dengan: Vercel Postgres, Supabase, Neon, Railway, Aiven
 -- ==============================================================================
 

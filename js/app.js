@@ -1,6 +1,6 @@
 /**
  * Havaland Community Portal - Main Application Logic
- * RT 04 / RW 12, Kelurahan Havaland Asri
+ * RT 04 / RW 08, Kelurahan Havaland Asri
  */
 
 const HavalandApp = {
@@ -591,7 +591,7 @@ const HavalandApp = {
     const k = HavalandData.kegiatan.find(item => item.id === actId);
     if (!k) return;
 
-    const pesan = `*PENGUMUMAN WARGA HAVALAND (RT 04 / RW 12)*%0A%0A*Kegiatan:* ${k.judul}%0A*Waktu:* ${k.waktuNext}%0A*Lokasi:* ${k.lokasi}%0A*Koordinator:* ${k.koordinator}%0A%0A${k.deskripsi}%0A%0ASalam kompak & guyub warga Havaland! 🏡🌿`;
+    const pesan = `*PENGUMUMAN WARGA HAVALAND (RT 04 / RW 08)*%0A%0A*Kegiatan:* ${k.judul}%0A*Waktu:* ${k.waktuNext}%0A*Lokasi:* ${k.lokasi}%0A*Koordinator:* ${k.koordinator}%0A%0A${k.deskripsi}%0A%0ASalam kompak & guyub warga Havaland! 🏡🌿`;
     window.open(`https://api.whatsapp.com/send?text=${pesan}`, "_blank");
   },
 
@@ -1558,7 +1558,7 @@ const HavalandBackup = {
 
     const payload = {
       havalandMeta: {
-        portal: "Pusat Informasi Warga Havaland RT 04 / RW 12",
+        portal: "Pusat Informasi Warga Havaland RT 04 / RW 08",
         versi: "2.1",
         diexportPada: new Date().toISOString(),
         diexportOleh: HavalandAuth.getCurrentUser()?.nama || "Admin RT"

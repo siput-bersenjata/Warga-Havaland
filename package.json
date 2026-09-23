@@ -1,7 +1,7 @@
 {
   "name": "warga-havaland",
   "version": "1.0.0",
-  "description": "Portal Informasi Warga Perumahan Havaland RT 04 / RW 12",
+  "description": "Portal Informasi Warga Perumahan Havaland RT 04 / RW 08",
   "main": "index.html",
   "scripts": {
     "start": "node -e \"require('http').createServer((req, res) => require('serve-handler')(req, res, {public: '.'})).listen(3000)\""
