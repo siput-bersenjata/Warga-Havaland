@@ -9,6 +9,9 @@ const HavalandApp = {
   filteredTransaksi: [],
   filteredWarga: [],
   selectedWargaIuran: null,
+  currentBlokFilter: "semua",
+  activeAutocompleteIndex: -1,
+  currentMatchingWarga: [],
 
   // Inisialisasi Aplikasi
   init() {
@@ -27,6 +30,7 @@ const HavalandApp = {
     this.renderKontak();
     this.renderAspirasi();
     this.populateRumahDropdown();
+    this.initAutocomplete();
     this.initDateInputs();
 
     // Coba hubungkan ke Cloud Database Vercel Postgres jika aktif
@@ -1107,27 +1111,397 @@ END:VCALENDAR`;
   },
 
   // =========================================================================
-  // CEK IURAN RUMAH SAYA & KONFIRMASI WA
+  // CEK IURAN RUMAH SAYA & AUTOCOMPLETE REKOMENDASI BLOK
   // =========================================================================
+  initAutocomplete() {
+    // Populate datalist for transaction description suggestions
+    const datalistTrx = document.getElementById("datalist-warga-trx");
+    if (datalistTrx && HavalandData.warga) {
+      datalistTrx.innerHTML = HavalandData.warga.map(w => 
+        `<option value="Iuran Kas September - ${w.namaKK} (${w.blok})"></option>`
+      ).join("");
+    }
+
+    // Close autocomplete dropdowns when clicking outside
+    document.addEventListener("click", (e) => {
+      const blokWrapper = document.getElementById("autocomplete-blok-wrapper");
+      const dropBlok = document.getElementById("autocomplete-dropdown-blok");
+      if (dropBlok && blokWrapper && !blokWrapper.contains(e.target)) {
+        dropBlok.style.display = "none";
+      }
+
+      const aspWrapper = document.getElementById("autocomplete-asp-wrapper");
+      const dropAsp = document.getElementById("autocomplete-dropdown-aspirasi");
+      if (dropAsp && aspWrapper && !aspWrapper.contains(e.target)) {
+        dropAsp.style.display = "none";
+      }
+    });
+  },
+
   populateRumahDropdown() {
     const select = document.getElementById("select-rumah-iuran");
-    if (!select) return;
+    if (select) {
+      let options = `<option value="">-- Pilih Nomor Blok Rumah Anda --</option>`;
+      HavalandData.warga.forEach(w => {
+        options += `<option value="${w.id}">${w.blok} - ${w.namaKK} (${w.statusHunian})</option>`;
+      });
+      select.innerHTML = options;
+    }
 
-    let options = `<option value="">-- Pilih Nomor Blok Rumah Anda --</option>`;
-    HavalandData.warga.forEach(w => {
-      options += `<option value="${w.id}">${w.blok} - ${w.namaKK} (${w.statusHunian})</option>`;
-    });
-    select.innerHTML = options;
+    this.renderBlokRecommendations("", "semua");
   },
 
   openCekIuranModal() {
     this.openModal("modal-cek-iuran");
+    this.currentBlokFilter = "semua";
+    this.activeAutocompleteIndex = -1;
+
+    // Reset filter pills
+    const pills = document.querySelectorAll("#blok-filter-pills .pill-btn");
+    pills.forEach(p => {
+      if (p.getAttribute("data-blok") === "semua") p.classList.add("active");
+      else p.classList.remove("active");
+    });
+
+    const searchInput = document.getElementById("input-cari-blok");
+    const clearBtn = document.getElementById("btn-clear-cari-blok");
+
+    if (searchInput) {
+      if (!this.selectedWargaIuran) {
+        searchInput.value = "";
+        if (clearBtn) clearBtn.style.display = "none";
+      } else {
+        searchInput.value = `${this.selectedWargaIuran.blok} - ${this.selectedWargaIuran.namaKK} (${this.selectedWargaIuran.statusHunian})`;
+        if (clearBtn) clearBtn.style.display = "flex";
+      }
+
+      setTimeout(() => {
+        searchInput.focus();
+        this.renderBlokRecommendations(searchInput.value, this.currentBlokFilter);
+        this.showBlokDropdown();
+      }, 150);
+    }
+  },
+
+  setBlokQuickFilter(blok, btn) {
+    this.currentBlokFilter = blok;
+    const pills = document.querySelectorAll("#blok-filter-pills .pill-btn");
+    pills.forEach(p => p.classList.remove("active"));
+    if (btn) btn.classList.add("active");
+
+    const input = document.getElementById("input-cari-blok");
+    let query = input ? input.value : "";
+    // If input already has a full selection string, clear it so all houses in this block appear
+    if (query.includes(" - ")) {
+      query = "";
+      if (input) input.value = "";
+      const clearBtn = document.getElementById("btn-clear-cari-blok");
+      if (clearBtn) clearBtn.style.display = "none";
+    }
+
+    this.renderBlokRecommendations(query, blok);
+    this.showBlokDropdown();
+  },
+
+  handleCariBlokInput(e) {
+    const query = e.target.value;
+    const clearBtn = document.getElementById("btn-clear-cari-blok");
+    if (clearBtn) {
+      clearBtn.style.display = query.trim().length > 0 ? "flex" : "none";
+    }
+    this.renderBlokRecommendations(query, this.currentBlokFilter);
+    this.showBlokDropdown();
+  },
+
+  clearCariBlok() {
+    const input = document.getElementById("input-cari-blok");
+    const clearBtn = document.getElementById("btn-clear-cari-blok");
+    if (input) {
+      input.value = "";
+      input.focus();
+    }
+    if (clearBtn) clearBtn.style.display = "none";
+
+    const select = document.getElementById("select-rumah-iuran");
+    if (select) select.value = "";
+    this.updateCekIuranDetail();
+
+    this.renderBlokRecommendations("", this.currentBlokFilter);
+    this.showBlokDropdown();
+  },
+
+  showBlokDropdown() {
+    const dropdown = document.getElementById("autocomplete-dropdown-blok");
+    if (dropdown) dropdown.style.display = "block";
+  },
+
+  hideBlokDropdown(delay = 180) {
+    setTimeout(() => {
+      const dropdown = document.getElementById("autocomplete-dropdown-blok");
+      if (dropdown) dropdown.style.display = "none";
+    }, delay);
+  },
+
+  highlightMatch(text, query) {
+    if (!query || !query.trim()) return HavalandUtils.escapeHtml(text);
+    const q = query.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const safeText = HavalandUtils.escapeHtml(text);
+    const regex = new RegExp(`(${q})`, "gi");
+    return safeText.replace(regex, '<span class="autocomplete-highlight">$1</span>');
+  },
+
+  renderBlokRecommendations(query = "", filterBlok = "semua") {
+    const dropdown = document.getElementById("autocomplete-dropdown-blok");
+    if (!dropdown) return;
+
+    const rawQ = (query || "").trim();
+    const qLower = rawQ.toLowerCase();
+    const qClean = qLower.replace(/[\s\-]/g, "");
+
+    let matches = HavalandData.warga.filter(w => {
+      // 1. Filter by Blok Cluster if active
+      if (filterBlok && filterBlok !== "semua") {
+        if (!w.blok.toUpperCase().startsWith(filterBlok.toUpperCase() + "-")) {
+          return false;
+        }
+      }
+
+      // If no query string, keep all for this cluster
+      if (!rawQ) return true;
+
+      const blokLower = w.blok.toLowerCase();
+      const blokClean = blokLower.replace(/[\s\-]/g, "");
+      const namaLower = w.namaKK.toLowerCase();
+      const clusterLower = w.cluster.toLowerCase();
+      const hunianLower = (w.statusHunian || "").toLowerCase();
+
+      return (
+        blokLower.includes(qLower) ||
+        blokClean.includes(qClean) ||
+        namaLower.includes(qLower) ||
+        clusterLower.includes(qLower) ||
+        hunianLower.includes(qLower)
+      );
+    });
+
+    // Sort: exact/prefix match on blok or nama first
+    if (rawQ) {
+      matches.sort((a, b) => {
+        const aBlokMatch = a.blok.toLowerCase().startsWith(qLower) || a.blok.toLowerCase().replace(/[\s\-]/g, "").startsWith(qClean);
+        const bBlokMatch = b.blok.toLowerCase().startsWith(qLower) || b.blok.toLowerCase().replace(/[\s\-]/g, "").startsWith(qClean);
+        if (aBlokMatch && !bBlokMatch) return -1;
+        if (!aBlokMatch && bBlokMatch) return 1;
+
+        const aNamaMatch = a.namaKK.toLowerCase().startsWith(qLower);
+        const bNamaMatch = b.namaKK.toLowerCase().startsWith(qLower);
+        if (aNamaMatch && !bNamaMatch) return -1;
+        if (!aNamaMatch && bNamaMatch) return 1;
+
+        return a.blok.localeCompare(b.blok);
+      });
+    }
+
+    this.currentMatchingWarga = matches;
+    this.activeAutocompleteIndex = -1;
+
+    if (matches.length === 0) {
+      dropdown.innerHTML = `
+        <div class="autocomplete-empty">
+          <svg class="w-8 h-8" style="margin: 0 auto 0.5rem; opacity: 0.5; stroke: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <div>Tidak ada data rumah terdaftar yang cocok dengan <strong>"${HavalandUtils.escapeHtml(rawQ)}"</strong></div>
+          <div style="font-size: 0.72rem; margin-top: 0.35rem; color: var(--text-muted);">Coba ketik nomor blok lain (misal: A-01, B-08) atau klik tombol tab blok di atas.</div>
+        </div>
+      `;
+      return;
+    }
+
+    let html = `
+      <div class="autocomplete-header-tip">
+        <span>Rekomendasi Rumah (${matches.length})</span>
+        <span style="font-size: 0.65rem; color: var(--text-muted);">Klik atau Tekan Enter ↵</span>
+      </div>
+    `;
+
+    matches.slice(0, 30).forEach((w, index) => {
+      const blokHighlighted = this.highlightMatch(w.blok, rawQ);
+      const namaHighlighted = this.highlightMatch(w.namaKK, rawQ);
+      const isLunas = w.iuranBulanIni;
+      const statusBadge = isLunas
+        ? `<span class="badge badge-success autocomplete-item-badge">Lunas</span>`
+        : `<span class="badge badge-danger autocomplete-item-badge">Belum Bayar</span>`;
+
+      html += `
+        <div class="autocomplete-item ${index === 0 && rawQ ? 'active' : ''}" 
+             data-index="${index}" 
+             data-id="${w.id}" 
+             onclick="HavalandApp.pilihRumahFromAutocomplete('${w.id}')"
+             onmouseenter="HavalandApp.highlightAutocompleteItem(${index})">
+          <div class="autocomplete-item-left">
+            <span class="autocomplete-item-blok">${blokHighlighted}</span>
+            <div class="autocomplete-item-info">
+              <span class="autocomplete-item-name">${namaHighlighted}</span>
+              <span class="autocomplete-item-sub">${w.cluster} • <em>${w.statusHunian}</em></span>
+            </div>
+          </div>
+          <div>
+            ${statusBadge}
+          </div>
+        </div>
+      `;
+    });
+
+    if (matches.length > 30) {
+      html += `<div style="text-align: center; padding: 0.4rem; font-size: 0.72rem; color: var(--text-muted);">Menampilkan 30 dari ${matches.length} rumah. Ketik lebih spesifik untuk menyaring.</div>`;
+    }
+
+    dropdown.innerHTML = html;
+    if (rawQ && matches.length > 0) {
+      this.activeAutocompleteIndex = 0;
+    }
+  },
+
+  highlightAutocompleteItem(index) {
+    this.activeAutocompleteIndex = index;
+    const items = document.querySelectorAll("#autocomplete-dropdown-blok .autocomplete-item");
+    items.forEach((item, i) => {
+      if (i === index) item.classList.add("active");
+      else item.classList.remove("active");
+    });
+  },
+
+  handleCariBlokKeydown(e) {
+    const dropdown = document.getElementById("autocomplete-dropdown-blok");
+    const items = dropdown ? dropdown.querySelectorAll(".autocomplete-item") : [];
+    if (!items.length) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      this.activeAutocompleteIndex = (this.activeAutocompleteIndex + 1) % items.length;
+      this.highlightAutocompleteItem(this.activeAutocompleteIndex);
+      if (items[this.activeAutocompleteIndex]) {
+        items[this.activeAutocompleteIndex].scrollIntoView({ block: "nearest" });
+      }
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      this.activeAutocompleteIndex = (this.activeAutocompleteIndex - 1 + items.length) % items.length;
+      this.highlightAutocompleteItem(this.activeAutocompleteIndex);
+      if (items[this.activeAutocompleteIndex]) {
+        items[this.activeAutocompleteIndex].scrollIntoView({ block: "nearest" });
+      }
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (this.activeAutocompleteIndex >= 0 && this.currentMatchingWarga[this.activeAutocompleteIndex]) {
+        const selected = this.currentMatchingWarga[this.activeAutocompleteIndex];
+        this.pilihRumahFromAutocomplete(selected.id);
+      }
+    } else if (e.key === "Escape") {
+      dropdown.style.display = "none";
+    }
+  },
+
+  pilihRumahFromAutocomplete(wargaId) {
+    const w = HavalandData.warga.find(x => x.id === wargaId);
+    if (!w) return;
+
+    const input = document.getElementById("input-cari-blok");
+    if (input) {
+      input.value = `${w.blok} - ${w.namaKK} (${w.statusHunian})`;
+    }
+
+    const clearBtn = document.getElementById("btn-clear-cari-blok");
+    if (clearBtn) clearBtn.style.display = "flex";
+
+    const select = document.getElementById("select-rumah-iuran");
+    if (select) {
+      select.value = w.id;
+    }
+
+    this.updateCekIuranDetail();
+
+    const dropdown = document.getElementById("autocomplete-dropdown-blok");
+    if (dropdown) dropdown.style.display = "none";
+  },
+
+  // =========================================================================
+  // AUTOCOMPLETE ASPIRASI PELAPOR & BLOK
+  // =========================================================================
+  handleAspirasiPelaporInput(e) {
+    const query = e.target.value;
+    const dropdown = document.getElementById("autocomplete-dropdown-aspirasi");
+    if (!dropdown) return;
+
+    if (!query || query.trim().length === 0) {
+      dropdown.style.display = "none";
+      return;
+    }
+
+    const qLower = query.trim().toLowerCase();
+    const qClean = qLower.replace(/[\s\-]/g, "");
+
+    const matches = HavalandData.warga.filter(w => {
+      const blokLower = w.blok.toLowerCase();
+      const blokClean = blokLower.replace(/[\s\-]/g, "");
+      const namaLower = w.namaKK.toLowerCase();
+      return (
+        blokLower.includes(qLower) ||
+        blokClean.includes(qClean) ||
+        namaLower.includes(qLower)
+      );
+    });
+
+    if (matches.length === 0) {
+      dropdown.style.display = "none";
+      return;
+    }
+
+    let html = `
+      <div class="autocomplete-header-tip">
+        <span>Rekomendasi Warga Havaland</span>
+        <span style="font-size: 0.65rem; color: var(--text-muted);">Pilih untuk isi otomatis</span>
+      </div>
+    `;
+
+    matches.slice(0, 8).forEach(w => {
+      const blokHighlighted = this.highlightMatch(w.blok, query);
+      const namaHighlighted = this.highlightMatch(w.namaKK, query);
+      html += `
+        <div class="autocomplete-item" onclick="HavalandApp.pilihAspirasiPelapor('${HavalandUtils.escapeHtml(w.namaKK)}', '${w.blok}')">
+          <div class="autocomplete-item-left">
+            <span class="autocomplete-item-blok">${blokHighlighted}</span>
+            <div class="autocomplete-item-info">
+              <span class="autocomplete-item-name">${namaHighlighted}</span>
+              <span class="autocomplete-item-sub">${w.cluster}</span>
+            </div>
+          </div>
+          <span class="badge badge-info" style="font-size: 0.65rem;">Pilih</span>
+        </div>
+      `;
+    });
+
+    dropdown.innerHTML = html;
+    dropdown.style.display = "block";
+  },
+
+  showAspirasiDropdown() {
+    const input = document.getElementById("asp-nama");
+    if (input && input.value.trim().length > 0) {
+      this.handleAspirasiPelaporInput({ target: input });
+    }
+  },
+
+  pilihAspirasiPelapor(nama, blok) {
+    const input = document.getElementById("asp-nama");
+    if (input) {
+      input.value = `${nama} (Blok ${blok})`;
+    }
+    const dropdown = document.getElementById("autocomplete-dropdown-aspirasi");
+    if (dropdown) dropdown.style.display = "none";
   },
 
   updateCekIuranDetail() {
     const select = document.getElementById("select-rumah-iuran");
     const resultBox = document.getElementById("cek-iuran-result");
-    const wargaId = select.value;
+    const wargaId = select ? select.value : null;
 
     if (!wargaId) {
       resultBox.style.display = "none";
