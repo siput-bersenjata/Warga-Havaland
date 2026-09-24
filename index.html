@@ -149,6 +149,75 @@
         </div>
       </div>
 
+      <!-- =====================================================================
+           SLIDER BERANDA: DOKUMENTASI & FOTO RESMI GOOGLE MAPS HAVALAND
+           ===================================================================== -->
+      <section class="beranda-slider-section card" aria-label="Galeri Foto Perumahan Havaland">
+        <div class="slider-section-header">
+          <div class="slider-header-left">
+            <div class="slider-badge-pill">
+              <span class="live-pulse-dot"></span>
+              <svg class="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              <span>Foto Resmi Google Maps</span>
+            </div>
+            <h3 class="slider-section-title">Dokumentasi & Panorama Kawasan Havaland</h3>
+            <p class="slider-section-desc">Keasrian lingkungan perumahan, akses gerbang utama, dan fasilitas warga RT 04 / RW 08 Karangploso Malang.</p>
+          </div>
+          
+          <div class="slider-header-right">
+            <a href="https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6" target="_blank" rel="noopener noreferrer" class="btn-gmaps-link" title="Buka tautan lokasi & ulasan di Google Maps">
+              <svg class="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              <span>Buka di Google Maps ↗</span>
+            </a>
+
+            <!-- Tombol Manajemen Khusus Admin RT (Otomatis Muncul Saat Admin Login) -->
+            <div id="slider-admin-actions" class="slider-admin-actions" style="display: none;">
+              <button type="button" class="btn btn-sm btn-primary" onclick="HavalandSlider.openAddModal()" style="font-size: 0.78rem; font-weight: 600;">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>+ Tambah Gambar Slide</span>
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="HavalandSlider.openManageModal()" style="font-size: 0.78rem;">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+                <span>Kelola (<span id="slider-count-badge">6</span>)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slider Main Carousel Box -->
+        <div class="havaland-slider-box" id="havaland-slider-box" onmouseenter="HavalandSlider.handleMouseEnter()" onmouseleave="HavalandSlider.handleMouseLeave()">
+          <div class="slider-viewport" id="slider-viewport">
+            <div class="slider-track" id="slider-track">
+              <!-- Rendered by HavalandSlider.render() -->
+            </div>
+          </div>
+
+          <!-- Tombol Navigasi Panah Kiri & Kanan -->
+          <button type="button" class="slider-arrow slider-arrow-prev" onclick="HavalandSlider.prev()" aria-label="Slide Foto Sebelumnya" title="Foto Sebelumnya (Panah Kiri)">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <button type="button" class="slider-arrow slider-arrow-next" onclick="HavalandSlider.next()" aria-label="Slide Foto Berikutnya" title="Foto Berikutnya (Panah Kanan)">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          </button>
+
+          <!-- Bilah Kontrol Bawah (Counter, Dots, Play/Pause, Fullscreen) -->
+          <div class="slider-bottom-bar">
+            <div class="slider-counter-badge" id="slider-counter">1 / 6</div>
+            <div class="slider-dots" id="slider-dots">
+              <!-- Dots rendered dynamically -->
+            </div>
+            <div class="slider-controls-right">
+              <button type="button" class="slider-control-btn" id="slider-autoplay-btn" onclick="HavalandSlider.toggleAutoPlay()" title="Jeda / Putar Otomatis">
+                <svg id="slider-autoplay-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </button>
+              <button type="button" class="slider-control-btn" onclick="HavalandSlider.openLightboxCurrent()" title="Lihat Foto Ukuran Penuh (Fullscreen)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Quick Action Shortcuts Bar -->
       <div class="quick-actions-bar">
         <button class="quick-action-btn" onclick="HavalandApp.openCekIuranModal()">
@@ -2080,6 +2149,207 @@
           <button type="submit" class="btn btn-primary btn-sm">Simpan Perubahan</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 15: TAMBAH GAMBAR SLIDE BERANDA (KHUSUS ADMINISTRATOR RT)
+       ========================================================================= -->
+  <div class="modal-overlay" id="modal-tambah-slide" role="dialog" aria-modal="true" aria-labelledby="modal-tambah-slide-title">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <div style="background: rgba(16, 185, 129, 0.15); width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <div>
+            <h3 class="modal-title" id="modal-tambah-slide-title">Tambah Foto ke Slide Beranda</h3>
+            <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);">Publikasikan foto kegiatan, fasilitas, atau kawasan ke carousel beranda warga</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="HavalandApp.closeModal('modal-tambah-slide')" aria-label="Tutup Modal">&times;</button>
+      </div>
+
+      <form id="form-tambah-slide" onsubmit="HavalandSlider.handleFormAddSlide(event)">
+        <div class="modal-body" style="max-height: 72vh; overflow-y: auto;">
+          <!-- 1. Input Informasi Slide -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="slide-add-title">Judul Foto / Slide: <span class="text-danger">*</span></label>
+              <input type="text" id="slide-add-title" class="form-control" placeholder="Contoh: Kerja Bakti Blok D & F" required oninput="HavalandSlider.updateLivePreview()">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="slide-add-badge">Kategori / Label Badge:</label>
+              <select id="slide-add-badge" class="form-control" onchange="HavalandSlider.updateLivePreview()">
+                <option value="Dokumentasi Warga 📸">Dokumentasi Warga 📸</option>
+                <option value="Fasilitas Perumahan 🌳">Fasilitas Perumahan 🌳</option>
+                <option value="Kegiatan & Gotong Royong 🤝">Kegiatan & Gotong Royong 🤝</option>
+                <option value="Google Maps Resmi 📍">Google Maps Resmi 📍</option>
+                <option value="Keamanan & Ronda 🛡️">Keamanan & Ronda 🛡️</option>
+                <option value="Pengumuman Penting 📢">Pengumuman Penting 📢</option>
+                <option value="Panorama Alam 🌄">Panorama Alam 🌄</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="slide-add-desc">Keterangan Singkat: <span class="text-danger">*</span></label>
+            <textarea id="slide-add-desc" class="form-control" rows="2" placeholder="Tuliskan deskripsi ringkas foto untuk ditampilkan di banner slide..." required oninput="HavalandSlider.updateLivePreview()"></textarea>
+          </div>
+
+          <!-- 2. Pilihan Sumber Foto (Tab Selector) -->
+          <div class="form-group">
+            <label class="form-label">Pilih Sumber Gambar: <span class="text-danger">*</span></label>
+            <div class="slide-source-tabs">
+              <button type="button" class="slide-tab-btn active" id="tab-src-gmap" onclick="HavalandSlider.switchSourceTab('gmap')">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                <span>Koleksi Google Maps (20 Foto)</span>
+              </button>
+              <button type="button" class="slide-tab-btn" id="tab-src-url" onclick="HavalandSlider.switchSourceTab('url')">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                <span>Link URL Online</span>
+              </button>
+              <button type="button" class="slide-tab-btn" id="tab-src-upload" onclick="HavalandSlider.switchSourceTab('upload')">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                <span>Unggah dari HP / PC</span>
+              </button>
+            </div>
+
+            <!-- Panel A: Galeri Google Maps Picker -->
+            <div id="panel-src-gmap" class="slide-source-panel active">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Klik salah satu foto asli dari Google Maps Havaland di bawah ini:</span>
+                <span class="badge badge-emerald" style="font-size: 0.7rem;">20 Foto Tersedia</span>
+              </div>
+              <div class="gmap-library-grid" id="gmap-library-grid">
+                <!-- Rendered dynamically by HavalandSlider.renderGmapLibrary() -->
+              </div>
+            </div>
+
+            <!-- Panel B: Input URL Online -->
+            <div id="panel-src-url" class="slide-source-panel">
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="url" id="slide-input-url" class="form-control" placeholder="https://domain.com/foto-havaland.jpg" oninput="HavalandSlider.handleUrlInput()">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandSlider.handleUrlInput()" style="white-space: nowrap;">Terapkan</button>
+              </div>
+              <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 0.35rem;">
+                Mendukung tautan gambar publik (JPG, PNG, WebP) dari hosting, Google Drive direct, Imgur, Cloudinary, dll.
+              </span>
+            </div>
+
+            <!-- Panel C: Upload File Komputer / Smartphone -->
+            <div id="panel-src-upload" class="slide-source-panel">
+              <div class="slide-upload-dropzone" onclick="document.getElementById('slide-input-file').click()">
+                <svg class="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                <div style="font-weight: 600; font-size: 0.85rem; margin-top: 0.35rem;">Klik untuk pilih file foto</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Format JPG, PNG, atau WebP (Otomatis dioptimalkan)</div>
+              </div>
+              <input type="file" id="slide-input-file" accept="image/*" style="display: none;" onchange="HavalandSlider.handleFileUpload(event)">
+            </div>
+          </div>
+
+          <!-- Hidden Input untuk URL Foto Terpilih -->
+          <input type="hidden" id="slide-selected-image-url" required>
+          <input type="hidden" id="slide-selected-source" value="Google Maps">
+
+          <!-- 3. Pratinjau Langsung (Live Preview) -->
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Pratinjau Tampilan Slide:</label>
+            <div class="slide-live-preview-box" id="slide-live-preview-box">
+              <div class="slide-live-preview-img" id="slide-preview-img-bg">
+                <div class="slide-live-preview-overlay">
+                  <span class="slide-live-preview-badge" id="slide-preview-badge">Dokumentasi Warga 📸</span>
+                  <div class="slide-live-preview-title" id="slide-preview-title">Judul Foto Slide</div>
+                  <div class="slide-live-preview-desc" id="slide-preview-desc">Keterangan foto akan muncul di sini...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandApp.closeModal('modal-tambah-slide')">Batal</button>
+          <button type="submit" class="btn btn-primary btn-sm" id="btn-submit-slide">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>Tambahkan ke Slide Beranda</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 16: KELOLA SLIDE BERANDA (KHUSUS ADMINISTRATOR RT)
+       ========================================================================= -->
+  <div class="modal-overlay" id="modal-kelola-slides" role="dialog" aria-modal="true" aria-labelledby="modal-kelola-slides-title">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <div style="background: rgba(16, 185, 129, 0.15); width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+          </div>
+          <div>
+            <h3 class="modal-title" id="modal-kelola-slides-title">Kelola Slide Galeri Beranda</h3>
+            <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);">Atur urutan foto, hapus foto tidak relevan, atau kembalikan ke setelan default Google Maps</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="HavalandApp.closeModal('modal-kelola-slides')" aria-label="Tutup Modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+          <span style="font-size: 0.82rem; font-weight: 600;">Daftar Slide Aktif (<span id="manage-slide-count">0</span> Foto)</span>
+          <button type="button" class="btn btn-primary btn-sm" onclick="HavalandSlider.openAddModal()" style="font-size: 0.75rem;">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>+ Tambah Foto Baru</span>
+          </button>
+        </div>
+
+        <div class="manage-slides-list" id="manage-slides-list">
+          <!-- Rendered dynamically by HavalandSlider.renderManageList() -->
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" class="btn btn-outline-danger btn-sm" onclick="HavalandSlider.resetToDefault()" style="font-size: 0.75rem;">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span>Reset ke Default Google Maps</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandApp.closeModal('modal-kelola-slides')">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 17: LIGHTBOX FULLSCREEN PREVIEW FOTO SLIDE
+       ========================================================================= -->
+  <div class="lightbox-overlay" id="modal-lightbox-slide" role="dialog" aria-modal="true" aria-label="Lihat Foto Ukuran Penuh" onclick="HavalandSlider.closeLightboxOnBackdrop(event)">
+    <div class="lightbox-container">
+      <button type="button" class="lightbox-close-btn" onclick="HavalandSlider.closeLightbox()" aria-label="Tutup Tampilan Foto">&times;</button>
+      
+      <div class="lightbox-media-wrapper">
+        <img id="lightbox-image" src="" alt="Pratinjau Foto Havaland" class="lightbox-img">
+        <button type="button" class="lightbox-nav-btn lightbox-prev" onclick="HavalandSlider.lightboxPrev()" aria-label="Foto Sebelumnya">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <button type="button" class="lightbox-nav-btn lightbox-next" onclick="HavalandSlider.lightboxNext()" aria-label="Foto Berikutnya">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <div class="lightbox-caption-bar">
+        <div>
+          <span class="badge badge-emerald" id="lightbox-badge" style="font-size: 0.72rem; margin-bottom: 0.25rem;">Badge</span>
+          <div id="lightbox-title" style="font-weight: 700; font-size: 1rem; color: #FFFFFF;">Judul Foto</div>
+          <div id="lightbox-desc" style="font-size: 0.8rem; color: #D1D5DB; margin-top: 0.2rem;">Deskripsi foto...</div>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <a id="lightbox-gmaps-link" href="https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary" style="font-size: 0.75rem; white-space: nowrap; color: #FFFFFF; background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.25);">
+            <svg class="w-3.5 h-3.5 text-emerald-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            <span>Google Maps ↗</span>
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 

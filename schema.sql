@@ -150,3 +150,30 @@ VALUES
 ('USR-ADMIN-01', 'admin', '5d34f17cb4318d6afabdd2db5296372fc55c87be9591fdd57af1771eaef123f9', 'Admin RT 04 Havaland', 'Admin RT', 'Kantor RT', TRUE)
 ON CONFLICT (username) DO NOTHING;
 
+-- 6. TABEL SLIDE BERANDA (FOTO GOOGLE MAPS & DOKUMENTASI RESMI)
+CREATE TABLE IF NOT EXISTS slides_beranda (
+  id VARCHAR(50) PRIMARY KEY,
+  title VARCHAR(200) NOT NULL,
+  description TEXT,
+  url TEXT NOT NULL,
+  full_url TEXT,
+  badge VARCHAR(100) DEFAULT 'Google Maps Resmi 📍',
+  source VARCHAR(100) DEFAULT 'Google Maps Resmi',
+  maps_url TEXT DEFAULT 'https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6',
+  order_index INT DEFAULT 0,
+  added_by VARCHAR(150) DEFAULT 'Admin RT',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Seed Slide Default Foto Google Maps Havaland
+INSERT INTO slides_beranda (id, title, description, url, full_url, badge, source, maps_url, order_index, added_by)
+VALUES
+('slide-gmap-1', 'Gerbang Utama & Pos Keamanan Havaland', 'Akses gerbang utama perumahan Havaland Karangploso dengan sistem keamanan terpadu satu pintu (One Gate System).', 'https://lh3.googleusercontent.com/grass-cs/ACvplmOOOe0QwbrowNxUKa57D-D94coBICWQ-YTBd-EtLaw9QQ1CZDeOQDzd2xZyhuRurKPrLPE-qklvcuPc0jsub5dGlZuCwsWkQMag1JkLcugdWo4YFa5ufpBwwc9PRvFai1Fi8H3w=w1200-h675-k-no', 'https://lh3.googleusercontent.com/grass-cs/ACvplmOOOe0QwbrowNxUKa57D-D94coBICWQ-YTBd-EtLaw9QQ1CZDeOQDzd2xZyhuRurKPrLPE-qklvcuPc0jsub5dGlZuCwsWkQMag1JkLcugdWo4YFa5ufpBwwc9PRvFai1Fi8H3w=w1600-h1200', 'Gerbang Utama 📍', 'Google Maps Resmi', 'https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6', 1, 'Sistem'),
+('slide-gmap-2', 'Jalan Lingkungan & Deretan Rumah Asri', 'Tata letak perumahan dengan jalan paving lebar, bersih, bebas debu, dan saluran drainase tertutup rapi.', 'https://lh3.googleusercontent.com/grass-cs/ACvplmOEGaHXjXBEyjHMft1OGBn7H42aLQCyVWWedzXjFXX7aDrdwrozygG4qkKMu4wSfIKBX3TN7UIufstCKDz5FVHkIZMpNMnnjO28lAYGj7gs4MzsUd4C2H_Th52Wi57hxQlLQhS1Ug=w1200-h675-k-no', 'https://lh3.googleusercontent.com/grass-cs/ACvplmOEGaHXjXBEyjHMft1OGBn7H42aLQCyVWWedzXjFXX7aDrdwrozygG4qkKMu4wSfIKBX3TN7UIufstCKDz5FVHkIZMpNMnnjO28lAYGj7gs4MzsUd4C2H_Th52Wi57hxQlLQhS1Ug=w1600-h900', 'Lingkungan Asri 🌿', 'Google Maps Resmi', 'https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6', 2, 'Sistem'),
+('slide-gmap-3', 'Deretan Hunian Modern Minimalis Warga', 'Hunian tertata rapi dengan desain minimalis elegan, menciptakan suasana perumahan yang nyaman dan harmonis.', 'https://lh3.googleusercontent.com/grass-cs/ACvplmMHVrnTuxmpXhc394_GpHpjsxcK-xZhXxLKg4olPc4zjj-TGypt4coQM9RQibrUO6Vnu_h2Q1yw8900UTkRpSzygpmFRVMBb819UR_T6j1OY91nwVhrMSLWdsAAMC_zX4viM2pYTsOlUAK-=w1200-h675-k-no', 'https://lh3.googleusercontent.com/grass-cs/ACvplmMHVrnTuxmpXhc394_GpHpjsxcK-xZhXxLKg4olPc4zjj-TGypt4coQM9RQibrUO6Vnu_h2Q1yw8900UTkRpSzygpmFRVMBb819UR_T6j1OY91nwVhrMSLWdsAAMC_zX4viM2pYTsOlUAK-=w1600-h900', 'Hunian Warga 🏘️', 'Google Maps Resmi', 'https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6', 3, 'Sistem'),
+('slide-gmap-4', 'Panorama Udara & Lanskap Hijau Karangploso', 'Kawasan perumahan yang dikelilingi pemandangan alam perbukitan dan udara segar pegunungan Malang Raya.', 'https://lh3.googleusercontent.com/grass-cs/ACvplmNUfMR3ivsR2QoOVEqN9fIMJEDo_vt4rOJe13U65s_ZYT510K-pgyZuLlCjSAey6mdB9yKVgD_zEfXPojnRBerhN7AapFH4-2d13O3emXULwEHO3hHPkurYsBp1llUeuQp8IjsJ=w1200-h675-k-no', 'https://lh3.googleusercontent.com/grass-cs/ACvplmNUfMR3ivsR2QoOVEqN9fIMJEDo_vt4rOJe13U65s_ZYT510K-pgyZuLlCjSAey6mdB9yKVgD_zEfXPojnRBerhN7AapFH4-2d13O3emXULwEHO3hHPkurYsBp1llUeuQp8IjsJ=w1600-h1200', 'Panorama Alam 🌄', 'Google Maps Resmi', 'https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6', 4, 'Sistem'),
+('slide-gmap-5', 'Fasilitas Lingkungan & Ruang Terbuka Hijau', 'Area taman dan fasum perumahan untuk berinteraksi antarwarga, olahraga pagi, dan ruang bermain anak-anak.', 'https://lh3.googleusercontent.com/grass-cs/ACvplmM4Bo-GsmT-q69AMy-F6B21_vGddv1eDkhdW5KELBHF5SsX2I_h6giH6COV1mTwBDxSjSO7FQBtDjFxCaYBao9I80uKG2FkeGb0GfY2sETRAkF2_Og61Ry8MwAWCVE5zjAAQ_LC6g=w1200-h675-k-no', 'https://lh3.googleusercontent.com/grass-cs/ACvplmM4Bo-GsmT-q69AMy-F6B21_vGddv1eDkhdW5KELBHF5SsX2I_h6giH6COV1mTwBDxSjSO7FQBtDjFxCaYBao9I80uKG2FkeGb0GfY2sETRAkF2_Og61Ry8MwAWCVE5zjAAQ_LC6g=w1600-h1200', 'Fasilitas Umum 🌳', 'Google Maps Resmi', 'https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6', 5, 'Sistem'),
+('slide-gmap-6', 'Kenyamanan & Kebersihan Blok Havaland', 'Komitmen bersama seluruh warga RT 04 / RW 08 dalam menjaga lingkungan tetap asri, aman, dan guyub rukun.', 'https://lh3.googleusercontent.com/grass-cs/ACvplmO_vVcnN1ONvRXrB7IVG2LViMqovswVI81ffMGdM-xXB24LUC0TcPwexAcQc191lafOPao1gHYFEtSSM4FGyEjW_SRYi3SwE65Nr97wIQqP1BwksLVuJ4mMlQTMEIcR8b6rIPjp=w1200-h675-k-no', 'https://lh3.googleusercontent.com/grass-cs/ACvplmO_vVcnN1ONvRXrB7IVG2LViMqovswVI81ffMGdM-xXB24LUC0TcPwexAcQc191lafOPao1gHYFEtSSM4FGyEjW_SRYi3SwE65Nr97wIQqP1BwksLVuJ4mMlQTMEIcR8b6rIPjp=w1600-h1200', 'Guyub Rukun 🤝', 'Google Maps Resmi', 'https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6', 6, 'Sistem')
+ON CONFLICT (id) DO NOTHING;
+
+

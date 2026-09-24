@@ -763,6 +763,235 @@ const HavalandData = {
       blok: "Kantor RT",
       isAdmin: true
     }
+  ],
+
+  // DATA RESMI GOOGLE MAPS PERUMAHAN HAVALAND KARANGPLOSO
+  googleMaps: {
+    placeName: "Perum Havaland Karangploso",
+    address: "4J58+37W, Babaan, Ngenep, Kec. Karang Ploso, Kabupaten Malang, Jawa Timur 65152",
+    mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+    embedUrl: "https://maps.google.com/maps?q=Perum+Havaland+Karangploso&t=&z=17&ie=UTF8&iwloc=&output=embed",
+    totalPhotos: 20
+  },
+
+  // KOLEKSI 20 FOTO RIIL DARI GOOGLE MAPS (https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6)
+  googleMapsPhotos: [
+    {
+      id: "gmap-p1",
+      title: "Gerbang Utama & Pos Keamanan Havaland",
+      desc: "Akses gerbang utama perumahan Havaland Karangploso dengan sistem keamanan one gate.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmOOOe0QwbrowNxUKa57D-D94coBICWQ-YTBd-EtLaw9QQ1CZDeOQDzd2xZyhuRurKPrLPE-qklvcuPc0jsub5dGlZuCwsWkQMag1JkLcugdWo4YFa5ufpBwwc9PRvFai1Fi8H3w",
+      badge: "Gerbang Utama"
+    },
+    {
+      id: "gmap-p2",
+      title: "Jalan Lingkungan & Deretan Rumah Asri",
+      desc: "Pemandangan jalan lingkungan paving rapi dan deretan perumahan yang tertata apik.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmOEGaHXjXBEyjHMft1OGBn7H42aLQCyVWWedzXjFXX7aDrdwrozygG4qkKMu4wSfIKBX3TN7UIufstCKDz5FVHkIZMpNMnnjO28lAYGj7gs4MzsUd4C2H_Th52Wi57hxQlLQhS1Ug",
+      badge: "Lingkungan Asri"
+    },
+    {
+      id: "gmap-p3",
+      title: "Kawasan Hunian Modern Minimalis",
+      desc: "Arsitektur hunian minimalis modern warga Havaland di udara sejuk lereng pegunungan.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmMHVrnTuxmpXhc394_GpHpjsxcK-xZhXxLKg4olPc4zjj-TGypt4coQM9RQibrUO6Vnu_h2Q1yw8900UTkRpSzygpmFRVMBb819UR_T6j1OY91nwVhrMSLWdsAAMC_zX4viM2pYTsOlUAK-",
+      badge: "Hunian Warga"
+    },
+    {
+      id: "gmap-p4",
+      title: "Panorama Udara & Lanskap Hijau Kawasan",
+      desc: "Lanskap lingkungan hijau dan view alam pegunungan di sekitar Perum Havaland.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmNUfMR3ivsR2QoOVEqN9fIMJEDo_vt4rOJe13U65s_ZYT510K-pgyZuLlCjSAey6mdB9yKVgD_zEfXPojnRBerhN7AapFH4-2d13O3emXULwEHO3hHPkurYsBp1llUeuQp8IjsJ",
+      badge: "Panorama Alam"
+    },
+    {
+      id: "gmap-p5",
+      title: "Sudut Cluster & Penataan Blok Perumahan",
+      desc: "Penataan hunian blok warga yang rapi, bersih, dan bebas genangan air.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmNCKqHhx-GoAhiobfrU42ooW9kIMk_e5DlJmQQqzLQIKRvHvOQv7bPH2SRDfSno_WRtUaR2pwfqNqBZGcY94Bqki42eXNAqzwwWAyGQxxYXeqmF73Oix8cEL8MK_eKjhd2dDiulW2k0OBUN",
+      badge: "Blok Cluster"
+    },
+    {
+      id: "gmap-p6",
+      title: "Fasilitas Lingkungan & Ruang Terbuka Hijau",
+      desc: "Area taman fasum perumahan untuk sosialisasi, olahraga ringan, dan bermain anak.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmM4Bo-GsmT-q69AMy-F6B21_vGddv1eDkhdW5KELBHF5SsX2I_h6giH6COV1mTwBDxSjSO7FQBtDjFxCaYBao9I80uKG2FkeGb0GfY2sETRAkF2_Og61Ry8MwAWCVE5zjAAQ_LC6g",
+      badge: "Fasilitas Umum"
+    },
+    {
+      id: "gmap-p7",
+      title: "Paving Jalan Blok D & F Bebas Polusi",
+      desc: "Akses jalan lebar antarrumah dengan sirkulasi udara bersih dan tenang.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmO_vVcnN1ONvRXrB7IVG2LViMqovswVI81ffMGdM-xXB24LUC0TcPwexAcQc191lafOPao1gHYFEtSSM4FGyEjW_SRYi3SwE65Nr97wIQqP1BwksLVuJ4mMlQTMEIcR8b6rIPjp",
+      badge: "Jalan Warga"
+    },
+    {
+      id: "gmap-p8",
+      title: "Suasana Siang Hari yang Teduh di Havaland",
+      desc: "Ketenangan suasana siang perumahan dengan hembusan angin sejuk Karangploso.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmOmZKlpbRuDANoZ_rZVaPD0WALBc3D0l5XKjmnwyBarXCPNsDFE-AqWrUICYrebasygXyuXNOQh04_BL5_GBzVlvS_9m7FrdyX-nGGnTtN-Fpv2zqvlgp7EcE3BE1vMMhFGqvrTIA",
+      badge: "Suasana Teduh"
+    },
+    {
+      id: "gmap-p9",
+      title: "Pemandangan Lembah & Pegunungan Malang",
+      desc: "Pesona alam pegunungan yang tampak jelas dari area barat perumahan.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmOFyFY5QzRYhbGy3OlCKTCjEvnb6KORniZmMQsOnN_Ikl11qlY2OuH883Ew-atpuFMFTQfYDtGJGnszSB5UuU53leFu1OqQsDvzO1bC7eLbLbM40vQmMfVTguLZuy66wqrrtz_k",
+      badge: "View Gunung"
+    },
+    {
+      id: "gmap-p10",
+      title: "Tata Kelola Instalasi & Penerangan Jalan",
+      desc: "Jaringan penerangan jalan umum (PJU) terawat dan tertib di sepanjang jalan blok.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmNqtTYUUa25l8kyRMd2KDQF7DMou6ICZxd_Q_0W0asOWuDrOWkZqRDlObt0pIdjx0Eus-VGMyyn7CZjD-KtRjYpqr5aLVC658CdvhE6bfKX4qcA5owXBDFAsIInSOI1TM3e2M3QRA",
+      badge: "Infrastruktur"
+    },
+    {
+      id: "gmap-p11",
+      title: "Sudut Pintu Gerbang Depan Perumahan",
+      desc: "Pos pantau dan barrier portal keamanan bagi tamu dan warga Havaland.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmOTVeoDs-9pKUkaCXUziKjjUC_YWNuhvTTXwwglNEdrtiK0pK1xsCXKvSgR7s-G4Xf4wkxnFX7yNjNd2I627Ft1piPciksk-0hKmcPsBvspEj3EQmKM_WPxYQSkiRRV-jbH4sLt",
+      badge: "Pos Satpam"
+    },
+    {
+      id: "gmap-p12",
+      title: "Jalan Lingkungan Bersih & Ramah Anak",
+      desc: "Kawasan perumahan yang aman untuk aktivitas bermain anak-anak dan jalan pagi.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmMw24kjdhQU6gj_-StqHuWohY9xvW3Cks33RNCwtQcZDNJm0-Svu3IFrXMTADvnadubMopHFwYRTWCc5Lgn-2nvup9kjVc55doHYBYjldKYtkd343q0sVWRUBIX2EWU7mVL_KBwXA",
+      badge: "Ramah Anak"
+    },
+    {
+      id: "gmap-p13",
+      title: "Drainase Rapi & Bebas Genangan",
+      desc: "Sistem saluran pembuangan dan got tertutup rapi untuk menjaga higienitas lingkungan.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmMwRiYfUs8FASsyC0ST2R_qF1qBZGjCtS3F9HjxtA-78ToLCus-osvmIc3AmiDoJYY11OD1CqcZ_x5DLAQVd0BO4sahtc_O0pUuovqm4U7vncSyb-By3p0-uOqPbqeMVHwj2Syh2w",
+      badge: "Drainase Rapi"
+    },
+    {
+      id: "gmap-p14",
+      title: "Titik Kumpul Warga & Area Bersama",
+      desc: "Ruang temu warga untuk kegiatan musyawarah RT, kerja bakti, dan senam pagi.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmPlqHrT0v1xQtM-7gUm9ww49omDFgbBRBxX8dfIXO4SPNx9l98YRT1smp0zCnq_MGvj3JJUOfjtpC8_sf0lpHKCuFVhPuw8RtAD4ULJrGZ1CYeRkVDF0ObhB9z2VvhoLg60ZJmR",
+      badge: "Titik Kumpul"
+    },
+    {
+      id: "gmap-p15",
+      title: "Penghijauan Median Jalan & Tanaman Hias",
+      desc: "Semak hias dan tanaman peneduh yang dirawat secara berkala oleh pengurus kebersihan.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmMTu9RrzsDBps3BYB-TnuPst8dMW9wUhK2Lt8HxLDs9fakEXSt-P3tlAvFuSiqMA9mtrOamVIVIpxD43yyOIlzxzl3DD_Ffe37gnbMmqu5q59YIceNUQw9vrmzdsY5Ic_Ckpt7b",
+      badge: "Penghijauan"
+    },
+    {
+      id: "gmap-p16",
+      title: "Deretan Unit Hunian Tipe 36 & 45",
+      desc: "Desain fasad rumah tropis minimalis modern dengan pencahayaan alami optimal.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmO0llCc29Uj6r8f3UvQO3by8zUaqohr6eakpF1BI4Z_WM2EILLdYt7nBGJH1YubouVnKYY_eadtMzPvoiHNkWOYiRw5m5jpb4Hfm_iipTrFZLgX4G2jcPMhoP0L3UUNps7BCIgbSQ",
+      badge: "Tipe Hunian"
+    },
+    {
+      id: "gmap-p17",
+      title: "Kawasan Tenang Jauh dari Kebisingan",
+      desc: "Lingkungan perumahan yang tenang untuk istirahat optimal keluarga tercinta.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmN_Fu0t_3QifqTLpEOtX3kGwe4DRjiX6zD4XFn1u40Z5S2B3wP5MRlABWrywXHotGzxyFIa3j2Ps5SK4yn036NdnQG-l2xhDfVdOaVDlXxs4VYYwrTWDhvUOEycUocSPFhFE_pt",
+      badge: "Lingkungan Nyaman"
+    },
+    {
+      id: "gmap-p18",
+      title: "Boulevard Akses Masuk Havaland Residence",
+      desc: "Akses jalan boulevard masuk perumahan yang representatif dan mudah dijangkau.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmP-LUR-011G37vm893fnt3qbReuTutSaZZnjYHzwrPWS-Oc4ZtqgiaYHnV0B5ce-uWhUKIDpcFEmx4lP5qi5kZ8rOgvQn_KsR9VXelhxTNCRzacU_-6fZ_avlRa3srbDjc1x8ofSQ",
+      badge: "Boulevard"
+    },
+    {
+      id: "gmap-p19",
+      title: "Panorama Sore Hari Kawasan Karangploso",
+      desc: "Suasana syahdu senja hari di Perumahan Havaland Malang.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmP1sNvjnCO93f_BTL9Gyc6ocAGnCnBAkI8iHDFbGR_ZKEJMUSTbUjx_bH9aZ-wTTFzrbYWe2Ig38DES6Nv4oT-l7oUv3IAaoFs91dNvETfvE-rYsSozdh8FSNhTZdCBu4BbHUd5",
+      badge: "Suasana Senja"
+    },
+    {
+      id: "gmap-p20",
+      title: "Keamanan Lingkungan Havaland 24 Jam",
+      desc: "Patroli ronda malam siskamling rutin menjaga keamanan dan ketentraman seluruh warga.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmPGkOT2dcZfM777e6mzJsP8j8mXgXuMAFtNHLo1kT4iqr7Fl6E8J8hpzVn3u61zcponJUB3waP1ESQBn3HZPkDMwgg-imbibnV4EwnugVhGiEu4FTNC3bL1sGH8mBhMg3O4ReFSng",
+      badge: "Keamanan 24 Jam"
+    }
+  ],
+
+  // SLIDE TAMPILAN AWAL UNTUK BERANDA (6 FOTO TERPILIH GOOGLE MAPS)
+  defaultSlides: [
+    {
+      id: "slide-gmap-1",
+      title: "Gerbang Utama & Pos Keamanan Havaland",
+      desc: "Akses gerbang utama perumahan Havaland Karangploso dengan sistem keamanan terpadu satu pintu (One Gate System).",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmOOOe0QwbrowNxUKa57D-D94coBICWQ-YTBd-EtLaw9QQ1CZDeOQDzd2xZyhuRurKPrLPE-qklvcuPc0jsub5dGlZuCwsWkQMag1JkLcugdWo4YFa5ufpBwwc9PRvFai1Fi8H3w=w1200-h675-k-no",
+      fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmOOOe0QwbrowNxUKa57D-D94coBICWQ-YTBd-EtLaw9QQ1CZDeOQDzd2xZyhuRurKPrLPE-qklvcuPc0jsub5dGlZuCwsWkQMag1JkLcugdWo4YFa5ufpBwwc9PRvFai1Fi8H3w=w1600-h1200",
+      badge: "Gerbang Utama 📍",
+      source: "Google Maps Resmi",
+      mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+      addedBy: "Sistem (Google Maps)",
+      createdAt: "2026-09-20"
+    },
+    {
+      id: "slide-gmap-2",
+      title: "Jalan Lingkungan & Deretan Rumah Asri",
+      desc: "Tata letak perumahan dengan jalan paving lebar, bersih, bebas debu, dan saluran drainase tertutup rapi.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmOEGaHXjXBEyjHMft1OGBn7H42aLQCyVWWedzXjFXX7aDrdwrozygG4qkKMu4wSfIKBX3TN7UIufstCKDz5FVHkIZMpNMnnjO28lAYGj7gs4MzsUd4C2H_Th52Wi57hxQlLQhS1Ug=w1200-h675-k-no",
+      fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmOEGaHXjXBEyjHMft1OGBn7H42aLQCyVWWedzXjFXX7aDrdwrozygG4qkKMu4wSfIKBX3TN7UIufstCKDz5FVHkIZMpNMnnjO28lAYGj7gs4MzsUd4C2H_Th52Wi57hxQlLQhS1Ug=w1600-h900",
+      badge: "Lingkungan Asri 🌿",
+      source: "Google Maps Resmi",
+      mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+      addedBy: "Sistem (Google Maps)",
+      createdAt: "2026-09-20"
+    },
+    {
+      id: "slide-gmap-3",
+      title: "Deretan Hunian Modern Minimalis Warga",
+      desc: "Hunian tertata rapi dengan desain minimalis elegan, menciptakan suasana perumahan yang nyaman dan harmonis.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmMHVrnTuxmpXhc394_GpHpjsxcK-xZhXxLKg4olPc4zjj-TGypt4coQM9RQibrUO6Vnu_h2Q1yw8900UTkRpSzygpmFRVMBb819UR_T6j1OY91nwVhrMSLWdsAAMC_zX4viM2pYTsOlUAK-=w1200-h675-k-no",
+      fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmMHVrnTuxmpXhc394_GpHpjsxcK-xZhXxLKg4olPc4zjj-TGypt4coQM9RQibrUO6Vnu_h2Q1yw8900UTkRpSzygpmFRVMBb819UR_T6j1OY91nwVhrMSLWdsAAMC_zX4viM2pYTsOlUAK-=w1600-h900",
+      badge: "Hunian Warga 🏘️",
+      source: "Google Maps Resmi",
+      mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+      addedBy: "Sistem (Google Maps)",
+      createdAt: "2026-09-20"
+    },
+    {
+      id: "slide-gmap-4",
+      title: "Panorama Udara & Lanskap Hijau Karangploso",
+      desc: "Kawasan perumahan yang dikelilingi pemandangan alam perbukitan dan udara segar pegunungan Malang Raya.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmNUfMR3ivsR2QoOVEqN9fIMJEDo_vt4rOJe13U65s_ZYT510K-pgyZuLlCjSAey6mdB9yKVgD_zEfXPojnRBerhN7AapFH4-2d13O3emXULwEHO3hHPkurYsBp1llUeuQp8IjsJ=w1200-h675-k-no",
+      fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmNUfMR3ivsR2QoOVEqN9fIMJEDo_vt4rOJe13U65s_ZYT510K-pgyZuLlCjSAey6mdB9yKVgD_zEfXPojnRBerhN7AapFH4-2d13O3emXULwEHO3hHPkurYsBp1llUeuQp8IjsJ=w1600-h1200",
+      badge: "Panorama Alam 🌄",
+      source: "Google Maps Resmi",
+      mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+      addedBy: "Sistem (Google Maps)",
+      createdAt: "2026-09-20"
+    },
+    {
+      id: "slide-gmap-5",
+      title: "Fasilitas Lingkungan & Ruang Terbuka Hijau",
+      desc: "Area taman dan fasum perumahan untuk berinteraksi antarwarga, olahraga pagi, dan ruang bermain anak-anak.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmM4Bo-GsmT-q69AMy-F6B21_vGddv1eDkhdW5KELBHF5SsX2I_h6giH6COV1mTwBDxSjSO7FQBtDjFxCaYBao9I80uKG2FkeGb0GfY2sETRAkF2_Og61Ry8MwAWCVE5zjAAQ_LC6g=w1200-h675-k-no",
+      fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmM4Bo-GsmT-q69AMy-F6B21_vGddv1eDkhdW5KELBHF5SsX2I_h6giH6COV1mTwBDxSjSO7FQBtDjFxCaYBao9I80uKG2FkeGb0GfY2sETRAkF2_Og61Ry8MwAWCVE5zjAAQ_LC6g=w1600-h1200",
+      badge: "Fasilitas Umum 🌳",
+      source: "Google Maps Resmi",
+      mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+      addedBy: "Sistem (Google Maps)",
+      createdAt: "2026-09-20"
+    },
+    {
+      id: "slide-gmap-6",
+      title: "Kenyamanan & Kebersihan Blok Havaland",
+      desc: "Komitmen bersama seluruh warga RT 04 / RW 08 dalam menjaga lingkungan tetap asri, aman, dan guyub rukun.",
+      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmO_vVcnN1ONvRXrB7IVG2LViMqovswVI81ffMGdM-xXB24LUC0TcPwexAcQc191lafOPao1gHYFEtSSM4FGyEjW_SRYi3SwE65Nr97wIQqP1BwksLVuJ4mMlQTMEIcR8b6rIPjp=w1200-h675-k-no",
+      fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmO_vVcnN1ONvRXrB7IVG2LViMqovswVI81ffMGdM-xXB24LUC0TcPwexAcQc191lafOPao1gHYFEtSSM4FGyEjW_SRYi3SwE65Nr97wIQqP1BwksLVuJ4mMlQTMEIcR8b6rIPjp=w1600-h1200",
+      badge: "Guyub Rukun 🤝",
+      source: "Google Maps Resmi",
+      mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+      addedBy: "Sistem (Google Maps)",
+      createdAt: "2026-09-20"
+    }
   ]
 };
 
