@@ -362,10 +362,6 @@ const HavalandApp = {
         html += `
           <div class="activity-card" style="padding: 1rem;">
             <div class="activity-main">
-              <div class="activity-date-badge">
-                <div class="activity-date-day">${k.kategori === 'Keamanan' ? 'SETIAP' : 'MINGGU'}</div>
-                <div class="activity-date-month">${k.kategori === 'Keamanan' ? 'MALAM' : 'PAGI'}</div>
-              </div>
               <div class="activity-details">
                 <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 2px;">
                   <span class="badge badge-info">${k.kategori}</span>
@@ -822,10 +818,6 @@ const HavalandApp = {
       html += `
         <div class="activity-card">
           <div class="activity-main" style="flex: 1;">
-            <div class="activity-date-badge">
-              <div class="activity-date-day">${k.tipe === 'Rutin' ? 'RUTIN' : 'AGENDA'}</div>
-              <div class="activity-date-month">${ek2(k.kategori)}</div>
-            </div>
             <div class="activity-details" style="flex: 1;">
               <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 4px; flex-wrap: wrap;">
                 <span class="badge badge-success">${ek2(k.statusBadge || 'Aktif')}</span>
