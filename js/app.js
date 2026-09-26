@@ -1268,6 +1268,19 @@ END:VCALENDAR`;
     HavalandUtils.showToast("Aspirasi Dihapus", `Laporan ${aspId} berhasil dihapus oleh ${user.nama}`, "info");
   },
 
+  // Isi nilai field form secara aman (anti-gagal bila elemen tak ada).
+  // Dipakai semua modal edit agar modal TETAP terbuka walau ada field hilang.
+  setVal(id, value) {
+    try {
+      const el = document.getElementById(id);
+      if (el) el.value = value === undefined || value === null ? "" : value;
+      return !!el;
+    } catch (e) {
+      console.warn("setVal gagal:", id, e);
+      return false;
+    }
+  },
+
   // =========================================================================
   // CRUD LENGKAP ADMINISTRATOR RT: DATA WARGA
   // =========================================================================
@@ -1445,11 +1458,11 @@ END:VCALENDAR`;
     if (index >= 0 && HavalandData.profile.kontakDarurat[index]) {
       const c = HavalandData.profile.kontakDarurat[index];
       if (modalTitle) modalTitle.textContent = `Edit Kontak: ${c.nama}`;
-      if (idxInput) idxInput.value = index;
-      if (namaInput) namaInput.value = c.nama;
-      if (roleInput) roleInput.value = c.role;
-      if (nomorInput) nomorInput.value = c.nomor;
-      if (waInput) waInput.value = c.wa || "";
+      this.setVal("form-kontak-index", index);
+      this.setVal("form-kontak-nama", c.nama);
+      this.setVal("form-kontak-role", c.role);
+      this.setVal("form-kontak-nomor", c.nomor);
+      this.setVal("form-kontak-wa", c.wa || "");
     } else {
       if (modalTitle) modalTitle.textContent = "Tambah Kontak Darurat Baru";
       if (idxInput) idxInput.value = "";
@@ -1524,12 +1537,12 @@ END:VCALENDAR`;
     if (!a) return;
 
     document.getElementById("edit-asp-id").value = a.id;
-    document.getElementById("edit-asp-pelapor").value = a.pelapor;
-    document.getElementById("edit-asp-kategori").value = a.kategori;
-    document.getElementById("edit-asp-judul").value = a.judul;
-    document.getElementById("edit-asp-status").value = a.status;
-    document.getElementById("edit-asp-urgensi").value = a.urgensi;
-    document.getElementById("edit-asp-tanggapan").value = a.tanggapan || "";
+    this.setVal("edit-asp-pelapor", a.pelapor);
+    this.setVal("edit-asp-kategori", a.kategori);
+    this.setVal("edit-asp-judul", a.judul);
+    this.setVal("edit-asp-status", a.status);
+    this.setVal("edit-asp-urgensi", a.urgensi);
+    this.setVal("edit-asp-tanggapan", a.tanggapan || "");
 
     this.openModal("modal-edit-aspirasi");
   },
@@ -1581,9 +1594,9 @@ END:VCALENDAR`;
     if (!k) return;
 
     document.getElementById("edit-keg-id").value = k.id;
-    document.getElementById("edit-keg-judul").value = k.judul;
-    document.getElementById("edit-keg-kategori").value = k.kategori;
-    document.getElementById("edit-keg-tipe").value = k.tipe || "Rutin";
+    this.setVal("edit-keg-judul", k.judul);
+    this.setVal("edit-keg-kategori", k.kategori);
+    this.setVal("edit-keg-tipe", k.tipe || "Rutin");
     // Isi kalender dari teks lama bila bisa dibaca ("27 Sep 2026", "07.30", ...)
     const parsed = HavalandUtils.parseWaktuNext(k.waktuNext || k.frekuensi || "");
     const origTeks = k.waktuNext || k.frekuensi || "";
@@ -1598,9 +1611,9 @@ END:VCALENDAR`;
     const selesaiInput = document.getElementById("edit-keg-waktu-selesai");
     if (selesaiInput) selesaiInput.disabled = sampaiAktif;
     document.getElementById("edit-keg-lokasi").value = k.lokasi;
-    document.getElementById("edit-keg-koordinator").value = k.koordinator;
-    document.getElementById("edit-keg-badge").value = k.statusBadge || "";
-    document.getElementById("edit-keg-deskripsi").value = k.deskripsi;
+    this.setVal("edit-keg-koordinator", k.koordinator);
+    this.setVal("edit-keg-badge", k.statusBadge || "");
+    this.setVal("edit-keg-deskripsi", k.deskripsi);
 
     this.openModal("modal-edit-kegiatan");
   },
@@ -1662,14 +1675,14 @@ END:VCALENDAR`;
     if (!t) return;
 
     document.getElementById("edit-trx-id").value = t.id;
-    document.getElementById("edit-trx-tanggal").value = t.tanggal;
-    document.getElementById("edit-trx-jenis").value = t.jenis;
-    document.getElementById("edit-trx-kategori").value = t.kategori;
-    document.getElementById("edit-trx-nominal").value = t.nominal;
-    document.getElementById("edit-trx-uraian").value = t.uraian;
-    document.getElementById("edit-trx-metode").value = t.metode;
-    document.getElementById("edit-trx-pj").value = t.pj;
-    document.getElementById("edit-trx-catatan").value = t.catatan || "";
+    this.setVal("edit-trx-tanggal", t.tanggal);
+    this.setVal("edit-trx-jenis", t.jenis);
+    this.setVal("edit-trx-kategori", t.kategori);
+    this.setVal("edit-trx-nominal", t.nominal);
+    this.setVal("edit-trx-uraian", t.uraian);
+    this.setVal("edit-trx-metode", t.metode);
+    this.setVal("edit-trx-pj", t.pj);
+    this.setVal("edit-trx-catatan", t.catatan || "");
 
     this.openModal("modal-edit-transaksi");
   },

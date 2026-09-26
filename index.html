@@ -17,8 +17,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/style.css?v=20260926r">
-  <link rel="stylesheet" href="css/components.css?v=20260926r">
+  <link rel="stylesheet" href="css/style.css?v=20260926s">
+  <link rel="stylesheet" href="css/components.css?v=20260926s">
 </head>
 <body>
 
@@ -2382,10 +2382,23 @@
   <!-- Hidden File Input for Data Restore -->
   <input type="file" id="backup-file-input" accept=".json" style="display: none;" onchange="HavalandBackup.handleFileSelected(event)">
 
+  <!-- Penangkap galat global: tampilkan pesan agar mudah dilaporkan -->
+  <script>
+    window.addEventListener("error", function (e) {
+      try {
+        var msg = (e && e.message) ? String(e.message) : "Kesalahan tak dikenal";
+        if (window.HavalandUtils && HavalandUtils.showToast) {
+          HavalandUtils.showToast("Galat Sistem", msg.slice(0, 160) + " — screenshot pesan ini ke admin.", "error");
+        }
+        console.error("[Havaland]", e && e.error ? e.error : msg);
+      } catch (_) { /* abaikan */ }
+    });
+  </script>
+
   <!-- Scripts -->
-  <script src="js/data.js?v=20260926r"></script>
-  <script src="js/utils.js?v=20260926r"></script>
-  <script src="js/app.js?v=20260926r"></script>
+  <script src="js/data.js?v=20260926s"></script>
+  <script src="js/utils.js?v=20260926s"></script>
+  <script src="js/app.js?v=20260926s"></script>
 
 </body>
 </html>
