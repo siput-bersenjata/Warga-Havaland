@@ -504,6 +504,16 @@ svg {
   height: 22px !important;
 }
 
+.brand-logo-img {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: var(--radius-md);
+  display: block;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-emerald);
+}
+
 .brand-text {
   display: flex;
   flex-direction: column;

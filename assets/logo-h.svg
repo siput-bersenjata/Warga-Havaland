@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Logo H Havaland">
+  <defs>
+    <linearGradient id="havaland-badge-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E8A6B"/>
+      <stop offset="0.55" stop-color="#066A52"/>
+      <stop offset="1" stop-color="#043B2F"/>
+    </linearGradient>
+    <linearGradient id="havaland-h-face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D1FAE5"/>
+      <stop offset="0.42" stop-color="#34D399"/>
+      <stop offset="1" stop-color="#0D9488"/>
+    </linearGradient>
+    <linearGradient id="havaland-h-side" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#065F46"/>
+      <stop offset="1" stop-color="#021F19"/>
+    </linearGradient>
+    <linearGradient id="havaland-h-shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.38"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Badge -->
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#havaland-badge-bg)"/>
+  <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="13.75" fill="none" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="1.5"/>
+
+  <!-- Huruf H 3D: sisi gelap (extrude) di belakang, muka gradien di depan -->
+  <path id="havaland-h" d="M17 13 h10 v15 h10 V13 h10 v38 h-10 V36 H27 v15 H17 Z"/>
+  <use href="#havaland-h" transform="translate(4.5,5)" fill="url(#havaland-h-side)"/>
+  <use href="#havaland-h" fill="url(#havaland-h-face)"/>
+  <use href="#havaland-h" fill="url(#havaland-h-shine)"/>
+</svg>
