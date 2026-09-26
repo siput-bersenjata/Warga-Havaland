@@ -194,16 +194,44 @@
   line-height: 1.3;
 }
 
+/* HP: tile aksi ala aplikasi — ikon di atas, teks presisi di tengah */
+@media (max-width: 640px) {
+  .quick-actions-bar {
+    gap: 0.65rem;
+  }
+  .quick-action-btn {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+    padding: 0.9rem 0.6rem;
+    height: auto;
+    min-height: 108px;
+  }
+  .quick-action-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+  .qa-title {
+    font-size: 0.78rem;
+  }
+  .qa-sub {
+    font-size: 0.66rem;
+  }
+}
+
 /* HP kecil: kartu aksi dipadatkan agar teks tidak berdesakan */
 @media (max-width: 480px) {
   .quick-actions-bar {
     gap: 0.6rem;
   }
   .quick-action-btn {
-    padding: 0.65rem 0.7rem;
-    gap: 0.6rem;
-    height: auto;
-    min-height: 72px;
+    padding: 0.8rem 0.5rem;
+    gap: 0.45rem;
+    min-height: 104px;
   }
   .quick-action-icon {
     width: 36px;
@@ -211,11 +239,12 @@
     min-width: 36px;
     min-height: 36px;
   }
-  .qa-title {
-    font-size: 0.78rem;
-  }
-  .qa-sub {
-    font-size: 0.66rem;
+}
+
+/* Kartu ide carousel: muat di layar HP sempit */
+@media (max-width: 480px) {
+  .idea-card {
+    min-width: 250px;
   }
 }
 
