@@ -3996,18 +3996,31 @@ const HavalandSlider = {
   },
 
   render() {
-    const track = document.getElementById("slider-track");
-    const dotsContainer = document.getElementById("slider-dots");
-    const counter = document.getElementById("slider-counter");
-    const countBadge = document.getElementById("slider-count-badge");
-    if (!track) return;
-
     if (this.slides.length === 0) {
       this.slides = JSON.parse(JSON.stringify(HavalandData.defaultSlides || []));
     }
 
     if (this.currentIndex >= this.slides.length) {
       this.currentIndex = 0;
+    }
+
+    // Sinkronkan hero beranda + panel Pengaturan (tetap jalan walau
+    // section slider galeri sudah dihapus dari beranda)
+    if (typeof HavalandHero !== "undefined" && HavalandHero.syncFromSlider) {
+      HavalandHero.syncFromSlider(this.slides);
+    }
+    if (typeof HavalandSettings !== "undefined" && HavalandSettings.renderSlideSection) {
+      HavalandSettings.renderSlideSection();
+    }
+
+    // Section slider galeri opsional: lewati render track bila sudah dihapus
+    const track = document.getElementById("slider-track");
+    const dotsContainer = document.getElementById("slider-dots");
+    const counter = document.getElementById("slider-counter");
+    const countBadge = document.getElementById("slider-count-badge");
+    if (!track) {
+      if (countBadge) countBadge.textContent = this.slides.length;
+      return;
     }
 
     const isAdmin = typeof HavalandAuth !== "undefined" && HavalandAuth.isAdmin();
@@ -4053,16 +4066,6 @@ const HavalandSlider = {
 
     // 4. Update Posisi Transform
     this.goTo(this.currentIndex, false);
-
-    // 5. Sinkronkan hero beranda agar memakai foto yang sama
-    if (typeof HavalandHero !== "undefined" && HavalandHero.syncFromSlider) {
-      HavalandHero.syncFromSlider(this.slides);
-    }
-
-    // 6. Segarkan hitungan di panel Pengaturan bila sedang terbuka
-    if (typeof HavalandSettings !== "undefined" && HavalandSettings.renderSlideSection) {
-      HavalandSettings.renderSlideSection();
-    }
   },
 
   goTo(index, smooth = true) {
