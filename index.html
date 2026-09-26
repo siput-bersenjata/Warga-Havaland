@@ -17,8 +17,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/style.css?v=20260926o">
-  <link rel="stylesheet" href="css/components.css?v=20260926o">
+  <link rel="stylesheet" href="css/style.css?v=20260926p">
+  <link rel="stylesheet" href="css/components.css?v=20260926p">
 </head>
 <body>
 
@@ -355,7 +355,7 @@
           </h2>
           <p class="section-subtitle">Transparansi pengelolaan dana rukun tetangga untuk keamanan, kebersihan, dan kenyamanan seluruh warga Havaland</p>
         </div>
-        <div style="display: flex; gap: 0.5rem;">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
           <button class="btn btn-secondary btn-sm" onclick="HavalandUtils.exportKasCSV(HavalandData.transaksi)">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
             Unduh CSV
@@ -421,7 +421,7 @@
           <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; background: var(--surface); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px dashed var(--primary);">
             <div>
               <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Bank Mandiri</div>
-              <div style="font-family: var(--font-heading); font-size: 1.4rem; font-weight: 800; color: var(--text-primary); letter-spacing: 0.05em;">106-00-9823412-1</div>
+              <div class="rek-number" style="font-family: var(--font-heading); font-weight: 800; color: var(--text-primary);">106-00-9823412-1</div>
               <div style="font-size: 0.82rem; font-weight: 600; color: var(--primary-light);">a.n. KAS RT 04 WARGA HAVALAND</div>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
@@ -2375,9 +2375,9 @@
   <input type="file" id="backup-file-input" accept=".json" style="display: none;" onchange="HavalandBackup.handleFileSelected(event)">
 
   <!-- Scripts -->
-  <script src="js/data.js?v=20260926o"></script>
-  <script src="js/utils.js?v=20260926o"></script>
-  <script src="js/app.js?v=20260926o"></script>
+  <script src="js/data.js?v=20260926p"></script>
+  <script src="js/utils.js?v=20260926p"></script>
+  <script src="js/app.js?v=20260926p"></script>
 
 </body>
 </html>
