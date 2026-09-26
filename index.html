@@ -17,8 +17,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/style.css?v=20260926h">
-  <link rel="stylesheet" href="css/components.css?v=20260926h">
+  <link rel="stylesheet" href="css/style.css?v=20260926i">
+  <link rel="stylesheet" href="css/components.css?v=20260926i">
 </head>
 <body>
 
@@ -1547,7 +1547,7 @@
       </div>
 
       <form id="form-tambah-kegiatan" onsubmit="HavalandApp.handleTambahKegiatan(event)">
-        <div class="modal-body">
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
           <div class="form-group">
             <label class="form-label" for="keg-nama">Nama Kegiatan / Agenda:</label>
             <input type="text" id="keg-nama" class="form-control" placeholder="Contoh: Kerja Bakti Massal Saluran Air" required>
@@ -1586,6 +1586,10 @@
             <div class="form-group">
               <label class="form-label" for="keg-waktu-selesai">Jam Selesai:</label>
               <input type="time" id="keg-waktu-selesai" class="form-control">
+              <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.35rem; cursor: pointer; font-weight: 600;">
+                <input type="checkbox" id="keg-sampai-selesai" style="width: 15px; height: 15px; accent-color: var(--primary);" onchange="HavalandApp.toggleSampaiSelesai('keg-waktu-selesai', 'keg-sampai-selesai')">
+                <span>Sampai acara selesai</span>
+              </label>
             </div>
           </div>
 
@@ -1595,8 +1599,8 @@
               <input type="text" id="keg-lokasi" class="form-control" placeholder="Contoh: Lapangan Fasum & Blok B" required>
             </div>
             <div class="form-group">
-              <label class="form-label" for="keg-pj">Penanggung Jawab:</label>
-              <input type="text" id="keg-pj" class="form-control" placeholder="Contoh: Sie Kebersihan RT" required>
+              <label class="form-label" for="keg-pj">Penanggung Jawab: <span style="font-weight: 400; color: var(--text-muted);">(opsional)</span></label>
+              <input type="text" id="keg-pj" class="form-control" placeholder="Contoh: Sie Kebersihan RT — boleh dikosongi">
             </div>
           </div>
 
@@ -2021,6 +2025,10 @@
             <div class="form-group">
               <label class="form-label" for="edit-keg-waktu-selesai">Jam Selesai:</label>
               <input type="time" id="edit-keg-waktu-selesai" class="form-control">
+              <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.35rem; cursor: pointer; font-weight: 600;">
+                <input type="checkbox" id="edit-keg-sampai-selesai" style="width: 15px; height: 15px; accent-color: var(--primary);" onchange="HavalandApp.toggleSampaiSelesai('edit-keg-waktu-selesai', 'edit-keg-sampai-selesai')">
+                <span>Sampai acara selesai</span>
+              </label>
             </div>
           </div>
           <div class="form-group">
@@ -2030,8 +2038,8 @@
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
             <div class="form-group">
-              <label class="form-label" for="edit-keg-koordinator">Koordinator / Penanggung Jawab:</label>
-              <input type="text" id="edit-keg-koordinator" class="form-control" required>
+              <label class="form-label" for="edit-keg-koordinator">Koordinator / Penanggung Jawab: <span style="font-weight: 400; color: var(--text-muted);">(opsional)</span></label>
+              <input type="text" id="edit-keg-koordinator" class="form-control">
             </div>
             <div class="form-group">
               <label class="form-label" for="edit-keg-badge">Badge Label:</label>
@@ -2367,9 +2375,9 @@
   <input type="file" id="backup-file-input" accept=".json" style="display: none;" onchange="HavalandBackup.handleFileSelected(event)">
 
   <!-- Scripts -->
-  <script src="js/data.js?v=20260926h"></script>
-  <script src="js/utils.js?v=20260926h"></script>
-  <script src="js/app.js?v=20260926h"></script>
+  <script src="js/data.js?v=20260926i"></script>
+  <script src="js/utils.js?v=20260926i"></script>
+  <script src="js/app.js?v=20260926i"></script>
 
 </body>
 </html>

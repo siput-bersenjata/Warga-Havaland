@@ -1545,6 +1545,15 @@ END:VCALENDAR`;
     HavalandUtils.showToast("Laporan Diperbarui", `Status laporan "${a.judul.slice(0, 30)}..." berhasil diperbarui ke "${a.status}"!`, "success");
   },
 
+  // Centang "sampai acara selesai": kunci input jam selesai
+  toggleSampaiSelesai(timeId, checkId) {
+    const timeInput = document.getElementById(timeId);
+    const check = document.getElementById(checkId);
+    if (!timeInput || !check) return;
+    timeInput.disabled = check.checked;
+    if (check.checked) timeInput.value = "";
+  },
+
   // =========================================================================
   // CRUD LENGKAP ADMINISTRATOR RT & PENGURUS: EDIT JADWAL KEGIATAN
   // =========================================================================
@@ -1562,10 +1571,17 @@ END:VCALENDAR`;
     document.getElementById("edit-keg-tipe").value = k.tipe || "Rutin";
     // Isi kalender dari teks lama bila bisa dibaca ("27 Sep 2026", "07.30", ...)
     const parsed = HavalandUtils.parseWaktuNext(k.waktuNext || k.frekuensi || "");
+    const origTeks = k.waktuNext || k.frekuensi || "";
     document.getElementById("edit-keg-tanggal").value = parsed.date || "";
     document.getElementById("edit-keg-waktu-mulai").value = parsed.start || "";
     document.getElementById("edit-keg-waktu-selesai").value = parsed.end || "";
-    document.getElementById("edit-keg-waktu-orig").value = k.waktuNext || k.frekuensi || "";
+    document.getElementById("edit-keg-waktu-orig").value = origTeks;
+    // Tandai centang bila jadwal lamanya sampai selesai ("s.d. selesai")
+    const sampaiCheck = document.getElementById("edit-keg-sampai-selesai");
+    const sampaiAktif = /s\.d\.|selesai/i.test(origTeks);
+    if (sampaiCheck) sampaiCheck.checked = sampaiAktif;
+    const selesaiInput = document.getElementById("edit-keg-waktu-selesai");
+    if (selesaiInput) selesaiInput.disabled = sampaiAktif;
     document.getElementById("edit-keg-lokasi").value = k.lokasi;
     document.getElementById("edit-keg-koordinator").value = k.koordinator;
     document.getElementById("edit-keg-badge").value = k.statusBadge || "";
@@ -1593,18 +1609,21 @@ END:VCALENDAR`;
     const editTgl = document.getElementById("edit-keg-tanggal").value;
     const editMulai = document.getElementById("edit-keg-waktu-mulai").value;
     const editSelesai = document.getElementById("edit-keg-waktu-selesai").value;
+    const editSampai = document.getElementById("edit-keg-sampai-selesai")?.checked;
     if (editTgl) {
       const tglTeks = HavalandUtils.formatHariTanggal(editTgl);
       const mulaiTeks = HavalandUtils.formatJamID(editMulai);
       const selesaiTeks = HavalandUtils.formatJamID(editSelesai);
-      k.waktuNext = mulaiTeks
-        ? (selesaiTeks ? `${tglTeks} • ${mulaiTeks} - ${selesaiTeks} WIB` : `${tglTeks} • ${mulaiTeks} WIB`)
-        : tglTeks;
+      k.waktuNext = editSampai && mulaiTeks
+        ? `${tglTeks} • ${mulaiTeks} WIB s.d. selesai`
+        : (mulaiTeks
+          ? (selesaiTeks ? `${tglTeks} • ${mulaiTeks} - ${selesaiTeks} WIB` : `${tglTeks} • ${mulaiTeks} WIB`)
+          : tglTeks);
     } else {
       k.waktuNext = document.getElementById("edit-keg-waktu-orig").value.trim() || k.waktuNext;
     }
     k.lokasi = document.getElementById("edit-keg-lokasi").value.trim();
-    k.koordinator = document.getElementById("edit-keg-koordinator").value.trim();
+    k.koordinator = document.getElementById("edit-keg-koordinator").value.trim() || "Belum ditentukan";
     k.statusBadge = document.getElementById("edit-keg-badge").value.trim();
     k.deskripsi = document.getElementById("edit-keg-deskripsi").value.trim();
 
@@ -1814,6 +1833,11 @@ END:VCALENDAR`;
     if (tglInput && !tglInput.value) {
       tglInput.value = new Date().toISOString().slice(0, 10);
     }
+    // Reset centang sampai-selesai
+    const sampaiCheck = document.getElementById("keg-sampai-selesai");
+    if (sampaiCheck) sampaiCheck.checked = false;
+    const selesaiInput = document.getElementById("keg-waktu-selesai");
+    if (selesaiInput) selesaiInput.disabled = false;
     this.openModal("modal-tambah-kegiatan");
   },
 
@@ -1835,8 +1859,9 @@ END:VCALENDAR`;
     const jadwalISO = document.getElementById("keg-jadwal").value;
     const mulai = document.getElementById("keg-waktu-mulai").value;
     const selesai = document.getElementById("keg-waktu-selesai").value;
+    const sampaiSelesai = document.getElementById("keg-sampai-selesai")?.checked;
     const lokasi = document.getElementById("keg-lokasi").value.trim();
-    const pj = document.getElementById("keg-pj").value.trim();
+    const pj = document.getElementById("keg-pj").value.trim() || "Belum ditentukan";
     const deskripsi = document.getElementById("keg-deskripsi").value.trim();
 
     if (!jadwalISO || !mulai) {
@@ -1845,10 +1870,13 @@ END:VCALENDAR`;
     }
 
     // Susun tampilan "Minggu, 27 Sep 2026 • 07.30 - 10.00 WIB" otomatis
+    // (atau "... • 07.30 WIB s.d. selesai" bila dicentang sampai selesai)
     const jadwalTeks = HavalandUtils.formatHariTanggal(jadwalISO);
     const mulaiTeks = HavalandUtils.formatJamID(mulai);
     const selesaiTeks = HavalandUtils.formatJamID(selesai);
-    const waktu = selesaiTeks ? `${jadwalTeks} • ${mulaiTeks} - ${selesaiTeks} WIB` : `${jadwalTeks} • ${mulaiTeks} WIB`;
+    const waktu = sampaiSelesai
+      ? `${jadwalTeks} • ${mulaiTeks} WIB s.d. selesai`
+      : (selesaiTeks ? `${jadwalTeks} • ${mulaiTeks} - ${selesaiTeks} WIB` : `${jadwalTeks} • ${mulaiTeks} WIB`);
 
     const pencatatInfo = `${user.nama} (${user.role})`;
 
