@@ -56,7 +56,21 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({
       connected: false,
       message: "Database belum dikonfigurasi. Tambahkan POSTGRES_URL/DATABASE_URL di Vercel agar sinkron antar-device aktif.",
-      source: "local"
+      source: "local",
+      // Diagnosa aman: hanya status KEBERADAAN nama env (bukan isinya) + info deploy.
+      // Dipakai untuk memastikan env Neon sudah masuk ke deployment yang berjalan.
+      diag: {
+        deploySha: process.env.VERCEL_GIT_COMMIT_SHA || null,
+        deployEnv: process.env.VERCEL_ENV || null,
+        envSeen: {
+          POSTGRES_URL: !!process.env.POSTGRES_URL,
+          DATABASE_URL: !!process.env.DATABASE_URL,
+          POSTGRES_PRISMA_URL: !!process.env.POSTGRES_PRISMA_URL,
+          POSTGRES_URL_NON_POOLING: !!process.env.POSTGRES_URL_NON_POOLING,
+          STORAGE_URL: !!process.env.STORAGE_URL,
+          NEON_DATABASE_URL: !!process.env.NEON_DATABASE_URL
+        }
+      }
     });
   }
 
