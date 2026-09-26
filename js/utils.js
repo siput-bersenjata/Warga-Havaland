@@ -113,7 +113,14 @@ const HavalandUtils = {
     return out;
   },
 
-  // Toast Notification System yang Elegan
+  // Sapaan waktu Indonesia berdasarkan jam saat ini (untuk template WhatsApp)
+  salamWaktu(date = null) {
+    const h = (date instanceof Date ? date : new Date()).getHours();
+    if (h >= 4 && h < 11) return "pagi";
+    if (h >= 11 && h < 15) return "siang";
+    if (h >= 15 && h < 18) return "sore";
+    return "malam";
+  },
   showToast(title, message, type = "success") {
     let container = document.getElementById("toast-container");
     if (!container) {

@@ -876,8 +876,27 @@ const HavalandApp = {
     const k = HavalandData.kegiatan.find(item => item.id === actId);
     if (!k) return;
 
-    const pesan = `*PENGUMUMAN WARGA HAVALAND (RT 04 / RW 08)*%0A%0A*Kegiatan:* ${k.judul}%0A*Waktu:* ${k.waktuNext}%0A*Lokasi:* ${k.lokasi}%0A*Koordinator:* ${k.koordinator}%0A%0A${k.deskripsi}%0A%0ASalam kompak & guyub warga Havaland! 🏡🌿`;
-    window.open(`https://api.whatsapp.com/send?text=${pesan}`, "_blank");
+    const lines = [
+      "Assalamualaikum warahmatullahi wabarakatuh,",
+      `Selamat ${HavalandUtils.salamWaktu()} Bapak/Ibu warga Havaland yang kami hormati 🙏`,
+      "",
+      "*PENGUMUMAN WARGA HAVALAND (RT 04 / RW 08)* 📢",
+      "",
+      `*Kegiatan:* ${k.judul}`,
+      `*Waktu:* ${k.waktuNext}`,
+      `*Lokasi:* ${k.lokasi}`,
+      `*Koordinator:* ${k.koordinator}`
+    ];
+    const desc = (k.deskripsi || "").trim();
+    if (desc) {
+      lines.push("", `*Keterangan:* ${desc}`);
+    }
+    lines.push(
+      "",
+      "Terima kasih atas perhatian dan partisipasinya.",
+      "Salam kompak & guyub warga Havaland! 🏡🌿"
+    );
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
   },
 
   simpanKalender(actId) {
@@ -4492,8 +4511,8 @@ Object.assign(HavalandApp, {
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label" for="ep-keg-deskripsi">Deskripsi Kegiatan:</label>
-            <textarea id="ep-keg-deskripsi" class="form-control" rows="2" required>${ea(k.deskripsi)}</textarea>
+            <label class="form-label" for="ep-keg-deskripsi">Deskripsi Kegiatan: <span style="font-weight: 400; color: var(--text-muted);">(opsional)</span></label>
+            <textarea id="ep-keg-deskripsi" class="form-control" rows="2">${ea(k.deskripsi)}</textarea>
           </div>`
       };
     }
