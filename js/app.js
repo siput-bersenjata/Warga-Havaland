@@ -66,31 +66,13 @@ const HavalandApp = {
     HavalandAuth.updateUI();
   },
 
-  // Sinkronisasi data dari Vercel Cloud Database
+  // Sinkronisasi data dari Vercel Cloud Database (mode sinkron antar-device).
+  // Jika database belum dikonfigurasi di Vercel, otomatis berjalan murni
+  // lokal (localStorage) tanpa error — lihat HavalandSync di bawah.
   async fetchCloudData() {
     try {
-      const res = await fetch("/api/data");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.connected && data.transaksi && data.transaksi.length > 0) {
-          console.log("Terhubung ke Vercel Cloud Database!");
-          HavalandData.transaksi = data.transaksi;
-          if (data.aspirasi) HavalandData.aspirasi = data.aspirasi;
-          if (data.kasSummary) HavalandData.kasSummary = { ...HavalandData.kasSummary, ...data.kasSummary };
-          
-          this.renderKPIs();
-          this.renderMiniChart();
-          this.renderExpenseAllocations();
-          this.renderBerandaHighlights();
-          this.renderTransaksi();
-          this.renderAspirasi();
-
-          const badge = document.querySelector(".live-badge");
-          if (badge) {
-            badge.innerHTML = `<span class="pulse-dot" style="background:#10B981;"></span><span>Cloud DB Aktif</span>`;
-            badge.setAttribute("title", "Terhubung ke Database Cloud Vercel");
-          }
-        }
+      if (typeof HavalandSync !== "undefined") {
+        await HavalandSync.init();
       }
     } catch (e) {
       console.log("Berjalan dalam mode lokal / offline (Database Vercel belum aktif).");
@@ -158,37 +140,84 @@ const HavalandApp = {
     }
   },
 
-  // Muat data lokal tambahan (jika ada transaksi/aspirasi/kegiatan/usulan baru di localStorage)
+  // Gabungkan cache lama dengan data bawaan sambil menghormati item bawaan
+  // yang sempat dihapus user SEBELUM update ini. Deteksi: bila cache memuat
+  // ID bawaan lain (= snapshot penuh), maka ID bawaan yang tak ada di cache
+  // dianggap sudah dihapus dan tidak dimunculkan lagi. Bila cache murni
+  // delta (tak ada ID bawaan sama sekali), semua bawaan dipertahankan.
+  mergeWithDeletions(legacy, builtin) {
+    const leg = Array.isArray(legacy) ? legacy : [];
+    const base = Array.isArray(builtin) ? builtin : [];
+    const builtinIds = base.map(x => x && x.id).filter(id => id !== undefined && id !== null);
+    const legacyIds = new Set(leg.map(x => x && x.id));
+    const looksFull = builtinIds.some(id => legacyIds.has(id));
+    let result = leg;
+    if (looksFull) {
+      const deleted = new Set(builtinIds.filter(id => !legacyIds.has(id)));
+      result = [...leg, ...base.filter(x => !deleted.has(x.id))];
+    } else {
+      result = [...leg, ...base];
+    }
+    return HavalandUtils.dedupeById(result);
+  },
+
+  // Muat data lokal tambahan (full-snapshot per koleksi).
+  //
+  // ATURAN PENTING (anti data-bangkit-lagi & anti ganda):
+  // - Setiap koleksi punya SATU kunci snapshot penuh (…_v2 / …_full).
+  // - Jika snapshot ada → dipakai apa adanya (ditambah hapus/tambah tetap utuh).
+  // - Jika TIDAK ada → pakai data bawaan, JANGAN pernah digabung dengan parsial.
+  // - Kunci delta lama (custom_kegiatan, custom_usulan, custom_transaksi)
+  //   dimigrasikan sekali: digabung + dedupe berdasarkan ID, lalu dihapus.
   loadPersistedData() {
+    // ---- TRANSAKSI (snapshot penuh) ----
     const fullTrx = HavalandUtils.loadStorage("custom_transaksi_full", null);
     if (fullTrx && Array.isArray(fullTrx) && fullTrx.length > 0) {
-      HavalandData.transaksi = fullTrx;
+      HavalandData.transaksi = HavalandUtils.dedupeById(fullTrx);
       this.recalculateSummary();
     } else {
-      const customTrx = HavalandUtils.loadStorage("custom_transaksi", []);
-      if (customTrx && customTrx.length > 0) {
-        HavalandData.transaksi = [...customTrx, ...HavalandData.transaksi];
+      const deltaTrx = HavalandUtils.loadStorage("custom_transaksi", []);
+      if (deltaTrx && deltaTrx.length > 0) {
+        HavalandData.transaksi = this.mergeWithDeletions(deltaTrx, HavalandData.transaksi);
         this.recalculateSummary();
+        HavalandUtils.saveStorage("custom_transaksi_full", HavalandData.transaksi);
+        HavalandUtils.removeStorage("custom_transaksi");
       }
     }
 
-    const customKeg = HavalandUtils.loadStorage("custom_kegiatan", []);
-    if (customKeg && customKeg.length > 0) {
-      HavalandData.kegiatan = [...customKeg, ...HavalandData.kegiatan];
+    // ---- KEGIATAN (snapshot penuh) ----
+    const snapKeg = HavalandUtils.loadStorage("custom_kegiatan_v2", null);
+    if (snapKeg && Array.isArray(snapKeg) && snapKeg.length > 0) {
+      HavalandData.kegiatan = HavalandUtils.dedupeById(snapKeg);
+    } else {
+      const legacyKeg = HavalandUtils.loadStorage("custom_kegiatan", []);
+      if (legacyKeg && legacyKeg.length > 0) {
+        HavalandData.kegiatan = this.mergeWithDeletions(legacyKeg, HavalandData.kegiatan);
+        HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
+        HavalandUtils.removeStorage("custom_kegiatan");
+      }
     }
 
-    const customUsulan = HavalandUtils.loadStorage("custom_usulan", []);
-    if (customUsulan && customUsulan.length > 0) {
-      HavalandData.usulanIde = [...customUsulan, ...HavalandData.usulanIde];
+    // ---- USULAN IDE (snapshot penuh) ----
+    const snapUsulan = HavalandUtils.loadStorage("custom_usulan_v2", null);
+    if (snapUsulan && Array.isArray(snapUsulan) && snapUsulan.length > 0) {
+      HavalandData.usulanIde = HavalandUtils.dedupeById(snapUsulan);
+    } else {
+      const legacyUsulan = HavalandUtils.loadStorage("custom_usulan", []);
+      if (legacyUsulan && legacyUsulan.length > 0) {
+        HavalandData.usulanIde = this.mergeWithDeletions(legacyUsulan, HavalandData.usulanIde);
+        HavalandUtils.saveStorage("custom_usulan_v2", HavalandData.usulanIde);
+        HavalandUtils.removeStorage("custom_usulan");
+      }
     }
 
     const customAspV2 = HavalandUtils.loadStorage("custom_aspirasi_v2", null);
     if (customAspV2 && Array.isArray(customAspV2) && customAspV2.length > 0) {
-      HavalandData.aspirasi = customAspV2;
+      HavalandData.aspirasi = HavalandUtils.dedupeById(customAspV2);
     } else {
       const customAsp = HavalandUtils.loadStorage("custom_aspirasi", null);
       if (customAsp && Array.isArray(customAsp) && customAsp.length > 0) {
-        HavalandData.aspirasi = customAsp;
+        HavalandData.aspirasi = HavalandUtils.dedupeById(customAsp);
       }
     }
 
@@ -203,7 +232,7 @@ const HavalandApp = {
     }
     const customWarga = HavalandUtils.loadStorage("custom_warga_v2", null);
     if (customWarga && Array.isArray(customWarga) && customWarga.length > 0) {
-      HavalandData.warga = customWarga;
+      HavalandData.warga = HavalandUtils.dedupeById(customWarga);
     }
   },
 
@@ -1190,10 +1219,8 @@ END:VCALENDAR`;
 
     HavalandData.aspirasi.unshift(newAspirasi);
 
-    // Simpan ke LocalStorage sebagai backup
-    const saved = HavalandUtils.loadStorage("custom_aspirasi", []);
-    saved.unshift(newAspirasi);
-    HavalandUtils.saveStorage("custom_aspirasi", saved);
+    // Simpan snapshot penuh sebagai backup
+    HavalandUtils.saveStorage("custom_aspirasi_v2", HavalandData.aspirasi);
 
     this.renderAspirasi();
     this.closeModal("modal-aspirasi");
@@ -1558,7 +1585,7 @@ END:VCALENDAR`;
     k.statusBadge = document.getElementById("edit-keg-badge").value.trim();
     k.deskripsi = document.getElementById("edit-keg-deskripsi").value.trim();
 
-    HavalandUtils.saveStorage("custom_kegiatan", HavalandData.kegiatan);
+    HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
     this.closeModal("modal-edit-kegiatan");
     this.renderKegiatan("semua");
     if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
@@ -1687,10 +1714,8 @@ END:VCALENDAR`;
 
     HavalandData.transaksi.unshift(newTrx);
 
-    // Simpan ke LocalStorage sebagai cadangan instan
-    const saved = HavalandUtils.loadStorage("custom_transaksi", []);
-    saved.unshift(newTrx);
-    HavalandUtils.saveStorage("custom_transaksi", saved);
+    // Simpan snapshot penuh sebagai cadangan instan
+    HavalandUtils.saveStorage("custom_transaksi_full", HavalandData.transaksi);
 
     this.recalculateSummary();
     this.renderKPIs();
@@ -1734,7 +1759,7 @@ END:VCALENDAR`;
     if (!confirm(`Hapus catatan transaksi ${trxId}? Tindakan ini akan dicatat atas nama ${user.nama}.`)) return;
 
     HavalandData.transaksi = HavalandData.transaksi.filter(t => t.id !== trxId);
-    HavalandUtils.saveStorage("custom_transaksi", HavalandData.transaksi);
+    HavalandUtils.saveStorage("custom_transaksi_full", HavalandData.transaksi);
     this.recalculateSummary();
     this.renderKPIs();
     this.filterTransaksi();
@@ -1803,9 +1828,7 @@ END:VCALENDAR`;
     };
 
     HavalandData.kegiatan.unshift(newKeg);
-    const saved = HavalandUtils.loadStorage("custom_kegiatan", []);
-    saved.unshift(newKeg);
-    HavalandUtils.saveStorage("custom_kegiatan", saved);
+    HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
 
     this.renderKegiatan("semua");
     this.renderBerandaHighlights();
@@ -1826,7 +1849,7 @@ END:VCALENDAR`;
     if (!confirm(`Hapus jadwal kegiatan ini? Tindakan ini akan dicatat atas nama ${user.nama}.`)) return;
 
     HavalandData.kegiatan = HavalandData.kegiatan.filter(k => k.id !== kegId);
-    HavalandUtils.saveStorage("custom_kegiatan", HavalandData.kegiatan);
+    HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
     this.renderKegiatan("semua");
     this.renderBerandaHighlights();
     if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
@@ -2365,11 +2388,9 @@ END:VCALENDAR`;
     w.iuranBulanIni = true;
     w.terakhirBayar = "September 2026";
 
-    // Simpan data transaksi
+    // Simpan data transaksi (snapshot penuh)
     HavalandData.transaksi.unshift(newTrx);
-    const savedTrx = HavalandUtils.loadStorage("custom_transaksi", []);
-    savedTrx.unshift(newTrx);
-    HavalandUtils.saveStorage("custom_transaksi", savedTrx);
+    HavalandUtils.saveStorage("custom_transaksi_full", HavalandData.transaksi);
 
     // Simpan data warga
     HavalandUtils.saveStorage("custom_warga_v2", HavalandData.warga);
@@ -2528,6 +2549,9 @@ const HavalandAuth = {
         if (session.user) {
           this.currentUser = session.user;
           this.currentSession = session;
+          // Kembalikan token server & sinkronisasi agar tulis cloud tetap jalan
+          this.serverToken = session.serverToken || null;
+          this.syncToken = session.syncToken || null;
           const sisaHari = session.expiresAt
             ? Math.max(1, Math.ceil((session.expiresAt - now) / (24 * 60 * 60 * 1000)))
             : null;
@@ -2549,7 +2573,7 @@ const HavalandAuth = {
     this.updateUI();
   },
 
-  saveSession(user, rememberMe = true, serverToken = null) {
+  saveSession(user, rememberMe = true, serverToken = null, syncToken = null) {
     this.currentUser = user;
     const now = Date.now();
     const expiresAt = rememberMe ? now + this.THIRTY_DAYS_MS : null;
@@ -2565,11 +2589,13 @@ const HavalandAuth = {
       loginAt: now,
       expiresAt: expiresAt,
       token: serverToken || clientToken,
-      serverToken: serverToken || null
+      serverToken: serverToken || null,
+      syncToken: syncToken || null
     };
 
     this.currentSession = session;
     this.serverToken = serverToken || null;
+    this.syncToken = syncToken || null;
 
     if (rememberMe) {
       localStorage.setItem("havaland_auth_session", JSON.stringify(session));
@@ -2657,9 +2683,14 @@ const HavalandAuth = {
         // Server auth succeeded — save session with server token
         const serverUser = result.user;
         this.serverToken = result.token;
-        this.saveSession(serverUser, rememberMe, result.token);
+        this.syncToken = result.syncToken || null;
+        this.saveSession(serverUser, rememberMe, result.token, result.syncToken || null);
         this.updateUI();
         HavalandApp.closeModal("modal-login");
+        // Tarik data cloud terbaru agar tidak menimpa cloud dengan lokal yang basi
+        if (result.syncToken && typeof HavalandSync !== "undefined") {
+          HavalandSync.pullOnLogin();
+        }
 
         const durasiMsg = rememberMe ? " (Ingat Saya: Tetap masuk 30 hari)" : " (Sesi sementara)";
         HavalandUtils.showToast(
@@ -2777,6 +2808,7 @@ const HavalandAuth = {
       } catch (e) { /* ignore */ }
     }
     this.serverToken = null;
+    this.syncToken = null;
     this.clearSession();
     this.updateUI();
     if (typeof HavalandSettings !== "undefined") {
@@ -3268,16 +3300,19 @@ const HavalandBackup = {
         const dataSrc = parsed.data ? parsed.data : parsed;
 
         if (dataSrc.transaksi && Array.isArray(dataSrc.transaksi)) {
-          HavalandData.transaksi = dataSrc.transaksi;
-          HavalandUtils.saveStorage("custom_transaksi", dataSrc.transaksi);
+          HavalandData.transaksi = HavalandUtils.dedupeById(dataSrc.transaksi);
+          HavalandUtils.saveStorage("custom_transaksi_full", HavalandData.transaksi);
+          HavalandUtils.removeStorage("custom_transaksi");
         }
         if (dataSrc.kegiatan && Array.isArray(dataSrc.kegiatan)) {
-          HavalandData.kegiatan = dataSrc.kegiatan;
-          HavalandUtils.saveStorage("custom_kegiatan", dataSrc.kegiatan);
+          HavalandData.kegiatan = HavalandUtils.dedupeById(dataSrc.kegiatan);
+          HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
+          HavalandUtils.removeStorage("custom_kegiatan");
         }
         if (dataSrc.usulanIde && Array.isArray(dataSrc.usulanIde)) {
-          HavalandData.usulanIde = dataSrc.usulanIde;
-          HavalandUtils.saveStorage("custom_usulan", dataSrc.usulanIde);
+          HavalandData.usulanIde = HavalandUtils.dedupeById(dataSrc.usulanIde);
+          HavalandUtils.saveStorage("custom_usulan_v2", HavalandData.usulanIde);
+          HavalandUtils.removeStorage("custom_usulan");
         }
         if (dataSrc.warga && Array.isArray(dataSrc.warga)) {
           HavalandData.warga = dataSrc.warga;
@@ -3518,7 +3553,7 @@ const HavalandProposals = {
       HavalandUtils.showToast("Terima Kasih", `Dukungan Anda untuk '${item.judul}' berhasil dicatat!`, "success");
     }
 
-    HavalandUtils.saveStorage("custom_usulan", HavalandData.usulanIde);
+    HavalandUtils.saveStorage("custom_usulan_v2", HavalandData.usulanIde);
     this.renderSlider();
   },
 
@@ -3531,7 +3566,7 @@ const HavalandProposals = {
     if (!confirm(`Hapus usulan ide warga ini? Tindakan ini akan dicatat atas nama ${user.nama}.`)) return;
 
     HavalandData.usulanIde = HavalandData.usulanIde.filter(u => u.id !== ideaId);
-    HavalandUtils.saveStorage("custom_usulan", HavalandData.usulanIde);
+    HavalandUtils.saveStorage("custom_usulan_v2", HavalandData.usulanIde);
     this.renderSlider();
     if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
     HavalandUtils.showToast("Usulan Dihapus", `Usulan ide berhasil dihapus oleh ${user.nama}.`, "info");
@@ -3596,9 +3631,7 @@ const HavalandProposals = {
     };
 
     HavalandData.usulanIde.unshift(newIdea);
-    const saved = HavalandUtils.loadStorage("custom_usulan", []);
-    saved.unshift(newIdea);
-    HavalandUtils.saveStorage("custom_usulan", saved);
+    HavalandUtils.saveStorage("custom_usulan_v2", HavalandData.usulanIde);
 
     this.renderSlider();
     HavalandApp.closeModal("modal-tambah-usulan");
@@ -3988,26 +4021,74 @@ const HavalandSlider = {
     // Gabungkan: slide simpanan warga dipertahankan urutannya, sedangkan foto
     // bawaan Google Maps yang belum ada (mis. foto 7–20) ditambahkan di
     // belakang tanpa duplikat (cocokkan ID dulu, lalu URL).
+    // Foto yang pernah DIHAPUS admin (daftar havaland_slides_deleted_ids)
+    // TIDAK dimunculkan lagi — ini yang dulu bikin "hapus lalu muncul lagi".
+    const deletedIds = this.loadDeletedIds();
     const seenIds = new Set(saved.map(s => s.id));
     const seenUrls = new Set(saved.map(s => s.url));
-    const missing = defaults.filter(d => !seenIds.has(d.id) && !seenUrls.has(d.url));
-    this.slides = [...saved, ...missing];
+    // Inferensi maksud hapus PRA-UPDATE: ID lama 1..6 yang hilang dari simpanan
+    // (padahal simpanan ada isinya) dianggap pernah dihapus admin — catat agar
+    // tidak bangkit lagi. Pengguna baru (tanpa simpanan) tidak terpengaruh.
+    if (saved.length > 0) {
+      ["slide-gmap-1", "slide-gmap-2", "slide-gmap-3", "slide-gmap-4", "slide-gmap-5", "slide-gmap-6"].forEach(id => {
+        if (seenIds.has(id) || deletedIds.has(id)) return;
+        const def = defaults.find(d => d.id === id);
+        if (!def || seenUrls.has(def.url)) return;
+        deletedIds.add(id);
+        this.markSlideDeleted(id);
+      });
+    }
+    const missing = defaults.filter(d => !deletedIds.has(d.id) && !seenIds.has(d.id) && !seenUrls.has(d.url));
+    this.slides = HavalandUtils.dedupeById([...saved, ...missing]).filter(s => !deletedIds.has(s.id));
     if (this.slides.length === 0) {
       // Fallback default foto Google Maps
-      this.slides = defaults;
+      this.slides = defaults.filter(d => !deletedIds.has(d.id));
     } else if (missing.length > 0) {
       this.saveSlides();
     }
   },
 
+  loadDeletedIds() {
+    try {
+      const raw = localStorage.getItem("havaland_slides_deleted_ids");
+      const parsed = raw ? JSON.parse(raw) : [];
+      return new Set(Array.isArray(parsed) ? parsed : []);
+    } catch (e) {
+      return new Set();
+    }
+  },
+
+  markSlideDeleted(slideId) {
+    try {
+      const ids = Array.from(this.loadDeletedIds());
+      if (!ids.includes(slideId)) ids.push(slideId);
+      localStorage.setItem("havaland_slides_deleted_ids", JSON.stringify(ids));
+    } catch (e) {
+      console.warn("Gagal mencatat slide terhapus:", e);
+    }
+  },
+
+  clearDeletedIds() {
+    try {
+      localStorage.removeItem("havaland_slides_deleted_ids");
+    } catch (e) {
+      console.warn("Gagal membersihkan daftar slide terhapus:", e);
+    }
+  },
+
   saveSlides() {
+    let ok = true;
     try {
       localStorage.setItem("havaland_slides_v2", JSON.stringify(this.slides));
-      return true;
     } catch (e) {
       console.warn("Gagal menyimpan slide ke localStorage:", e);
-      return false;
+      ok = false;
     }
+    // Beritahu mesin sinkron cloud (diabaikan bila DB belum aktif / offline)
+    try {
+      if (typeof HavalandSync !== "undefined") HavalandSync.markDirty("slides");
+    } catch (_) { /* abaikan */ }
+    return ok;
   },
 
   render() {
@@ -4716,6 +4797,7 @@ const HavalandSlider = {
 
     if (confirm(`Apakah Anda yakin ingin menghapus "${title}" dari slide beranda?`)) {
       this.slides = this.slides.filter(s => s.id !== slideId);
+      this.markSlideDeleted(slideId);
       this.saveSlides();
       this.render();
       this.renderManageList();
@@ -4729,8 +4811,9 @@ const HavalandSlider = {
       return;
     }
 
-    if (confirm("Kembalikan slide ke 6 foto awal Google Maps resmi Havaland Residence?")) {
+    if (confirm("Kembalikan slide ke 20 foto awal Google Maps resmi Havaland Residence?")) {
       this.slides = JSON.parse(JSON.stringify(HavalandData.defaultSlides));
+      this.clearDeletedIds();
       this.saveSlides();
       this.render();
       this.renderManageList();
@@ -4815,6 +4898,253 @@ const HavalandSlider = {
     let prevIdx = this.lightboxCurrentIndex - 1;
     if (prevIdx < 0) prevIdx = this.slides.length - 1;
     this.openLightbox(prevIdx);
+  }
+};
+
+// =============================================================================
+// MODUL 7A: SINKRONISASI CLOUD ANTAR-DEVICE (via POST/GET /api/sync)
+// -----------------------------------------------------------------------------
+// Cara kerja:
+// - Saat halaman dibuka: tarik snapshot cloud (jika DB terkonfigurasi).
+//   Koleksi cloud yang BERISI menimpa lokal; koleksi cloud yang KOSONG dibiarkan
+//   (lalu lokal diunggah sebagai seed bila yang membuka adalah admin).
+// - Setiap ada tambah/ubah/hapus: simpan lokal seperti biasa + otomatis unggah
+//   koleksi tersebut (debounce 2 detik, hanya bila login sebagai admin).
+// - Kebijakan konflik: last-write-wins per koleksi (wajar untuk skala RT).
+// - Tanpa database / offline: semua no-op aman → murni localStorage.
+// =============================================================================
+const HavalandSync = {
+  enabled: false,
+  suspended: false,
+  timers: {},
+  badgeNotified: false,
+
+  // Kunci storage lokal (tanpa prefix havaland_) -> nama koleksi cloud
+  KEYMAP: {
+    custom_transaksi_full: "transaksi",
+    custom_kegiatan_v2: "kegiatan",
+    custom_usulan_v2: "usulan",
+    custom_aspirasi_v2: "aspirasi",
+    custom_warga_v2: "warga",
+    custom_kontak_v1: "kontak"
+  },
+
+  canPush() {
+    return this.enabled &&
+      typeof HavalandAuth !== "undefined" &&
+      HavalandAuth.isAdmin() &&
+      !!HavalandAuth.syncToken;
+  },
+
+  authHeaders() {
+    return {
+      "Content-Type": "application/json",
+      "X-Sync-Token": HavalandAuth.syncToken
+    };
+  },
+
+  collect(name) {
+    try {
+      switch (name) {
+        case "transaksi": return Array.isArray(HavalandData.transaksi) ? HavalandData.transaksi : [];
+        case "kegiatan": return Array.isArray(HavalandData.kegiatan) ? HavalandData.kegiatan : [];
+        case "warga": return Array.isArray(HavalandData.warga) ? HavalandData.warga : [];
+        case "aspirasi": return Array.isArray(HavalandData.aspirasi) ? HavalandData.aspirasi : [];
+        case "usulan": return Array.isArray(HavalandData.usulanIde) ? HavalandData.usulanIde : [];
+        case "kontak": return (HavalandData.profile && Array.isArray(HavalandData.profile.kontakDarurat))
+          ? HavalandData.profile.kontakDarurat : [];
+        case "slides":
+          return (typeof HavalandSlider !== "undefined" && Array.isArray(HavalandSlider.slides))
+            ? HavalandSlider.slides : [];
+        default: return [];
+      }
+    } catch (e) {
+      return [];
+    }
+  },
+
+  saveLocal(name, items) {
+    const clean = HavalandUtils.dedupeById(items);
+    switch (name) {
+      case "transaksi":
+        HavalandData.transaksi = clean;
+        HavalandUtils.saveStorage("custom_transaksi_full", clean);
+        break;
+      case "kegiatan":
+        HavalandData.kegiatan = clean;
+        HavalandUtils.saveStorage("custom_kegiatan_v2", clean);
+        break;
+      case "warga":
+        HavalandData.warga = clean;
+        HavalandUtils.saveStorage("custom_warga_v2", clean);
+        break;
+      case "aspirasi":
+        HavalandData.aspirasi = clean;
+        HavalandUtils.saveStorage("custom_aspirasi_v2", clean);
+        break;
+      case "usulan":
+        HavalandData.usulanIde = clean;
+        HavalandUtils.saveStorage("custom_usulan_v2", clean);
+        break;
+      case "kontak":
+        HavalandData.profile.kontakDarurat = clean;
+        HavalandUtils.saveStorage("custom_kontak_v1", clean);
+        break;
+      case "slides":
+        if (typeof HavalandSlider !== "undefined") {
+          HavalandSlider.slides = clean;
+          HavalandSlider.saveSlides();
+        }
+        break;
+      default: break;
+    }
+  },
+
+  rerender(name) {
+    try {
+      switch (name) {
+        case "transaksi":
+          HavalandApp.recalculateSummary();
+          HavalandApp.renderKPIs();
+          HavalandApp.renderMiniChart();
+          HavalandApp.renderExpenseAllocations();
+          HavalandApp.renderBerandaHighlights();
+          HavalandApp.renderTransaksi();
+          break;
+        case "kegiatan":
+          HavalandApp.renderKegiatan("semua");
+          HavalandApp.renderBerandaHighlights();
+          break;
+        case "warga":
+          HavalandApp.filterWarga();
+          HavalandApp.renderKPIs();
+          break;
+        case "aspirasi":
+          HavalandApp.renderAspirasi();
+          break;
+        case "usulan":
+          if (typeof HavalandProposals !== "undefined") HavalandProposals.renderSlider();
+          break;
+        case "kontak":
+          HavalandApp.renderKontak();
+          break;
+        case "slides":
+          if (typeof HavalandSlider !== "undefined") HavalandSlider.render();
+          break;
+        default: break;
+      }
+    } catch (e) {
+      console.warn("Gagal me-render ulang koleksi sinkron:", name, e);
+    }
+  },
+
+  apply(name, items) {
+    if (!Array.isArray(items)) return;
+    this.saveLocal(name, items);
+    this.rerender(name);
+  },
+
+  async init() {
+    let status = null;
+    try {
+      const res = await fetch("/api/sync");
+      if (!res.ok) return;
+      status = await res.json();
+    } catch (e) {
+      return; // offline / API belum ter-deploy → mode lokal
+    }
+    if (!status || !status.connected) return; // DB belum dikonfigurasi
+
+    this.enabled = true;
+    this.suspended = true; // jangan memicu push balik selama pull awal
+    try {
+      const cols = status.collections || {};
+      const names = Object.keys(this.KEYMAP).map(k => this.KEYMAP[k]).concat(["slides"]);
+      for (const name of names) {
+        const cloud = Array.isArray(cols[name]) ? cols[name] : [];
+        if (cloud.length > 0) {
+          this.apply(name, cloud);
+        } else {
+          // Cloud kosong → jadikan data lokal sebagai seed (hanya admin login)
+          const local = this.collect(name);
+          if (local.length > 0 && this.canPush()) {
+            await this.pushImmediate(name);
+          }
+        }
+      }
+    } finally {
+      this.suspended = false;
+    }
+
+    console.log("Terhubung ke Vercel Cloud Database! Sinkron antar-device aktif.");
+    const badge = document.querySelector(".live-badge");
+    if (badge) {
+      badge.innerHTML = `<span class="pulse-dot" style="background:#10B981;"></span><span>Cloud DB Aktif</span>`;
+      badge.setAttribute("title", "Terhubung ke Database Cloud — data sinkron antar-device");
+    }
+    if (!this.badgeNotified) {
+      this.badgeNotified = true;
+      HavalandUtils.showToast("Cloud DB Aktif", "Data tersinkron antar-device via database cloud.", "success");
+    }
+  },
+
+  // Dipanggil ulang setelah admin login agar tidak menimpa cloud dengan lokal basi
+  async pullOnLogin() {
+    if (!this.enabled) {
+      await this.init();
+      return;
+    }
+    this.suspended = true;
+    try {
+      const res = await fetch("/api/sync");
+      if (!res.ok) return;
+      const status = await res.json();
+      if (!status || !status.connected) return;
+      const cols = status.collections || {};
+      const names = Object.keys(this.KEYMAP).map(k => this.KEYMAP[k]).concat(["slides"]);
+      for (const name of names) {
+        const cloud = Array.isArray(cols[name]) ? cols[name] : [];
+        if (cloud.length > 0) this.apply(name, cloud);
+      }
+    } catch (e) {
+      console.warn("Gagal menarik data cloud saat login:", e);
+    } finally {
+      this.suspended = false;
+    }
+  },
+
+  markDirtyByStorageKey(key) {
+    const name = this.KEYMAP[key];
+    if (name) this.markDirty(name);
+  },
+
+  markDirty(name) {
+    if (this.suspended || !this.enabled) return;
+    if (this.timers[name]) clearTimeout(this.timers[name]);
+    this.timers[name] = setTimeout(() => {
+      this.timers[name] = null;
+      this.pushImmediate(name);
+    }, 2000);
+  },
+
+  async pushImmediate(name) {
+    if (!this.canPush()) return false;
+    const items = this.collect(name);
+    try {
+      const res = await fetch("/api/sync", {
+        method: "POST",
+        headers: this.authHeaders(),
+        body: JSON.stringify({ collection: name, items })
+      });
+      if (!res.ok) {
+        console.warn("Sinkron cloud ditolak/gagal:", name, res.status);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.warn("Sinkron cloud offline, dicoba lagi saat ada perubahan:", name);
+      return false;
+    }
   }
 };
 
@@ -4972,6 +5302,7 @@ if (typeof window !== "undefined") {
   window.HavalandProposals = HavalandProposals;
   window.HavalandUserManagement = HavalandUserManagement;
   window.HavalandSlider = HavalandSlider;
+  window.HavalandSync = HavalandSync;
   window.HavalandHero = HavalandHero;
 }
 

@@ -1,6 +1,6 @@
 /**
  * Auth Middleware — Validates session tokens for protected API endpoints
- * Used by: api/transaksi.js, api/aspirasi.js, api/warga.js
+ * Used by: api/transaksi.js, api/aspirasi.js, api/warga.js, api/sync.js
  */
 
 const crypto = require('crypto');
@@ -136,6 +136,81 @@ function revokeToken(authHeader) {
   return sessions.delete(token);
 }
 
+// ============================================================================
+// STATELESS SYNC TOKEN (tahan cold-start serverless Vercel)
+//
+// Sesi `sessions` di atas hilang saat serverless pindah instance, sehingga
+// validasi token tulis antar-device sering 401. Token ini di-HMAC memakai
+// secret yang sama di semua instance sehingga bisa diverifikasi di mana saja
+// tanpa penyimpanan. Dipakai KHUSUS oleh POST /api/sync (tulis koleksi).
+// Format: base64url(payload).base64url(hmac_sha256(payload, secret))
+// payload: { u: username, a: 1|0 (admin), exp: ms epoch }
+// ============================================================================
+function getSyncSecret() {
+  return process.env.SYNC_SECRET || ADMIN_HASH;
+}
+
+function b64urlEncode(str) {
+  return Buffer.from(str, 'utf8').toString('base64url');
+}
+
+function b64urlDecode(b64) {
+  return Buffer.from(b64, 'base64url').toString('utf8');
+}
+
+/**
+ * Terbitkan token sinkronisasi untuk user yang baru login.
+ * Hanya user admin yang diberi token tulis (a:1).
+ */
+function issueSyncToken(user) {
+  if (!user) return null;
+  const payload = {
+    u: user.username || 'admin',
+    a: user.isAdmin ? 1 : 0,
+    exp: Date.now() + SESSION_TTL_MS
+  };
+  const encoded = b64urlEncode(JSON.stringify(payload));
+  const sig = crypto.createHmac('sha256', getSyncSecret()).update(encoded).digest('base64url');
+  return `${encoded}.${sig}`;
+}
+
+/**
+ * Verifikasi token sinkronisasi dari header Authorization Bearer / X-Sync-Token.
+ * @returns {object|null} { username, isAdmin } atau null
+ */
+function validateSyncToken(authHeader) {
+  if (!authHeader || typeof authHeader !== 'string') return null;
+  const token = authHeader.startsWith('Bearer ')
+    ? authHeader.slice(7).trim()
+    : authHeader.trim();
+  if (!token || !token.includes('.')) return null;
+
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+  const [encoded, sig] = parts;
+
+  let expected;
+  try {
+    expected = crypto.createHmac('sha256', getSyncSecret()).update(encoded).digest('base64url');
+  } catch (e) {
+    return null;
+  }
+  // Perbandingan waktu-konstan agar tak bocor via timing
+  const a = Buffer.from(sig, 'utf8');
+  const b = Buffer.from(expected, 'utf8');
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+
+  let payload;
+  try {
+    payload = JSON.parse(b64urlDecode(encoded));
+  } catch (e) {
+    return null;
+  }
+  if (!payload || !payload.u || !payload.exp || Date.now() > payload.exp) return null;
+
+  return { username: payload.u, isAdmin: payload.a === 1 };
+}
+
 /**
  * Set standard CORS and security headers on API response
  */
@@ -187,6 +262,8 @@ module.exports = {
   authenticate,
   validateToken,
   revokeToken,
+  issueSyncToken,
+  validateSyncToken,
   setCorsHeaders,
   handlePreflight,
   safeErrorResponse,

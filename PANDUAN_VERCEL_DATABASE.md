@@ -93,3 +93,15 @@ Setelah terhubung:
 - Pengunjung tanpa login hanya dapat melihat data (Mode Tamu / Read-Only).
 - Transaksi kas, agenda kegiatan, usulan ide, dan aspirasi tersimpan secara terpusat, aman, dan transparan.
 
+---
+
+## 🔄 Sinkron Otomatis Antar-Device (Transaksi, Kegiatan, Warga, Slide, dll.)
+
+Sejak update ini, **tambah/ubah/hapus** data otomatis tersinkron ke semua HP & laptop:
+
+- **Syarat**: database terhubung (cukup `POSTGRES_URL`/`DATABASE_URL` — langkah di atas). Tabel `sync_store` dibuat **otomatis**, tanpa perlu menjalankan SQL manual.
+- **Cara kerja**: tiap perubahan oleh admin diunggah sebagai snapshot koleksi (`/api/sync`), tiap perangkat menarik versi terbaru saat membuka website. Tanpa database, website tetap berjalan normal memakai penyimpanan lokal per-device.
+- **Keamanan tulis**: hanya admin login yang bisa mengunggah (token HMAC stateless 30 hari, tahan pindah instance serverless). Baca tetap publik sesuai sifat transparansi portal.
+- **Konflik**: bila dua admin mengedit bersamaan, yang tersimpan terakhir yang menang (last-write-wins) per koleksi.
+- **Verifikasi**: buka `https://<nama-web-anda>.vercel.app/api/sync` — bila menjawab `"connected": true`, sinkron aktif. Login admin di satu HP, hapus/tambah data, lalu buka di HP lain: perubahan ikut tampil.
+

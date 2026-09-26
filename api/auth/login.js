@@ -1,7 +1,7 @@
 /**
  * Auth API Endpoint — POST /api/auth/login, POST /api/auth/logout, GET /api/auth/me
  */
-const { authenticate, validateToken, revokeToken, setCorsHeaders, handlePreflight, safeErrorResponse } = require('../middleware/auth');
+const { authenticate, validateToken, revokeToken, issueSyncToken, setCorsHeaders, handlePreflight, safeErrorResponse } = require('../middleware/auth');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
@@ -44,6 +44,9 @@ module.exports = async function handler(req, res) {
       success: true,
       message: `Selamat datang, ${session.user.nama}!`,
       token: session.token,
+      // Token tulis sinkronisasi stateless (tahan pindah instance serverless).
+      // Diberi hanya ke admin; dipakai client untuk POST /api/sync.
+      syncToken: session.user.isAdmin ? issueSyncToken(session.user) : null,
       user: session.user,
       expiresAt: session.expiresAt
     });

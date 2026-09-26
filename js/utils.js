@@ -85,6 +85,10 @@ const HavalandUtils = {
     } catch (e) {
       console.warn("Gagal menyimpan ke LocalStorage:", e);
     }
+    // Beritahu mesin sinkron cloud (diabaikan bila DB belum aktif / offline)
+    try {
+      if (typeof HavalandSync !== "undefined") HavalandSync.markDirtyByStorageKey(key);
+    } catch (_) { /* abaikan */ }
   },
 
   // Ambil data dari LocalStorage
@@ -105,6 +109,20 @@ const HavalandUtils = {
     } catch (e) {
       console.warn("Gagal menghapus dari LocalStorage:", e);
     }
+  },
+
+  // Hapus duplikat array objek berdasarkan `id` (pertahankan kemunculan pertama).
+  // Dipakai saat migrasi cache lama yang tercampur data ganda.
+  dedupeById(arr) {
+    if (!Array.isArray(arr)) return [];
+    const seen = new Set();
+    return arr.filter(item => {
+      const id = item && item.id;
+      if (id === undefined || id === null) return true;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
   },
 
   // Ekspor Transaksi Kas ke format CSV
