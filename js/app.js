@@ -5044,6 +5044,32 @@ const HavalandSync = {
     this.rerender(name);
   },
 
+  // Inti sinkron dipakai init() & pullOnLogin(): tarik yang ada di cloud,
+  // unggah lokal sebagai seed untuk koleksi cloud yang masih kosong.
+  // Mengembalikan { pulled, seeded, seededItems } untuk umpan balik.
+  async syncAllCollections(status) {
+    const result = { pulled: 0, seeded: 0, seededItems: 0 };
+    const cols = (status && status.collections) || {};
+    const names = Object.keys(this.KEYMAP).map(k => this.KEYMAP[k]).concat(["slides"]);
+    for (const name of names) {
+      const cloud = Array.isArray(cols[name]) ? cols[name] : [];
+      if (cloud.length > 0) {
+        this.apply(name, cloud);
+        result.pulled += 1;
+      } else {
+        const local = this.collect(name);
+        if (local.length > 0 && this.canPush()) {
+          const ok = await this.pushImmediate(name);
+          if (ok) {
+            result.seeded += 1;
+            result.seededItems += local.length;
+          }
+        }
+      }
+    }
+    return result;
+  },
+
   async init() {
     let status = null;
     try {
@@ -5057,21 +5083,9 @@ const HavalandSync = {
 
     this.enabled = true;
     this.suspended = true; // jangan memicu push balik selama pull awal
+    let summary = { pulled: 0, seeded: 0, seededItems: 0 };
     try {
-      const cols = status.collections || {};
-      const names = Object.keys(this.KEYMAP).map(k => this.KEYMAP[k]).concat(["slides"]);
-      for (const name of names) {
-        const cloud = Array.isArray(cols[name]) ? cols[name] : [];
-        if (cloud.length > 0) {
-          this.apply(name, cloud);
-        } else {
-          // Cloud kosong → jadikan data lokal sebagai seed (hanya admin login)
-          const local = this.collect(name);
-          if (local.length > 0 && this.canPush()) {
-            await this.pushImmediate(name);
-          }
-        }
-      }
+      summary = await this.syncAllCollections(status);
     } finally {
       this.suspended = false;
     }
@@ -5086,9 +5100,17 @@ const HavalandSync = {
       this.badgeNotified = true;
       HavalandUtils.showToast("Cloud DB Aktif", "Data tersinkron antar-device via database cloud.", "success");
     }
+    if (summary.seeded > 0) {
+      HavalandUtils.showToast(
+        "Data Diunggah ke Cloud",
+        `${summary.seededItems} data dari ${summary.seeded} koleksi berhasil disimpan ke database cloud.`,
+        "success"
+      );
+    }
   },
 
-  // Dipanggil ulang setelah admin login agar tidak menimpa cloud dengan lokal basi
+  // Dipanggil ulang setelah admin login: tarik versi cloud terbaru, sekaligus
+  // unggah data lokal untuk koleksi cloud yang masih kosong (seed awal).
   async pullOnLogin() {
     if (!this.enabled) {
       await this.init();
@@ -5100,11 +5122,13 @@ const HavalandSync = {
       if (!res.ok) return;
       const status = await res.json();
       if (!status || !status.connected) return;
-      const cols = status.collections || {};
-      const names = Object.keys(this.KEYMAP).map(k => this.KEYMAP[k]).concat(["slides"]);
-      for (const name of names) {
-        const cloud = Array.isArray(cols[name]) ? cols[name] : [];
-        if (cloud.length > 0) this.apply(name, cloud);
+      const summary = await this.syncAllCollections(status);
+      if (summary.seeded > 0) {
+        HavalandUtils.showToast(
+          "Data Diunggah ke Cloud",
+          `${summary.seededItems} data dari ${summary.seeded} koleksi berhasil disimpan ke database cloud.`,
+          "success"
+        );
       }
     } catch (e) {
       console.warn("Gagal menarik data cloud saat login:", e);
