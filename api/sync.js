@@ -148,13 +148,15 @@ module.exports = async function handler(req, res) {
       return safeErrorResponse(res, 400, `Terlalu banyak item (maks ${MAX_ITEMS}).`);
     }
 
-    // Normalisasi: setiap item wajib punya id string
+    // Normalisasi: setiap item wajib punya id string.
+    // Item tanpa id (mis. kontak darurat bawaan) diberi id stabil
+    // `koleksi-index` agar tetap tersinkron, bukan dibuang diam-diam.
     const clean = [];
     for (const it of items) {
       if (!it || typeof it !== 'object') continue;
-      const id = String(it.id || '').slice(0, 120);
-      if (!id) continue;
-      clean.push({ id, data: it });
+      const rawId = String(it.id || '').slice(0, 120);
+      const id = rawId || `${collection}-${clean.length}`;
+      clean.push({ id, data: { ...it, id } });
     }
 
     try {
