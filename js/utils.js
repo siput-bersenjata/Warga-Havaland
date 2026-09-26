@@ -35,6 +35,84 @@ const HavalandUtils = {
     return `${date.getDate()} ${bulan[date.getMonth()]} ${date.getFullYear()}`;
   },
 
+  HARI_ID: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"],
+  BULAN_ID: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],
+  BULAN_SINGKAT_ID: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"],
+
+  // Pecah "2026-09-27" menjadi Date lokal (hindari geser hari karena UTC)
+  parseTanggalLokal(iso) {
+    if (!iso || typeof iso !== "string") return null;
+    const m = iso.trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!m) return null;
+    const d = new Date(+m[1], +m[2] - 1, +m[3]);
+    return isNaN(d.getTime()) ? null : d;
+  },
+
+  // "2026-09-27" -> "Minggu, 27 Sep 2026" (nama hari otomatis dari kalender)
+  formatHariTanggal(iso) {
+    const d = this.parseTanggalLokal(iso);
+    if (!d) return iso || "-";
+    return `${this.HARI_ID[d.getDay()]}, ${d.getDate()} ${this.BULAN_SINGKAT_ID[d.getMonth()]} ${d.getFullYear()}`;
+  },
+
+  // "07:30" -> "07.30" (gaya penulisan Indonesia)
+  formatJamID(hhmm) {
+    if (!hhmm || typeof hhmm !== "string") return "";
+    const m = hhmm.trim().match(/^(\d{1,2}):(\d{2})/);
+    if (!m) return hhmm.trim();
+    return `${m[1].padStart(2, "0")}.${m[2]}`;
+  },
+
+  // "2026-09" -> "September 2026"
+  formatBulanID(yyyymm) {
+    if (!yyyymm || typeof yyyymm !== "string") return yyyymm || "-";
+    const m = yyyymm.trim().match(/^(\d{4})-(\d{2})/);
+    if (!m) return yyyymm.trim();
+    const idx = +m[2] - 1;
+    if (idx < 0 || idx > 11) return yyyymm.trim();
+    return `${this.BULAN_ID[idx]} ${m[1]}`;
+  },
+
+  // "September 2026" -> "2026-09" (untuk mengisi input type="month")
+  parseBulanID(str) {
+    if (!str || typeof str !== "string") return "";
+    const m = str.trim().match(/^([A-Za-z]+)\s+(\d{4})/);
+    if (!m) return "";
+    const idx = this.BULAN_ID.findIndex(b => b.toLowerCase() === m[1].toLowerCase());
+    if (idx < 0) return "";
+    return `${m[2]}-${String(idx + 1).padStart(2, "0")}`;
+  },
+
+  // Coba pecah teks waktuNext lama ("Minggu, 27 Sep 2026 • 07.30 - 10.00 WIB",
+  // "2026-09-27", "Malam ini, 23.00 WIB", ...) menjadi { date, start, end }.
+  // date = "YYYY-MM-DD", start/end = "HH:MM". Tak ketemu -> null per bagian.
+  parseWaktuNext(str) {
+    const out = { date: null, start: null, end: null };
+    if (!str || typeof str !== "string") return out;
+    const text = str.trim();
+
+    let m = text.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (m && this.parseTanggalLokal(m[0])) {
+      out.date = m[0];
+    } else {
+      m = text.match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|Mei|Jun|Jul|Agu|Sep|Okt|Nov|Des)[a-z]*\s+(\d{4})/i);
+      if (m) {
+        const months = { jan: 0, feb: 1, mar: 2, apr: 3, mei: 4, jun: 5, jul: 6, agu: 7, sep: 8, okt: 9, nov: 10, des: 11 };
+        const mi = months[m[2].toLowerCase().slice(0, 3)];
+        if (mi !== undefined) {
+          out.date = `${m[3]}-${String(mi + 1).padStart(2, "0")}-${String(+m[1]).padStart(2, "0")}`;
+        }
+      }
+    }
+
+    const times = [...text.matchAll(/(\d{1,2})[.:](\d{2})/g)].map(x =>
+      `${x[1].padStart(2, "0")}:${x[2]}`
+    ).filter(t => +t.slice(0, 2) < 24);
+    if (times.length > 0) out.start = times[0];
+    if (times.length > 1) out.end = times[1];
+    return out;
+  },
+
   // Toast Notification System yang Elegan
   showToast(title, message, type = "success") {
     let container = document.getElementById("toast-container");

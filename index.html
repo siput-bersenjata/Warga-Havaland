@@ -17,8 +17,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/style.css?v=20260926g">
-  <link rel="stylesheet" href="css/components.css?v=20260926g">
+  <link rel="stylesheet" href="css/style.css?v=20260926h">
+  <link rel="stylesheet" href="css/components.css?v=20260926h">
 </head>
 <body>
 
@@ -1574,14 +1574,18 @@
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem;">
             <div class="form-group">
               <label class="form-label" for="keg-jadwal">Hari & Tanggal:</label>
-              <input type="text" id="keg-jadwal" class="form-control" placeholder="Contoh: Minggu, 27 Sep 2026" required>
+              <input type="date" id="keg-jadwal" class="form-control" required>
             </div>
             <div class="form-group">
-              <label class="form-label" for="keg-waktu">Waktu / Pukul:</label>
-              <input type="text" id="keg-waktu" class="form-control" placeholder="Contoh: 07.30 - 10.00 WIB" required>
+              <label class="form-label" for="keg-waktu-mulai">Jam Mulai:</label>
+              <input type="time" id="keg-waktu-mulai" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="keg-waktu-selesai">Jam Selesai:</label>
+              <input type="time" id="keg-waktu-selesai" class="form-control">
             </div>
           </div>
 
@@ -1813,7 +1817,7 @@
             </div>
             <div class="form-group">
               <label class="form-label" for="form-warga-terakhir">Bulan Terakhir Bayar:</label>
-              <input type="text" id="form-warga-terakhir" class="form-control" placeholder="Contoh: September 2026">
+              <input type="month" id="form-warga-terakhir" class="form-control">
             </div>
           </div>
         </div>
@@ -2004,15 +2008,24 @@
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <input type="hidden" id="edit-keg-waktu-orig">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem;">
             <div class="form-group">
-              <label class="form-label" for="edit-keg-waktu">Waktu Pelaksanaan / Pukul:</label>
-              <input type="text" id="edit-keg-waktu" class="form-control" required>
+              <label class="form-label" for="edit-keg-tanggal">Tanggal Pelaksanaan:</label>
+              <input type="date" id="edit-keg-tanggal" class="form-control">
             </div>
             <div class="form-group">
-              <label class="form-label" for="edit-keg-lokasi">Lokasi Pelaksanaan:</label>
-              <input type="text" id="edit-keg-lokasi" class="form-control" required>
+              <label class="form-label" for="edit-keg-waktu-mulai">Jam Mulai:</label>
+              <input type="time" id="edit-keg-waktu-mulai" class="form-control">
             </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-keg-waktu-selesai">Jam Selesai:</label>
+              <input type="time" id="edit-keg-waktu-selesai" class="form-control">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-keg-lokasi">Lokasi Pelaksanaan:</label>
+            <input type="text" id="edit-keg-lokasi" class="form-control" required>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
@@ -2354,9 +2367,9 @@
   <input type="file" id="backup-file-input" accept=".json" style="display: none;" onchange="HavalandBackup.handleFileSelected(event)">
 
   <!-- Scripts -->
-  <script src="js/data.js?v=20260926g"></script>
-  <script src="js/utils.js?v=20260926g"></script>
-  <script src="js/app.js?v=20260926g"></script>
+  <script src="js/data.js?v=20260926h"></script>
+  <script src="js/utils.js?v=20260926h"></script>
+  <script src="js/app.js?v=20260926h"></script>
 
 </body>
 </html>
