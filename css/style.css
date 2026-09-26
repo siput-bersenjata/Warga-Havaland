@@ -340,6 +340,9 @@ html {
   font-size: 16px;
   scroll-behavior: smooth;
   height: 100%;
+  overflow-x: hidden;
+  overflow-x: clip;
+  width: 100%;
 }
 
 body {
@@ -352,7 +355,19 @@ body {
   flex-direction: column;
   transition: background-color var(--transition-smooth), color var(--transition-smooth);
   overflow-x: hidden;
+  overflow-x: clip;
+  width: 100%;
   padding-bottom: 76px; /* Space for mobile bottom nav */
+}
+
+/* Anti-geser HP: anak flex/grid wajib bisa menyusut agar tak melebarkan layar */
+.brand-wrapper,
+.brand-text,
+.header-actions,
+.hero-content,
+.main-wrapper,
+.tab-view {
+  min-width: 0;
 }
 
 @media (min-width: 1024px) {

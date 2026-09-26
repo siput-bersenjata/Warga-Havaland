@@ -150,7 +150,12 @@
   transition: all var(--transition-fast);
   height: 68px;
   min-height: 68px;
+  min-width: 0;
   box-sizing: border-box;
+}
+
+.quick-action-btn > div:last-child {
+  min-width: 0;
 }
 
 .quick-action-btn:hover {
