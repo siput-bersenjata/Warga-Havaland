@@ -55,6 +55,15 @@ const HavalandApp = {
       if (e.key === "Escape") {
         document.querySelectorAll(".modal-overlay.active").forEach(m => m.classList.remove("active"));
         document.body.style.overflow = "";
+        this.closeBurgerMenu();
+      }
+    });
+
+    // Klik di luar burger menu menutup dropdown
+    document.addEventListener("click", (e) => {
+      const dd = document.getElementById("burger-dropdown");
+      if (dd && dd.classList.contains("open") && !e.target.closest(".burger-wrap")) {
+        this.closeBurgerMenu();
       }
     });
 
@@ -1928,6 +1937,23 @@ END:VCALENDAR`;
     this.renderBerandaHighlights();
     if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
     HavalandUtils.showToast("Agenda Dihapus", `Kegiatan berhasil dihapus oleh ${user.nama}`, "info");
+  },
+
+  // Burger menu header: buka/tutup dropdown Akun, Kelola Akun, Pengaturan
+  toggleBurgerMenu(event) {
+    if (event) event.stopPropagation();
+    const dd = document.getElementById("burger-dropdown");
+    const btn = document.getElementById("btn-burger");
+    if (!dd || !btn) return;
+    const open = dd.classList.toggle("open");
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  },
+
+  closeBurgerMenu() {
+    const dd = document.getElementById("burger-dropdown");
+    const btn = document.getElementById("btn-burger");
+    if (dd) dd.classList.remove("open");
+    if (btn) btn.setAttribute("aria-expanded", "false");
   },
 
   openSettingsModal() {
