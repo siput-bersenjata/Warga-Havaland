@@ -1026,7 +1026,8 @@ END:VCALENDAR`;
     document.getElementById("modal-warga-title").textContent = `Profil Warga: ${w.blok} - ${w.namaKK}`;
 
     let vehicleList = "";
-    w.platKendaraan.forEach(v => {
+    const platList = Array.isArray(w.platKendaraan) ? w.platKendaraan : (w.platKendaraan ? [w.platKendaraan] : ["-"]);
+    platList.forEach(v => {
       vehicleList += `<li style="margin-bottom: 3px;">${v}</li>`;
     });
 
@@ -1074,10 +1075,16 @@ END:VCALENDAR`;
       </div>
 
       <div style="margin-top: 1.25rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        ${String(w.kontak || "").replace(/[^0-9]/g, "").length >= 9 ? `
         <a href="https://wa.me/${w.kontak.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener" class="btn btn-whatsapp" style="flex: 1; min-width: 140px;">
           <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.54 1.764.819 2.791.819h.005c3.18 0 5.767-2.586 5.768-5.766 0-3.18-2.587-5.765-5.773-5.765zm3.364 8.163c-.144.405-.837.774-1.17.824-.312.045-.634.055-1.921-.479-1.503-.623-2.47-2.148-2.545-2.247-.075-.1-1.01-1.344-1.01-2.564 0-1.22.639-1.82.866-2.066.227-.247.498-.309.664-.309.166 0 .332.002.477.01.155.008.363-.058.567.433.21.505.719 1.752.782 1.88.063.128.105.279.021.446-.084.167-.126.27-.25.417-.125.148-.263.33-.375.443-.125.125-.255.261-.11.51.145.249.645 1.066 1.385 1.725.952.848 1.755 1.111 2.004 1.236.249.125.395.104.541-.063.146-.167.625-.729.791-.979.166-.25.332-.208.562-.125.229.083 1.458.687 1.708.812.25.125.417.188.479.292.062.104.062.604-.082 1.009z"/></svg>
           Chat WhatsApp
         </a>
+        ` : `
+        <div class="btn btn-secondary" style="flex: 1; min-width: 140px; opacity: 0.55; cursor: not-allowed; justify-content: center;" title="Isi nomor HP via Edit Data agar bisa chat WA">
+          Chat WhatsApp (No. HP kosong)
+        </div>
+        `}
         ${(typeof HavalandAuth !== 'undefined' && HavalandAuth.isAdmin()) ? `
           <button type="button" class="btn btn-secondary" style="flex: 1; min-width: 110px;" onclick="HavalandApp.closeModal('modal-detail-warga'); HavalandApp.openFormWargaModal('${w.id}')">
             ✏️ Edit Data
@@ -1303,7 +1310,7 @@ END:VCALENDAR`;
       if (clusterInput) clusterInput.value = "Blok D (Jl. Havaland)";
       if (jabatanInput) jabatanInput.value = "Warga";
       if (jiwaInput) jiwaInput.value = "3";
-      if (terakhirInput) terakhirInput.value = "September 2026";
+      if (terakhirInput) terakhirInput.value = new Date().toISOString().slice(0, 7);
     }
 
     this.openModal("modal-form-warga");
@@ -1356,8 +1363,11 @@ END:VCALENDAR`;
       }
       HavalandUtils.showToast("Data Diperbarui", `Data warga ${blokVal} (${namaVal}) berhasil diperbarui!`, "success");
     } else {
-      // Tambah warga baru
-      const newId = `W-${blokVal.replace(/[^a-zA-Z0-9]/g, '') || Date.now().toString(36)}`;
+      // Tambah warga baru (hindari ID ganda bila blok sudah terdata)
+      let newId = `W-${blokVal.replace(/[^a-zA-Z0-9]/g, '') || Date.now().toString(36)}`;
+      if (HavalandData.warga.some(w => w.id === newId)) {
+        newId += `-${Date.now().toString(36)}`;
+      }
       const newWarga = {
         id: newId,
         blok: blokVal,
@@ -1387,6 +1397,10 @@ END:VCALENDAR`;
     this.filterWarga();
     this.renderKPIs();
     if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+    // Setelah edit: tampilkan kembali profil dengan data terbaru sebagai bukti
+    if (idVal) {
+      this.openDetailWarga(idVal);
+    }
   },
 
   hapusWarga(wargaId) {
