@@ -3916,12 +3916,18 @@ const HavalandSlider = {
   },
 
   loadSlides() {
+    const OLD_MAPS = "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6";
+    const NEW_MAPS = "https://maps.app.goo.gl/9G6s1233qLd68a8A7";
     try {
       const saved = localStorage.getItem("havaland_slides_v2");
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          this.slides = parsed;
+          // Migrasi cache lama: ganti link Maps lama ke link baru
+          this.slides = parsed.map(s => ({
+            ...s,
+            mapsUrl: s.mapsUrl === OLD_MAPS ? NEW_MAPS : (s.mapsUrl || NEW_MAPS)
+          }));
           return;
         }
       }
