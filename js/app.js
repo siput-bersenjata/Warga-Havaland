@@ -3963,26 +3963,41 @@ const HavalandSlider = {
   loadSlides() {
     const OLD_MAPS = "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6";
     const NEW_MAPS = "https://maps.app.goo.gl/9G6s1233qLd68a8A7";
+    const defaults = (typeof HavalandData !== "undefined" && HavalandData.defaultSlides)
+      ? JSON.parse(JSON.stringify(HavalandData.defaultSlides))
+      : [];
+
+    let saved = [];
     try {
-      const saved = localStorage.getItem("havaland_slides_v2");
-      if (saved) {
-        const parsed = JSON.parse(saved);
+      const raw = localStorage.getItem("havaland_slides_v2");
+      if (raw) {
+        const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) {
           // Migrasi cache lama: ganti link Maps lama ke link baru
-          this.slides = parsed.map(s => ({
+          saved = parsed.map(s => ({
             ...s,
-            mapsUrl: s.mapsUrl === OLD_MAPS ? NEW_MAPS : (s.mapsUrl || NEW_MAPS)
+            mapsUrl: s.mapsUrl === OLD_MAPS ? NEW_MAPS : (s.mapsUrl || NEW_MAPS),
+            takenAt: s.takenAt || null
           }));
-          return;
         }
       }
     } catch (e) {
       console.warn("Gagal membaca slide tersimpan:", e);
     }
-    // Fallback default foto Google Maps
-    this.slides = (typeof HavalandData !== "undefined" && HavalandData.defaultSlides)
-      ? JSON.parse(JSON.stringify(HavalandData.defaultSlides))
-      : [];
+
+    // Gabungkan: slide simpanan warga dipertahankan urutannya, sedangkan foto
+    // bawaan Google Maps yang belum ada (mis. foto 7–20) ditambahkan di
+    // belakang tanpa duplikat (cocokkan ID dulu, lalu URL).
+    const seenIds = new Set(saved.map(s => s.id));
+    const seenUrls = new Set(saved.map(s => s.url));
+    const missing = defaults.filter(d => !seenIds.has(d.id) && !seenUrls.has(d.url));
+    this.slides = [...saved, ...missing];
+    if (this.slides.length === 0) {
+      // Fallback default foto Google Maps
+      this.slides = defaults;
+    } else if (missing.length > 0) {
+      this.saveSlides();
+    }
   },
 
   saveSlides() {
@@ -4246,6 +4261,9 @@ const HavalandSlider = {
     } else {
       this.renderGmapLibrary();
     }
+    // Batasi tanggal ambil maksimal hari ini
+    const takenDateMax = document.getElementById("slide-add-takendate");
+    if (takenDateMax) takenDateMax.max = new Date().toISOString().split("T")[0];
     this.updateLivePreview();
 
     HavalandApp.openModal("modal-tambah-slide");
@@ -4312,6 +4330,9 @@ const HavalandSlider = {
     if (badgeSelect && photo.badge) {
       badgeSelect.value = "Google Maps Resmi 📍";
     }
+    // Foto pustaka Maps belum memiliki tanggal ambil — admin bisa isi manual
+    const takenDateInput = document.getElementById("slide-add-takendate");
+    if (takenDateInput) takenDateInput.value = "";
 
     this.updateLivePreview();
   },
@@ -4538,6 +4559,7 @@ const HavalandSlider = {
     const titleVal = document.getElementById("slide-add-title")?.value.trim();
     const descVal = document.getElementById("slide-add-desc")?.value.trim();
     const badgeVal = document.getElementById("slide-add-badge")?.value.trim();
+    const takenAtVal = document.getElementById("slide-add-takendate")?.value || null;
     const imgUrl = document.getElementById("slide-selected-image-url")?.value.trim();
     const sourceVal = document.getElementById("slide-selected-source")?.value.trim() || "Google Maps Resmi";
 
@@ -4554,6 +4576,7 @@ const HavalandSlider = {
       fullUrl: imgUrl,
       badge: badgeVal,
       source: sourceVal,
+      takenAt: takenAtVal,
       mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
       addedBy: HavalandAuth.getCurrentUser()?.nama || "Admin RT",
       createdAt: new Date().toISOString().split("T")[0]
@@ -4579,6 +4602,7 @@ const HavalandSlider = {
         fullUrl: p.dataUrl,
         badge: badgeVal,
         source: "Upload Admin",
+        takenAt: takenAtVal,
         mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
         addedBy: HavalandAuth.getCurrentUser()?.nama || "Admin RT",
         createdAt: new Date().toISOString().split("T")[0]
@@ -4727,6 +4751,7 @@ const HavalandSlider = {
     const title = document.getElementById("lightbox-title");
     const desc = document.getElementById("lightbox-desc");
     const badge = document.getElementById("lightbox-badge");
+    const dateEl = document.getElementById("lightbox-date");
     const mapsLink = document.getElementById("lightbox-gmaps-link");
 
     if (!modal || !img) return;
@@ -4735,6 +4760,7 @@ const HavalandSlider = {
     if (title) title.textContent = slide.title;
     if (desc) desc.textContent = slide.desc;
     if (badge) badge.textContent = slide.badge || "Google Maps 📍";
+    if (dateEl) dateEl.textContent = this.formatTakenAt(slide.takenAt);
     if (mapsLink) mapsLink.href = slide.mapsUrl || "https://maps.app.goo.gl/9G6s1233qLd68a8A7";
 
     modal.classList.add("active");
@@ -4746,11 +4772,29 @@ const HavalandSlider = {
     this.openLightbox(this.currentIndex);
   },
 
+  // Format tanggal pengambilan foto (YYYY-MM-DD) ke Bahasa Indonesia.
+  // Tanggal asli foto Maps hanya tampil di halaman Google Maps dan tidak bisa
+  // ditarik otomatis — slide tanpa tanggal menampilkan "belum tercatat".
+  formatTakenAt(takenAt) {
+    if (!takenAt) return "📅 Tanggal ambil: belum tercatat (lihat di Google Maps)";
+    const d = new Date(takenAt + (takenAt.length === 10 ? "T00:00:00" : ""));
+    if (isNaN(d.getTime())) return "📅 Tanggal ambil: " + takenAt;
+    try {
+      return "📅 Foto diambil: " + d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+    } catch (e) {
+      return "📅 Foto diambil: " + takenAt;
+    }
+  },
+
   closeLightbox() {
     const modal = document.getElementById("modal-lightbox-slide");
     if (modal) modal.classList.remove("active");
     document.body.style.overflow = "";
     if (!this.isPaused) this.startAutoPlay();
+    // Lanjutkan kembali autoplay hero yang dijeda saat full-view dibuka
+    if (typeof HavalandHero !== "undefined" && HavalandHero.startAutoPlay) {
+      HavalandHero.startAutoPlay();
+    }
   },
 
   closeLightboxOnBackdrop(event) {
@@ -4814,7 +4858,8 @@ const HavalandHero = {
 
   syncFromSlider(slides) {
     const src = Array.isArray(slides) && slides.length > 0 ? slides : this.getSourceSlides();
-    this.slides = src.slice(0, 12);
+    // Tampilkan SEMUA foto (tidak dibatasi 6) — selaras dengan slide Google Maps.
+    this.slides = src.slice();
     if (this.currentIndex >= this.slides.length) this.currentIndex = 0;
     this.renderBg();
     this.renderDots();
@@ -4868,6 +4913,16 @@ const HavalandHero = {
   prev() {
     this.goTo(this.currentIndex - 1);
     this.restartAutoPlay();
+  },
+
+  // Buka foto hero yang sedang tampil dalam lightbox ukuran penuh.
+  // Urutan hero selalu sama dengan HavalandSlider.slides sehingga indeks cocok.
+  // Autoplay hero dijeda selama lightbox terbuka, dil lanjutkan saat ditutup.
+  openFullscreen() {
+    if (typeof HavalandSlider !== "undefined" && HavalandSlider.openLightbox) {
+      this.stopAutoPlay();
+      HavalandSlider.openLightbox(this.currentIndex);
+    }
   },
 
   startAutoPlay() {

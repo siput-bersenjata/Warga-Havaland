@@ -918,82 +918,30 @@ const HavalandData = {
     }
   ],
 
-  // SLIDE TAMPILAN AWAL UNTUK BERANDA (6 FOTO TERPILIH GOOGLE MAPS)
-  defaultSlides: [
-    {
-      id: "slide-gmap-1",
-      title: "Gerbang Utama & Pos Keamanan Havaland",
-      desc: "Akses gerbang utama perumahan Havaland Karangploso dengan sistem keamanan terpadu satu pintu (One Gate System).",
-      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmOOOe0QwbrowNxUKa57D-D94coBICWQ-YTBd-EtLaw9QQ1CZDeOQDzd2xZyhuRurKPrLPE-qklvcuPc0jsub5dGlZuCwsWkQMag1JkLcugdWo4YFa5ufpBwwc9PRvFai1Fi8H3w=w1200-h675-k-no",
-      fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmOOOe0QwbrowNxUKa57D-D94coBICWQ-YTBd-EtLaw9QQ1CZDeOQDzd2xZyhuRurKPrLPE-qklvcuPc0jsub5dGlZuCwsWkQMag1JkLcugdWo4YFa5ufpBwwc9PRvFai1Fi8H3w=w1600-h1200",
-      badge: "Gerbang Utama 📍",
-      source: "Google Maps Resmi",
-      mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
-      addedBy: "Sistem (Google Maps)",
-      createdAt: "2026-09-20"
-    },
-    {
-      id: "slide-gmap-2",
-      title: "Jalan Lingkungan & Deretan Rumah Asri",
-      desc: "Tata letak perumahan dengan jalan paving lebar, bersih, bebas debu, dan saluran drainase tertutup rapi.",
-      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmOEGaHXjXBEyjHMft1OGBn7H42aLQCyVWWedzXjFXX7aDrdwrozygG4qkKMu4wSfIKBX3TN7UIufstCKDz5FVHkIZMpNMnnjO28lAYGj7gs4MzsUd4C2H_Th52Wi57hxQlLQhS1Ug=w1200-h675-k-no",
-      fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmOEGaHXjXBEyjHMft1OGBn7H42aLQCyVWWedzXjFXX7aDrdwrozygG4qkKMu4wSfIKBX3TN7UIufstCKDz5FVHkIZMpNMnnjO28lAYGj7gs4MzsUd4C2H_Th52Wi57hxQlLQhS1Ug=w1600-h900",
-      badge: "Lingkungan Asri 🌿",
-      source: "Google Maps Resmi",
-      mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
-      addedBy: "Sistem (Google Maps)",
-      createdAt: "2026-09-20"
-    },
-    {
-      id: "slide-gmap-3",
-      title: "Deretan Hunian Modern Minimalis Warga",
-      desc: "Hunian tertata rapi dengan desain minimalis elegan, menciptakan suasana perumahan yang nyaman dan harmonis.",
-      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmMHVrnTuxmpXhc394_GpHpjsxcK-xZhXxLKg4olPc4zjj-TGypt4coQM9RQibrUO6Vnu_h2Q1yw8900UTkRpSzygpmFRVMBb819UR_T6j1OY91nwVhrMSLWdsAAMC_zX4viM2pYTsOlUAK-=w1200-h675-k-no",
-      fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmMHVrnTuxmpXhc394_GpHpjsxcK-xZhXxLKg4olPc4zjj-TGypt4coQM9RQibrUO6Vnu_h2Q1yw8900UTkRpSzygpmFRVMBb819UR_T6j1OY91nwVhrMSLWdsAAMC_zX4viM2pYTsOlUAK-=w1600-h900",
-      badge: "Hunian Warga 🏘️",
-      source: "Google Maps Resmi",
-      mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
-      addedBy: "Sistem (Google Maps)",
-      createdAt: "2026-09-20"
-    },
-    {
-      id: "slide-gmap-4",
-      title: "Panorama Udara & Lanskap Hijau Karangploso",
-      desc: "Kawasan perumahan yang dikelilingi pemandangan alam perbukitan dan udara segar pegunungan Malang Raya.",
-      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmNUfMR3ivsR2QoOVEqN9fIMJEDo_vt4rOJe13U65s_ZYT510K-pgyZuLlCjSAey6mdB9yKVgD_zEfXPojnRBerhN7AapFH4-2d13O3emXULwEHO3hHPkurYsBp1llUeuQp8IjsJ=w1200-h675-k-no",
-      fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmNUfMR3ivsR2QoOVEqN9fIMJEDo_vt4rOJe13U65s_ZYT510K-pgyZuLlCjSAey6mdB9yKVgD_zEfXPojnRBerhN7AapFH4-2d13O3emXULwEHO3hHPkurYsBp1llUeuQp8IjsJ=w1600-h1200",
-      badge: "Panorama Alam 🌄",
-      source: "Google Maps Resmi",
-      mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
-      addedBy: "Sistem (Google Maps)",
-      createdAt: "2026-09-20"
-    },
-    {
-      id: "slide-gmap-5",
-      title: "Fasilitas Lingkungan & Ruang Terbuka Hijau",
-      desc: "Area taman dan fasum perumahan untuk berinteraksi antarwarga, olahraga pagi, dan ruang bermain anak-anak.",
-      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmM4Bo-GsmT-q69AMy-F6B21_vGddv1eDkhdW5KELBHF5SsX2I_h6giH6COV1mTwBDxSjSO7FQBtDjFxCaYBao9I80uKG2FkeGb0GfY2sETRAkF2_Og61Ry8MwAWCVE5zjAAQ_LC6g=w1200-h675-k-no",
-      fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmM4Bo-GsmT-q69AMy-F6B21_vGddv1eDkhdW5KELBHF5SsX2I_h6giH6COV1mTwBDxSjSO7FQBtDjFxCaYBao9I80uKG2FkeGb0GfY2sETRAkF2_Og61Ry8MwAWCVE5zjAAQ_LC6g=w1600-h1200",
-      badge: "Fasilitas Umum 🌳",
-      source: "Google Maps Resmi",
-      mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
-      addedBy: "Sistem (Google Maps)",
-      createdAt: "2026-09-20"
-    },
-    {
-      id: "slide-gmap-6",
-      title: "Kenyamanan & Kebersihan Blok Havaland",
-      desc: "Komitmen bersama seluruh warga RT 04 / RW 08 dalam menjaga lingkungan tetap asri, aman, dan guyub rukun.",
-      url: "https://lh3.googleusercontent.com/grass-cs/ACvplmO_vVcnN1ONvRXrB7IVG2LViMqovswVI81ffMGdM-xXB24LUC0TcPwexAcQc191lafOPao1gHYFEtSSM4FGyEjW_SRYi3SwE65Nr97wIQqP1BwksLVuJ4mMlQTMEIcR8b6rIPjp=w1200-h675-k-no",
-      fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmO_vVcnN1ONvRXrB7IVG2LViMqovswVI81ffMGdM-xXB24LUC0TcPwexAcQc191lafOPao1gHYFEtSSM4FGyEjW_SRYi3SwE65Nr97wIQqP1BwksLVuJ4mMlQTMEIcR8b6rIPjp=w1600-h1200",
-      badge: "Guyub Rukun 🤝",
-      source: "Google Maps Resmi",
-      mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
-      addedBy: "Sistem (Google Maps)",
-      createdAt: "2026-09-20"
-    }
-  ]
+  // SLIDE TAMPILAN AWAL UNTUK BERANDA (SELURUH 20 FOTO GOOGLE MAPS)
+  // Dibangun otomatis dari googleMapsPhotos tepat di bawah objek ini,
+  // agar semua foto masuk slide (tidak hanya 6).
+  defaultSlides: []
 };
+
+// Daftar 20 slide default dibangun dari seluruh foto Google Maps Havaland.
+// ID stabil "slide-gmap-1..20" agar tidak duplikat dengan slide simpanan warga.
+HavalandData.defaultSlides = HavalandData.googleMapsPhotos.map((p, i) => ({
+  id: "slide-gmap-" + (i + 1),
+  title: p.title,
+  desc: p.desc,
+  url: p.url + "=w1200-h675-k-no",
+  fullUrl: p.url + "=w1600",
+  badge: p.badge,
+  source: "Google Maps Resmi",
+  // Tanggal pengambilan asli hanya terlihat di halaman foto Google Maps dan
+  // tidak dapat ditarik otomatis (butuh API key / scraping melanggar ToS),
+  // jadi bawaan dikosongkan — admin dapat mengisinya manual per slide.
+  takenAt: null,
+  mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
+  addedBy: "Sistem (Google Maps)",
+  createdAt: "2026-09-20"
+}));
 
 // Export to window object
 if (typeof window !== "undefined") {

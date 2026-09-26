@@ -151,7 +151,7 @@
           <div class="hero-photo-meta">
             <span class="hero-photo-badge">
               <span class="live-pulse-dot"></span>
-              <span id="hero-photo-caption">Foto Google Maps • 1 / 6</span>
+              <span id="hero-photo-caption">Foto Google Maps • 1 / 20</span>
             </span>
             <a class="hero-gmaps-link" href="https://maps.app.goo.gl/9G6s1233qLd68a8A7" target="_blank" rel="noopener noreferrer" title="Buka foto & lokasi di Google Maps">
               Buka di Google Maps ↗
@@ -162,6 +162,9 @@
           <button type="button" class="hero-arrow" onclick="HavalandHero.prev()" aria-label="Foto sebelumnya">‹</button>
           <div class="hero-dots" id="hero-dots"></div>
           <button type="button" class="hero-arrow" onclick="HavalandHero.next()" aria-label="Foto berikutnya">›</button>
+          <button type="button" class="hero-arrow" onclick="HavalandHero.openFullscreen()" aria-label="Lihat foto ukuran penuh" title="Lihat ukuran penuh">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+          </button>
         </div>
       </div>
 
@@ -2158,6 +2161,11 @@
             <textarea id="slide-add-desc" class="form-control" rows="2" placeholder="Tuliskan deskripsi ringkas foto untuk ditampilkan di banner slide..." required oninput="HavalandSlider.updateLivePreview()"></textarea>
           </div>
 
+          <div class="form-group">
+            <label class="form-label" for="slide-add-takendate">Tanggal Foto Diambil: <span style="font-weight: 400; color: var(--text-muted);">(opsional — tampil di full-view, cek tanggalnya di Google Maps)</span></label>
+            <input type="date" id="slide-add-takendate" class="form-control" oninput="HavalandSlider.updateLivePreview()">
+          </div>
+
           <!-- 2. Pilihan Sumber Foto (Tab Selector) -->
           <div class="form-group">
             <label class="form-label">Pilih Sumber Gambar: <span class="text-danger">*</span></label>
@@ -2329,6 +2337,7 @@
           <span class="badge badge-emerald" id="lightbox-badge" style="font-size: 0.72rem; margin-bottom: 0.25rem;">Badge</span>
           <div id="lightbox-title" style="font-weight: 700; font-size: 1rem; color: #FFFFFF;">Judul Foto</div>
           <div id="lightbox-desc" style="font-size: 0.8rem; color: #D1D5DB; margin-top: 0.2rem;">Deskripsi foto...</div>
+          <div id="lightbox-date" style="font-size: 0.75rem; color: #9CA3AF; margin-top: 0.25rem;">📅 Tanggal ambil: belum tercatat</div>
         </div>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
           <a id="lightbox-gmaps-link" href="https://maps.app.goo.gl/9G6s1233qLd68a8A7" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary" style="font-size: 0.75rem; white-space: nowrap; color: #FFFFFF; background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.25);">

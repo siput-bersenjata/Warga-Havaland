@@ -1288,6 +1288,9 @@ html[data-btn-size="xlarge"] .nav-link {
 .hero-dots {
   display: flex;
   gap: 0.35rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 38vw;
 }
 
 .hero-dot {
