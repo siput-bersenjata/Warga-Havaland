@@ -3814,7 +3814,7 @@ const HavalandUserManagement = {
     let optionsHtml = '<option value="">-- Pilih Warga dari Direktori (Otomatis Isi) --</option>';
     if (HavalandData && HavalandData.warga) {
       HavalandData.warga.forEach(w => {
-        optionsHtml += `<option value="${w.id}" data-nama="${HavalandUtils.escapeHtml(w.nama_kk)}" data-blok="${HavalandUtils.escapeHtml(w.blok)}">${HavalandUtils.escapeHtml(w.nama_kk)} (Blok ${HavalandUtils.escapeHtml(w.blok)})</option>`;
+        optionsHtml += `<option value="${w.id}" data-nama="${HavalandUtils.escapeHtml(w.namaKK)}" data-blok="${HavalandUtils.escapeHtml(w.blok)}">${HavalandUtils.escapeHtml(w.namaKK)} (Blok ${HavalandUtils.escapeHtml(w.blok)})</option>`;
       });
     }
     optionsHtml += '<option value="manual">+ Input Manual (Warga Lain / Baru)</option>';

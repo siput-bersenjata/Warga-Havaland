@@ -17,8 +17,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/style.css?v=20260926j">
-  <link rel="stylesheet" href="css/components.css?v=20260926j">
+  <link rel="stylesheet" href="css/style.css?v=20260926k">
+  <link rel="stylesheet" href="css/components.css?v=20260926k">
 </head>
 <body>
 
@@ -1028,7 +1028,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
-      <div class="modal-body" id="modal-warga-body">
+      <div class="modal-body" id="modal-warga-body" style="max-height: 70vh; overflow-y: auto;">
         <!-- Rendered dynamically -->
       </div>
       <div class="modal-footer">
@@ -1047,7 +1047,7 @@
         </button>
       </div>
       <form id="form-aspirasi" onsubmit="HavalandApp.handleKirimAspirasi(event)">
-        <div class="modal-body">
+        <div class="modal-body" style="max-height: 72vh; overflow-y: auto;">
           <div class="form-group" style="position: relative;">
             <label class="form-label" for="asp-nama">Nama Pelapor & Blok Rumah:</label>
             <div class="autocomplete-wrapper" id="autocomplete-asp-wrapper">
@@ -1115,7 +1115,7 @@
         </button>
       </div>
       <form id="form-tambah-trx" onsubmit="HavalandApp.handleTambahTransaksi(event)">
-        <div class="modal-body">
+        <div class="modal-body" style="max-height: 72vh; overflow-y: auto;">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
             <div class="form-group">
               <label class="form-label" for="new-trx-jenis">Jenis Transaksi:</label>
@@ -1418,7 +1418,7 @@
       </div>
 
       <form id="form-login" onsubmit="HavalandAuth.handleFormLogin(event)">
-        <div class="modal-body">
+        <div class="modal-body" style="max-height: 72vh; overflow-y: auto;">
           <div class="form-group">
             <label class="form-label" for="login-username">Nama Pengguna / Username:</label>
             <input type="text" id="login-username" class="form-control" placeholder="admin" required autocomplete="username">
@@ -1483,7 +1483,7 @@
       </div>
 
       <form id="form-tambah-usulan" onsubmit="HavalandProposals.handleSubmit(event)">
-        <div class="modal-body">
+        <div class="modal-body" style="max-height: 72vh; overflow-y: auto;">
           <!-- Proposer Identity Box -->
           <div class="card" style="background: var(--bg-subtle); padding: 0.75rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between;">
             <div>
@@ -1694,7 +1694,7 @@
       </div>
 
       <form id="form-tambah-akun" onsubmit="HavalandUserManagement.handleFormSubmit(event)">
-        <div class="modal-body">
+        <div class="modal-body" style="max-height: 72vh; overflow-y: auto;">
           <!-- Direktori Picker -->
           <div class="form-group">
             <label class="form-label" for="akun-select-warga">Pilih dari Direktori Warga Havaland (Praktis):</label>
@@ -1854,7 +1854,7 @@
 
       <form id="form-data-kontak" onsubmit="HavalandApp.simpanKontak(event)">
         <input type="hidden" id="form-kontak-index">
-        <div class="modal-body">
+        <div class="modal-body" style="max-height: 72vh; overflow-y: auto;">
           <div class="form-group">
             <label class="form-label" for="form-kontak-nama">Nama Kontak / Instansi:</label>
             <input type="text" id="form-kontak-nama" class="form-control" placeholder="Contoh: Pos Keamanan / Satpam 24 Jam" required>
@@ -2375,9 +2375,9 @@
   <input type="file" id="backup-file-input" accept=".json" style="display: none;" onchange="HavalandBackup.handleFileSelected(event)">
 
   <!-- Scripts -->
-  <script src="js/data.js?v=20260926j"></script>
-  <script src="js/utils.js?v=20260926j"></script>
-  <script src="js/app.js?v=20260926j"></script>
+  <script src="js/data.js?v=20260926k"></script>
+  <script src="js/utils.js?v=20260926k"></script>
+  <script src="js/app.js?v=20260926k"></script>
 
 </body>
 </html>
