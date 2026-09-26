@@ -145,20 +145,15 @@ module.exports = async function handler(req, res) {
 
     try {
       await ensureTable();
-      await db.query('BEGIN');
-      try {
-        await db.query('DELETE FROM sync_store WHERE collection = $1', [collection]);
+      await db.transaction(async (client) => {
+        await client.query('DELETE FROM sync_store WHERE collection = $1', [collection]);
         for (const row of clean) {
-          await db.query(
+          await client.query(
             'INSERT INTO sync_store (collection, id, data, updated_at) VALUES ($1, $2, $3, NOW())',
             [collection, row.id, JSON.stringify(row.data)]
           );
         }
-        await db.query('COMMIT');
-      } catch (e) {
-        try { await db.query('ROLLBACK'); } catch (_) { /* abaikan */ }
-        throw e;
-      }
+      });
 
       return res.status(200).json({
         connected: true,

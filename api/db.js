@@ -39,8 +39,31 @@ async function query(text, params) {
   return res;
 }
 
+// Jalankan fungsi dalam SATU transaksi pada SATU koneksi khusus.
+// WAJIB dipakai untuk rangkaian multi-statement (mis. DELETE + INSERT di
+// /api/sync) karena pool.query() biasa bisa memakai koneksi berbeda-beda.
+// Aman untuk PgBouncer/Supavisor mode transaksi (Supabase pooler).
+async function transaction(fn) {
+  if (!pool) {
+    throw new Error("DATABASE_NOT_CONFIGURED: Belum ada POSTGRES_URL atau DATABASE_URL di Environment Variables Vercel.");
+  }
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await fn(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (e) {
+    try { await client.query('ROLLBACK'); } catch (_) { /* abaikan */ }
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
 module.exports = {
   query,
+  transaction,
   isConfigured: !!connectionString,
   pool
 };
