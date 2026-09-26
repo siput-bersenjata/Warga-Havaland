@@ -1174,3 +1174,150 @@ html[data-btn-size="xlarge"] .nav-link {
   font-size: 1rem !important;
 }
 
+/* ==========================================================================
+   Hero Photo Mode: slider foto Google Maps sebagai background hero
+   Sumber foto: https://maps.app.goo.gl/9G6s1233qLd68a8A7
+   ========================================================================== */
+.hero-banner.hero-photo-mode {
+  min-height: 340px;
+  display: flex;
+  align-items: flex-end;
+  isolation: isolate;
+}
+
+.hero-bg-slides {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: #062e29;
+}
+
+.hero-bg-slides img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.hero-bg-slides img.active {
+  opacity: 1;
+}
+
+.hero-bg-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(100deg, rgba(4, 47, 46, 0.92) 20%, rgba(6, 95, 70, 0.72) 55%, rgba(13, 148, 136, 0.45) 100%),
+    linear-gradient(to top, rgba(2, 20, 19, 0.65) 0%, transparent 45%);
+  pointer-events: none;
+}
+
+.hero-banner.hero-photo-mode .hero-content {
+  z-index: 2;
+  max-width: 720px;
+}
+
+.hero-photo-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  font-size: 0.75rem;
+}
+
+.hero-photo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.hero-gmaps-link {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+}
+
+.hero-gmaps-link:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.hero-slider-controls {
+  position: absolute;
+  right: 1.1rem;
+  bottom: 1.1rem;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hero-arrow {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.hero-arrow:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.hero-dots {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.hero-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  padding: 0;
+}
+
+.hero-dot.active {
+  width: 22px;
+  background: #fff;
+}
+
+@media (max-width: 640px) {
+  .hero-banner.hero-photo-mode {
+    min-height: 420px;
+  }
+  .hero-slider-controls {
+    right: 0.9rem;
+    bottom: 0.9rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-bg-slides img {
+    transition: none;
+  }
+}
+

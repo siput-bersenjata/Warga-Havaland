@@ -125,8 +125,10 @@
          TAB 1: BERANDA / OVERVIEW
          ======================================================================= -->
     <section id="view-beranda" class="tab-view active">
-      <!-- Hero Banner Havaland -->
-      <div class="hero-banner">
+      <!-- Hero Banner Havaland: slider foto Google Maps (link: https://maps.app.goo.gl/9G6s1233qLd68a8A7) -->
+      <div class="hero-banner hero-photo-mode" id="hero-banner">
+        <div class="hero-bg-slides" id="hero-bg-slides" aria-hidden="true"></div>
+        <div class="hero-bg-overlay" aria-hidden="true"></div>
         <div class="hero-content">
           <div class="hero-badge-pill">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -146,6 +148,20 @@
               Lihat Rincian Kas
             </button>
           </div>
+          <div class="hero-photo-meta">
+            <span class="hero-photo-badge">
+              <span class="live-pulse-dot"></span>
+              <span id="hero-photo-caption">Foto Google Maps • 1 / 6</span>
+            </span>
+            <a class="hero-gmaps-link" href="https://maps.app.goo.gl/9G6s1233qLd68a8A7" target="_blank" rel="noopener noreferrer" title="Buka foto & lokasi di Google Maps">
+              Buka di Google Maps ↗
+            </a>
+          </div>
+        </div>
+        <div class="hero-slider-controls">
+          <button type="button" class="hero-arrow" onclick="HavalandHero.prev()" aria-label="Foto sebelumnya">‹</button>
+          <div class="hero-dots" id="hero-dots"></div>
+          <button type="button" class="hero-arrow" onclick="HavalandHero.next()" aria-label="Foto berikutnya">›</button>
         </div>
       </div>
 
@@ -165,7 +181,7 @@
           </div>
           
           <div class="slider-header-right">
-            <a href="https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6" target="_blank" rel="noopener noreferrer" class="btn-gmaps-link" title="Buka tautan lokasi & ulasan di Google Maps">
+            <a href="https://maps.app.goo.gl/9G6s1233qLd68a8A7" target="_blank" rel="noopener noreferrer" class="btn-gmaps-link" title="Buka tautan lokasi & ulasan di Google Maps">
               <svg class="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
               <span>Buka di Google Maps ↗</span>
             </a>
@@ -2344,7 +2360,7 @@
           <div id="lightbox-desc" style="font-size: 0.8rem; color: #D1D5DB; margin-top: 0.2rem;">Deskripsi foto...</div>
         </div>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <a id="lightbox-gmaps-link" href="https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary" style="font-size: 0.75rem; white-space: nowrap; color: #FFFFFF; background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.25);">
+          <a id="lightbox-gmaps-link" href="https://maps.app.goo.gl/9G6s1233qLd68a8A7" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary" style="font-size: 0.75rem; white-space: nowrap; color: #FFFFFF; background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.25);">
             <svg class="w-3.5 h-3.5 text-emerald-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
             <span>Google Maps ↗</span>
           </a>

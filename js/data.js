@@ -769,12 +769,12 @@ const HavalandData = {
   googleMaps: {
     placeName: "Perum Havaland Karangploso",
     address: "4J58+37W, Babaan, Ngenep, Kec. Karang Ploso, Kabupaten Malang, Jawa Timur 65152",
-    mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+    mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
     embedUrl: "https://maps.google.com/maps?q=Perum+Havaland+Karangploso&t=&z=17&ie=UTF8&iwloc=&output=embed",
     totalPhotos: 20
   },
 
-  // KOLEKSI 20 FOTO RIIL DARI GOOGLE MAPS (https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6)
+  // KOLEKSI 20 FOTO RIIL DARI GOOGLE MAPS (https://maps.app.goo.gl/9G6s1233qLd68a8A7)
   googleMapsPhotos: [
     {
       id: "gmap-p1",
@@ -928,7 +928,7 @@ const HavalandData = {
       fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmOOOe0QwbrowNxUKa57D-D94coBICWQ-YTBd-EtLaw9QQ1CZDeOQDzd2xZyhuRurKPrLPE-qklvcuPc0jsub5dGlZuCwsWkQMag1JkLcugdWo4YFa5ufpBwwc9PRvFai1Fi8H3w=w1600-h1200",
       badge: "Gerbang Utama 📍",
       source: "Google Maps Resmi",
-      mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+      mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
       addedBy: "Sistem (Google Maps)",
       createdAt: "2026-09-20"
     },
@@ -940,7 +940,7 @@ const HavalandData = {
       fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmOEGaHXjXBEyjHMft1OGBn7H42aLQCyVWWedzXjFXX7aDrdwrozygG4qkKMu4wSfIKBX3TN7UIufstCKDz5FVHkIZMpNMnnjO28lAYGj7gs4MzsUd4C2H_Th52Wi57hxQlLQhS1Ug=w1600-h900",
       badge: "Lingkungan Asri 🌿",
       source: "Google Maps Resmi",
-      mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+      mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
       addedBy: "Sistem (Google Maps)",
       createdAt: "2026-09-20"
     },
@@ -952,7 +952,7 @@ const HavalandData = {
       fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmMHVrnTuxmpXhc394_GpHpjsxcK-xZhXxLKg4olPc4zjj-TGypt4coQM9RQibrUO6Vnu_h2Q1yw8900UTkRpSzygpmFRVMBb819UR_T6j1OY91nwVhrMSLWdsAAMC_zX4viM2pYTsOlUAK-=w1600-h900",
       badge: "Hunian Warga 🏘️",
       source: "Google Maps Resmi",
-      mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+      mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
       addedBy: "Sistem (Google Maps)",
       createdAt: "2026-09-20"
     },
@@ -964,7 +964,7 @@ const HavalandData = {
       fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmNUfMR3ivsR2QoOVEqN9fIMJEDo_vt4rOJe13U65s_ZYT510K-pgyZuLlCjSAey6mdB9yKVgD_zEfXPojnRBerhN7AapFH4-2d13O3emXULwEHO3hHPkurYsBp1llUeuQp8IjsJ=w1600-h1200",
       badge: "Panorama Alam 🌄",
       source: "Google Maps Resmi",
-      mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+      mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
       addedBy: "Sistem (Google Maps)",
       createdAt: "2026-09-20"
     },
@@ -976,7 +976,7 @@ const HavalandData = {
       fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmM4Bo-GsmT-q69AMy-F6B21_vGddv1eDkhdW5KELBHF5SsX2I_h6giH6COV1mTwBDxSjSO7FQBtDjFxCaYBao9I80uKG2FkeGb0GfY2sETRAkF2_Og61Ry8MwAWCVE5zjAAQ_LC6g=w1600-h1200",
       badge: "Fasilitas Umum 🌳",
       source: "Google Maps Resmi",
-      mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+      mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
       addedBy: "Sistem (Google Maps)",
       createdAt: "2026-09-20"
     },
@@ -988,7 +988,7 @@ const HavalandData = {
       fullUrl: "https://lh3.googleusercontent.com/grass-cs/ACvplmO_vVcnN1ONvRXrB7IVG2LViMqovswVI81ffMGdM-xXB24LUC0TcPwexAcQc191lafOPao1gHYFEtSSM4FGyEjW_SRYi3SwE65Nr97wIQqP1BwksLVuJ4mMlQTMEIcR8b6rIPjp=w1600-h1200",
       badge: "Guyub Rukun 🤝",
       source: "Google Maps Resmi",
-      mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+      mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
       addedBy: "Sistem (Google Maps)",
       createdAt: "2026-09-20"
     }

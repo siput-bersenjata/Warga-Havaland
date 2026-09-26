@@ -24,6 +24,7 @@ const HavalandApp = {
     HavalandProposals.init();
     HavalandUserManagement.init();
     HavalandSlider.init();
+    if (typeof HavalandHero !== "undefined") HavalandHero.init();
     this.loadPersistedData();
     this.renderKPIs();
     this.renderMiniChart();
@@ -3999,6 +4000,11 @@ const HavalandSlider = {
 
     // 4. Update Posisi Transform
     this.goTo(this.currentIndex, false);
+
+    // 5. Sinkronkan hero beranda agar memakai foto yang sama
+    if (typeof HavalandHero !== "undefined" && HavalandHero.syncFromSlider) {
+      HavalandHero.syncFromSlider(this.slides);
+    }
   },
 
   goTo(index, smooth = true) {
@@ -4323,7 +4329,7 @@ const HavalandSlider = {
       fullUrl: imgUrl,
       badge: badgeVal,
       source: sourceVal,
-      mapsUrl: "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6",
+      mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
       addedBy: HavalandAuth.getCurrentUser()?.nama || "Admin RT",
       createdAt: new Date().toISOString().split("T")[0]
     };
@@ -4461,7 +4467,7 @@ const HavalandSlider = {
     if (title) title.textContent = slide.title;
     if (desc) desc.textContent = slide.desc;
     if (badge) badge.textContent = slide.badge || "Google Maps 📍";
-    if (mapsLink) mapsLink.href = slide.mapsUrl || "https://maps.app.goo.gl/Ujdz5idEU8PSaUEq6";
+    if (mapsLink) mapsLink.href = slide.mapsUrl || "https://maps.app.goo.gl/9G6s1233qLd68a8A7";
 
     modal.classList.add("active");
     document.body.style.overflow = "hidden";
@@ -4498,6 +4504,123 @@ const HavalandSlider = {
   }
 };
 
+// =============================================================================
+// MODUL 7B: HERO SLIDER FOTO GOOGLE MAPS (background card biru/hijau beranda)
+// Sumber: https://maps.app.goo.gl/9G6s1233qLd68a8A7 (Perum Havaland Karangploso)
+// Foto diambil dari HavalandData.defaultSlides / HavalandSlider.slides agar
+// selalu sinkron dengan foto yang dikelola admin. Tidak mengunduh ulang dari
+// Google (menghormati ToS Google Maps): admin tambah foto via URL/upload.
+// =============================================================================
+const HavalandHero = {
+  slides: [],
+  currentIndex: 0,
+  autoplayTimer: null,
+  autoplayDelay: 6000,
+
+  init() {
+    this.syncFromSlider(
+      (typeof HavalandSlider !== "undefined" && HavalandSlider.slides) ||
+      (typeof HavalandData !== "undefined" && HavalandData.defaultSlides) ||
+      []
+    );
+    this.startAutoPlay();
+    const banner = document.getElementById("hero-banner");
+    if (banner) {
+      banner.addEventListener("mouseenter", () => this.stopAutoPlay(), { passive: true });
+      banner.addEventListener("mouseleave", () => this.startAutoPlay(), { passive: true });
+    }
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      this.stopAutoPlay();
+    }
+  },
+
+  getSourceSlides() {
+    if (typeof HavalandSlider !== "undefined" && Array.isArray(HavalandSlider.slides) && HavalandSlider.slides.length > 0) {
+      return HavalandSlider.slides;
+    }
+    if (typeof HavalandData !== "undefined" && Array.isArray(HavalandData.defaultSlides)) {
+      return HavalandData.defaultSlides;
+    }
+    return [];
+  },
+
+  syncFromSlider(slides) {
+    const src = Array.isArray(slides) && slides.length > 0 ? slides : this.getSourceSlides();
+    this.slides = src.slice(0, 12);
+    if (this.currentIndex >= this.slides.length) this.currentIndex = 0;
+    this.renderBg();
+    this.renderDots();
+    this.updateCaption();
+  },
+
+  renderBg() {
+    const box = document.getElementById("hero-bg-slides");
+    if (!box) return;
+    box.innerHTML = this.slides.map((s, idx) => `
+      <img src="${s.url}" alt="" aria-hidden="true" loading="${idx === 0 ? "eager" : "lazy"}"
+        class="${idx === this.currentIndex ? "active" : ""}"
+        onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1200'">
+    `).join("");
+  },
+
+  renderDots() {
+    const dots = document.getElementById("hero-dots");
+    if (!dots) return;
+    dots.innerHTML = this.slides.map((_, idx) => `
+      <button type="button" class="hero-dot ${idx === this.currentIndex ? "active" : ""}"
+        onclick="HavalandHero.goTo(${idx})" aria-label="Foto hero ${idx + 1}"></button>
+    `).join("");
+  },
+
+  updateCaption() {
+    const cap = document.getElementById("hero-photo-caption");
+    if (!cap) return;
+    const s = this.slides[this.currentIndex];
+    const title = s && s.title ? ` • ${s.title}` : "";
+    cap.textContent = `Foto Google Maps • ${this.slides.length > 0 ? this.currentIndex + 1 : 0} / ${this.slides.length}${title}`;
+  },
+
+  goTo(index) {
+    if (this.slides.length === 0) return;
+    if (index < 0) index = this.slides.length - 1;
+    if (index >= this.slides.length) index = 0;
+    this.currentIndex = index;
+    const imgs = document.querySelectorAll("#hero-bg-slides img");
+    imgs.forEach((img, i) => img.classList.toggle("active", i === this.currentIndex));
+    const dots = document.querySelectorAll("#hero-dots .hero-dot");
+    dots.forEach((d, i) => d.classList.toggle("active", i === this.currentIndex));
+    this.updateCaption();
+  },
+
+  next() {
+    this.goTo(this.currentIndex + 1);
+    this.restartAutoPlay();
+  },
+
+  prev() {
+    this.goTo(this.currentIndex - 1);
+    this.restartAutoPlay();
+  },
+
+  startAutoPlay() {
+    this.stopAutoPlay();
+    if (this.slides.length <= 1) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    this.autoplayTimer = setInterval(() => this.goTo(this.currentIndex + 1), this.autoplayDelay);
+  },
+
+  stopAutoPlay() {
+    if (this.autoplayTimer) {
+      clearInterval(this.autoplayTimer);
+      this.autoplayTimer = null;
+    }
+  },
+
+  restartAutoPlay() {
+    this.startAutoPlay();
+  }
+};
+
 // Start application when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   HavalandApp.init();
@@ -4512,6 +4635,7 @@ if (typeof window !== "undefined") {
   window.HavalandProposals = HavalandProposals;
   window.HavalandUserManagement = HavalandUserManagement;
   window.HavalandSlider = HavalandSlider;
+  window.HavalandHero = HavalandHero;
 }
 
 
