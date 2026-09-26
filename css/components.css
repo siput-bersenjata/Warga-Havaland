@@ -2921,12 +2921,13 @@ textarea.form-control {
 }
 
 .lightbox-container {
-  max-width: 1080px;
+  max-width: 1400px;
   width: 100%;
   display: flex;
   flex-direction: column;
   position: relative;
-  max-height: 94vh;
+  max-height: 100vh;
+  max-height: 100dvh;
 }
 
 .lightbox-close-btn {
@@ -2957,7 +2958,10 @@ textarea.form-control {
 .lightbox-media-wrapper {
   position: relative;
   width: 100%;
-  max-height: 70vh;
+  max-height: calc(100vh - 240px);
+  max-height: calc(100dvh - 240px);
+  min-height: 40vh;
+  min-height: 40dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2969,9 +2973,21 @@ textarea.form-control {
 
 .lightbox-img {
   max-width: 100%;
-  max-height: 70vh;
+  max-height: calc(100vh - 240px);
+  max-height: calc(100dvh - 240px);
   object-fit: contain;
   display: block;
+}
+
+.lightbox-counter {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #D1D5DB;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  white-space: nowrap;
 }
 
 .lightbox-nav-btn {

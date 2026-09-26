@@ -4752,6 +4752,7 @@ const HavalandSlider = {
     const desc = document.getElementById("lightbox-desc");
     const badge = document.getElementById("lightbox-badge");
     const dateEl = document.getElementById("lightbox-date");
+    const counterEl = document.getElementById("lightbox-counter");
     const mapsLink = document.getElementById("lightbox-gmaps-link");
 
     if (!modal || !img) return;
@@ -4761,6 +4762,7 @@ const HavalandSlider = {
     if (desc) desc.textContent = slide.desc;
     if (badge) badge.textContent = slide.badge || "Google Maps 📍";
     if (dateEl) dateEl.textContent = this.formatTakenAt(slide.takenAt);
+    if (counterEl) counterEl.textContent = `${index + 1} / ${this.slides.length}`;
     if (mapsLink) mapsLink.href = slide.mapsUrl || "https://maps.app.goo.gl/9G6s1233qLd68a8A7";
 
     modal.classList.add("active");
@@ -4915,13 +4917,25 @@ const HavalandHero = {
     this.restartAutoPlay();
   },
 
-  // Buka foto hero yang sedang tampil dalam lightbox ukuran penuh.
-  // Urutan hero selalu sama dengan HavalandSlider.slides sehingga indeks cocok.
-  // Autoplay hero dijeda selama lightbox terbuka, dil lanjutkan saat ditutup.
+  // Buka foto hero yang sedang tampil dalam lightbox ukuran penuh (selayar).
+  // Dicocokkan via ID slide (bukan posisi) agar tetap tepat walau urutan berubah.
+  // Autoplay hero dijeda selama lightbox terbuka, dilanjutkan saat ditutup.
   openFullscreen() {
-    if (typeof HavalandSlider !== "undefined" && HavalandSlider.openLightbox) {
+    try {
+      if (typeof HavalandSlider === "undefined" || !HavalandSlider.openLightbox) return;
+      const current = this.slides[this.currentIndex];
+      let idx = 0;
+      if (current) {
+        const found = HavalandSlider.slides.findIndex(s => s.id === current.id || s.url === current.url);
+        idx = found >= 0 ? found : 0;
+      }
       this.stopAutoPlay();
-      HavalandSlider.openLightbox(this.currentIndex);
+      HavalandSlider.openLightbox(idx);
+    } catch (e) {
+      console.warn("Gagal membuka full-view:", e);
+      if (typeof HavalandUtils !== "undefined") {
+        HavalandUtils.showToast("Full-view Gagal", "Foto tidak dapat dibuka ukuran penuh. Coba muat ulang halaman.", "error");
+      }
     }
   },
 
