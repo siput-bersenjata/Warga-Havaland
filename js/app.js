@@ -3076,6 +3076,7 @@ const HavalandSettings = {
           </div>
         </div>
       `;
+      this.renderSlideSection();
       return;
     }
 
@@ -3135,6 +3136,50 @@ const HavalandSettings = {
             </button>
           </div>
         </div>
+      </div>
+    `;
+    this.renderSlideSection();
+  },
+
+  // Section Pengaturan → Kelola Slide (khusus admin, dirender bersama backup)
+  renderSlideSection() {
+    const container = document.getElementById("slide-controls-container");
+    if (!container) return;
+
+    const isAdmin = typeof HavalandAuth !== "undefined" && HavalandAuth.isAdmin();
+    if (!isAdmin) {
+      container.innerHTML = `
+        <div class="admin-locked-box">
+          <svg class="w-5 h-5" style="color: var(--accent-gold); flex-shrink: 0; margin-top: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">Kelola slide khusus Administrator RT</div>
+            <div style="line-height: 1.4;">Masuk sebagai admin untuk menambah foto dari HP/PC atau Google Drive ke slide beranda.</div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    const count = (typeof HavalandSlider !== "undefined" && HavalandSlider.slides)
+      ? HavalandSlider.slides.length
+      : 0;
+    container.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent); padding: 0.6rem 0.85rem; border-radius: var(--radius-md); font-size: 0.82rem; font-weight: 700; color: var(--primary);">
+          <span>🖼️ ${count} foto aktif di slide beranda & hero</span>
+          <span class="badge badge-success" style="font-size: 0.7rem;">Admin</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
+          <button type="button" class="btn btn-primary btn-sm" onclick="HavalandApp.closeModal('modal-pengaturan'); HavalandSlider.openAddModal('upload');" style="justify-content: center;">
+            📱 Tambah dari HP / PC
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="HavalandApp.closeModal('modal-pengaturan'); HavalandSlider.openAddModal('drive');" style="justify-content: center;">
+            📁 Tambah via Drive
+          </button>
+        </div>
+        <button type="button" class="btn btn-outline-primary btn-sm" onclick="HavalandApp.closeModal('modal-pengaturan'); HavalandSlider.openManageModal();" style="justify-content: center; width: 100%; padding: 0.5rem 0.85rem; font-weight: 600;">
+          ⚙️ Kelola Urutan & Hapus Slide
+        </button>
       </div>
     `;
   }
@@ -3943,8 +3988,10 @@ const HavalandSlider = {
   saveSlides() {
     try {
       localStorage.setItem("havaland_slides_v2", JSON.stringify(this.slides));
+      return true;
     } catch (e) {
       console.warn("Gagal menyimpan slide ke localStorage:", e);
+      return false;
     }
   },
 
@@ -4010,6 +4057,11 @@ const HavalandSlider = {
     // 5. Sinkronkan hero beranda agar memakai foto yang sama
     if (typeof HavalandHero !== "undefined" && HavalandHero.syncFromSlider) {
       HavalandHero.syncFromSlider(this.slides);
+    }
+
+    // 6. Segarkan hitungan di panel Pengaturan bila sedang terbuka
+    if (typeof HavalandSettings !== "undefined" && HavalandSettings.renderSlideSection) {
+      HavalandSettings.renderSlideSection();
     }
   },
 
@@ -4155,19 +4207,43 @@ const HavalandSlider = {
   // -------------------------------------------------------------
   // ADMIN ACTIONS: TAMBAH SLIDE
   // -------------------------------------------------------------
-  openAddModal() {
+  openAddModal(tabKey = "gmap") {
     if (typeof HavalandAuth !== "undefined" && !HavalandAuth.isAdmin()) {
       HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat menambahkan gambar slide.", "warning");
       return;
     }
 
+    const allowedTabs = ["gmap", "url", "drive", "upload"];
+    const startTab = allowedTabs.includes(tabKey) ? tabKey : "gmap";
+
     const form = document.getElementById("form-tambah-slide");
     if (form) form.reset();
 
-    this.switchSourceTab("gmap");
-    this.renderGmapLibrary();
-    // Default select photo index 0
-    this.selectLibraryPhoto(0);
+    // Reset state pilihan sebelumnya agar tidak tercampur antar sumber
+    this.selectedLibraryIndex = -1;
+    this.pendingUploads = [];
+    this.renderPendingUploads();
+    const hiddenUrl = document.getElementById("slide-selected-image-url");
+    if (hiddenUrl) hiddenUrl.value = "";
+    const driveInput = document.getElementById("slide-input-drive");
+    if (driveInput) driveInput.value = "";
+    const drivePreview = document.getElementById("drive-preview-img");
+    if (drivePreview) drivePreview.style.display = "none";
+    const driveStatus = document.getElementById("drive-convert-status");
+    if (driveStatus) {
+      driveStatus.className = "";
+      driveStatus.textContent = "Tempel link berbagi Google Drive, sistem mengubahnya menjadi gambar slide otomatis.";
+    }
+
+    this.switchSourceTab(startTab);
+    if (startTab === "gmap") {
+      this.renderGmapLibrary();
+      // Default select photo index 0
+      this.selectLibraryPhoto(0);
+    } else {
+      this.renderGmapLibrary();
+    }
+    this.updateLivePreview();
 
     HavalandApp.openModal("modal-tambah-slide");
   },
@@ -4184,7 +4260,8 @@ const HavalandSlider = {
 
     const srcInput = document.getElementById("slide-selected-source");
     if (srcInput) {
-      srcInput.value = tabKey === "gmap" ? "Google Maps Resmi" : (tabKey === "upload" ? "Upload Admin" : "Link Online");
+      const labels = { gmap: "Google Maps Resmi", upload: "Upload Admin", drive: "Google Drive" };
+      srcInput.value = labels[tabKey] || "Link Online";
     }
   },
 
@@ -4243,51 +4320,190 @@ const HavalandSlider = {
     if (!input || !input.value.trim()) return;
 
     const url = input.value.trim();
+
+    // Link Google Drive yang ditempel di kolom URL umum ikut dikonversi otomatis
+    if (this.parseDriveFileId(url)) {
+      const driveInput = document.getElementById("slide-input-drive");
+      if (driveInput) driveInput.value = url;
+      this.switchSourceTab("drive");
+      this.handleDriveInput();
+      return;
+    }
+
     if (hiddenUrl) hiddenUrl.value = url;
     if (hiddenSrc) hiddenSrc.value = "Link Online";
     this.updateLivePreview();
   },
 
-  handleFileUpload(event) {
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
+  // -------------------------------------------------------------
+  // GOOGLE DRIVE: ubah link berbagi menjadi URL gambar langsung.
+  // Format didukung: /file/d/ID, ?id=ID, /uc?id=ID, thumbnail?id=ID.
+  // Syarat: file di Drive dibagikan "Siapa saja yang memiliki link".
+  // -------------------------------------------------------------
+  parseDriveFileId(url) {
+    if (!url || typeof url !== "string") return null;
+    const text = url.trim();
+    let m = text.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/);
+    if (m) return m[1];
+    m = text.match(/[?&]id=([A-Za-z0-9_-]+)/);
+    if (m && text.includes("drive.google.com")) return m[1];
+    m = text.match(/lh3\.googleusercontent\.com\/d\/([A-Za-z0-9_-]+)/);
+    if (m) return m[1];
+    return null;
+  },
 
-    if (!file.type.startsWith("image/")) {
-      HavalandUtils.showToast("File Tidak Valid", "Harap pilih file berformat gambar (JPG, PNG, atau WebP).", "warning");
+  toDriveDirectUrl(fileId, width = 1200) {
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w${width}`;
+  },
+
+  handleDriveInput() {
+    const input = document.getElementById("slide-input-drive");
+    const hiddenUrl = document.getElementById("slide-selected-image-url");
+    const hiddenSrc = document.getElementById("slide-selected-source");
+    const status = document.getElementById("drive-convert-status");
+    const preview = document.getElementById("drive-preview-img");
+    if (!input || !input.value.trim()) return;
+
+    const raw = input.value.trim();
+    const fileId = this.parseDriveFileId(raw);
+
+    const setStatus = (msg, cls) => {
+      if (!status) return;
+      status.textContent = msg;
+      status.className = cls || "";
+    };
+
+    if (!fileId) {
+      setStatus("Link tidak dikenali. Gunakan link berbagi file Google Drive (contoh: drive.google.com/file/d/.../view).", "drive-err");
+      HavalandUtils.showToast("Link Drive Tidak Valid", "Salin link via Bagikan → Salin link pada file foto di Drive.", "warning");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        // Compress & scale to max 1280px to save storage
-        const canvas = document.createElement("canvas");
-        const maxW = 1280;
-        const maxH = 720;
-        let w = img.width;
-        let h = img.height;
-        if (w > maxW || h > maxH) {
-          const ratio = Math.min(maxW / w, maxH / h);
-          w = Math.round(w * ratio);
-          h = Math.round(h * ratio);
-        }
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, w, h);
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+    const directUrl = this.toDriveDirectUrl(fileId, 1200);
+    if (hiddenUrl) hiddenUrl.value = directUrl;
+    if (hiddenSrc) hiddenSrc.value = "Google Drive";
 
-        const hiddenUrl = document.getElementById("slide-selected-image-url");
-        const hiddenSrc = document.getElementById("slide-selected-source");
-        if (hiddenUrl) hiddenUrl.value = dataUrl;
-        if (hiddenSrc) hiddenSrc.value = "Upload Admin";
-        this.updateLivePreview();
-        HavalandUtils.showToast("Foto Dimuat", "Foto dari perangkat berhasil disiapkan untuk slide.", "success");
+    setStatus("Link valid ✓ — memeriksa akses berbagi file...", "");
+    if (preview) {
+      preview.style.display = "none";
+      preview.src = directUrl;
+      preview.onload = () => {
+        preview.style.display = "block";
+        setStatus("Gambar Drive termuat ✓ — pastikan mode berbagi tetap “Siapa saja yang memiliki link”.", "drive-ok");
       };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+      preview.onerror = () => {
+        preview.style.display = "none";
+        setStatus("Gambar belum bisa dibuka — ubah berbagi file ke “Siapa saja yang memiliki link” (Viewer), lalu Terapkan ulang.", "drive-err");
+      };
+    }
+
+    this.updateLivePreview();
+  },
+
+  // Daftar file lokal yang antre ditambahkan (mendukung pilih banyak foto)
+  pendingUploads: [],
+
+  handleFileUpload(event) {
+    const files = event.target.files ? Array.from(event.target.files) : [];
+    if (files.length === 0) return;
+
+    const images = files.filter(f => f.type.startsWith("image/"));
+    if (images.length === 0) {
+      HavalandUtils.showToast("File Tidak Valid", "Harap pilih file berformat gambar (JPG, PNG, atau WebP).", "warning");
+      return;
+    }
+    if (images.length < files.length) {
+      HavalandUtils.showToast("Sebagian Dilewati", `${files.length - images.length} file bukan gambar sehingga dilewati.`, "info");
+    }
+
+    const MAX_FILES = 5;
+    const room = MAX_FILES - this.pendingUploads.length;
+    if (room <= 0) {
+      HavalandUtils.showToast("Batas Tercapai", `Maksimal ${MAX_FILES} foto per sekali tambah. Simpan dulu, lalu tambah lagi.`, "warning");
+      return;
+    }
+    const batch = images.slice(0, room);
+
+    let done = 0;
+    batch.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          // Compress & scale to max 1280px to save storage
+          const canvas = document.createElement("canvas");
+          const maxW = 1280;
+          const maxH = 720;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxW || h > maxH) {
+            const ratio = Math.min(maxW / w, maxH / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+
+          this.pendingUploads.push({ name: file.name, size: file.size, dataUrl });
+          done += 1;
+
+          if (done === batch.length) {
+            const hiddenUrl = document.getElementById("slide-selected-image-url");
+            const hiddenSrc = document.getElementById("slide-selected-source");
+            if (hiddenUrl && this.pendingUploads.length > 0) hiddenUrl.value = this.pendingUploads[0].dataUrl;
+            if (hiddenSrc) hiddenSrc.value = "Upload Admin";
+            this.renderPendingUploads();
+            this.updateLivePreview();
+            HavalandUtils.showToast(
+              "Foto Dimuat",
+              `${this.pendingUploads.length} foto dari perangkat siap ditambahkan saat Simpan.`,
+              "success"
+            );
+          }
+        };
+        img.onerror = () => {
+          done += 1;
+          HavalandUtils.showToast("Gagal Dibaca", `File "${file.name}" rusak dan dilewati.`, "warning");
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Reset input agar file yang sama bisa dipilih ulang bila perlu
+    event.target.value = "";
+  },
+
+  removePendingUpload(index) {
+    if (index < 0 || index >= this.pendingUploads.length) return;
+    this.pendingUploads.splice(index, 1);
+    const hiddenUrl = document.getElementById("slide-selected-image-url");
+    if (hiddenUrl) hiddenUrl.value = this.pendingUploads.length > 0 ? this.pendingUploads[0].dataUrl : "";
+    this.renderPendingUploads();
+    this.updateLivePreview();
+  },
+
+  renderPendingUploads() {
+    const list = document.getElementById("upload-pending-list");
+    if (!list) return;
+    if (!this.pendingUploads || this.pendingUploads.length === 0) {
+      list.innerHTML = "";
+      return;
+    }
+    const fmtKB = (b) => b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`;
+    list.innerHTML = this.pendingUploads.map((p, idx) => `
+      <div class="upload-pending-item">
+        <img src="${p.dataUrl}" alt="" class="upload-pending-thumb">
+        <div class="upload-pending-info">
+          <div class="upload-pending-name">${HavalandUtils.escapeHtml(p.name)}</div>
+          <div class="upload-pending-size">Foto ${idx + 1} • asli ${fmtKB(p.size)} • dioptimalkan otomatis</div>
+        </div>
+        <button type="button" class="upload-pending-remove" onclick="HavalandSlider.removePendingUpload(${idx})" title="Batalkan foto ini">Hapus</button>
+      </div>
+    `).join("");
   },
 
   updateLivePreview() {
@@ -4340,14 +4556,57 @@ const HavalandSlider = {
       createdAt: new Date().toISOString().split("T")[0]
     };
 
+    // Foto Google Drive: sediakan versi resolusi lebih besar untuk lightbox
+    if (sourceVal === "Google Drive") {
+      const fileId = this.parseDriveFileId(document.getElementById("slide-input-drive")?.value || "") || this.parseDriveFileId(imgUrl);
+      if (fileId) {
+        newSlide.url = this.toDriveDirectUrl(fileId, 1200);
+        newSlide.fullUrl = this.toDriveDirectUrl(fileId, 1600);
+      }
+    }
+
+    // Upload lokal multi-foto: tambahkan semua antrean sekaligus
+    let addedSlides = [newSlide];
+    if (this.activeSourceTab === "upload" && this.pendingUploads && this.pendingUploads.length > 1) {
+      addedSlides = this.pendingUploads.map((p, i) => ({
+        id: "slide-custom-" + Date.now() + "-" + i,
+        title: i === 0 ? titleVal : `${titleVal} (${i + 1})`,
+        desc: descVal,
+        url: p.dataUrl,
+        fullUrl: p.dataUrl,
+        badge: badgeVal,
+        source: "Upload Admin",
+        mapsUrl: "https://maps.app.goo.gl/9G6s1233qLd68a8A7",
+        addedBy: HavalandAuth.getCurrentUser()?.nama || "Admin RT",
+        createdAt: new Date().toISOString().split("T")[0]
+      }));
+    }
+
     // Tambahkan slide ke urutan pertama (paling depan)
-    this.slides.unshift(newSlide);
-    this.saveSlides();
+    this.slides.unshift(...addedSlides);
+    if (!this.saveSlides()) {
+      // Kapasitas peramban penuh (umumnya karena foto upload lokal) → kembalikan
+      this.slides.splice(0, addedSlides.length);
+      HavalandUtils.showToast(
+        "Penyimpanan Penuh",
+        "Foto gagal disimpan: kapasitas peramban penuh. Hapus slide lama atau pakai link Google Drive untuk foto besar.",
+        "error"
+      );
+      return;
+    }
+    this.pendingUploads = [];
+    this.renderPendingUploads();
     this.render();
     this.goTo(0, true);
 
     HavalandApp.closeModal("modal-tambah-slide");
-    HavalandUtils.showToast("Slide Ditambahkan!", `Foto "${newSlide.title}" berhasil dipublikasikan di slide beranda.`, "success");
+    HavalandUtils.showToast(
+      addedSlides.length > 1 ? "Slide Ditambahkan!" : "Slide Ditambahkan!",
+      addedSlides.length > 1
+        ? `${addedSlides.length} foto berhasil dipublikasikan di slide beranda.`
+        : `Foto "${newSlide.title}" berhasil dipublikasikan di slide beranda.`,
+      "success"
+    );
   },
 
   // -------------------------------------------------------------

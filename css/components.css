@@ -2545,7 +2545,7 @@ textarea.form-control {
    ========================================================================== */
 .slide-source-tabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 0.4rem;
   background: var(--bg-subtle);
   padding: 0.35rem;
@@ -2556,7 +2556,7 @@ textarea.form-control {
 
 @media (max-width: 580px) {
   .slide-source-tabs {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -2685,6 +2685,71 @@ textarea.form-control {
 .slide-upload-dropzone:hover {
   border-color: var(--primary);
   background: var(--surface-hover);
+}
+
+/* Daftar foto lokal yang siap ditambahkan */
+.upload-pending-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.55rem;
+}
+
+.upload-pending-thumb {
+  width: 52px;
+  height: 38px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  background: #111827;
+}
+
+.upload-pending-info {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.75rem;
+}
+
+.upload-pending-name {
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upload-pending-size {
+  color: var(--text-muted);
+}
+
+.upload-pending-remove {
+  flex-shrink: 0;
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  color: var(--danger, #ef4444);
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+}
+
+.upload-pending-remove:hover {
+  background: var(--surface-hover);
+}
+
+/* Status konversi Google Drive */
+#drive-convert-status.drive-ok {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+#drive-convert-status.drive-err {
+  color: var(--danger, #ef4444);
+  font-weight: 600;
 }
 
 /* Live Preview Box */

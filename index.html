@@ -1429,6 +1429,20 @@
           </div>
         </div>
 
+        <!-- Kelola Slide Foto Beranda & Hero (Khusus Admin RT) -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            Foto Slide Beranda & Hero
+          </div>
+          <p class="settings-section-desc">Tambah foto sendiri dari HP/PC atau via link Google Drive, atur urutan, atau hapus slide galeri beranda.</p>
+
+          <!-- Dynamic Container untuk kontrol slide tergantung auth Admin -->
+          <div id="slide-controls-container">
+            <!-- Rendered by HavalandSettings.renderSlideSection() -->
+          </div>
+        </div>
+
         <!-- Backup & Restore Data (Role-Based: Admin RT Only) -->
         <div class="settings-section">
           <div class="settings-section-title">
@@ -2225,6 +2239,10 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
                 <span>Link URL Online</span>
               </button>
+              <button type="button" class="slide-tab-btn" id="tab-src-drive" onclick="HavalandSlider.switchSourceTab('drive')">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M7.71 3.5L1.15 15l3.43 5.95L11.14 9.5 7.71 3.5zm10.58 0L14.86 9.5l6.56 11.45L24.85 15 18.29 3.5h-3.42zM12.71 10.5l-3.43 5.95h6.86l-3.43-5.95z"/></svg>
+                <span>Google Drive</span>
+              </button>
               <button type="button" class="slide-tab-btn" id="tab-src-upload" onclick="HavalandSlider.switchSourceTab('upload')">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                 <span>Unggah dari HP / PC</span>
@@ -2249,18 +2267,40 @@
                 <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandSlider.handleUrlInput()" style="white-space: nowrap;">Terapkan</button>
               </div>
               <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 0.35rem;">
-                Mendukung tautan gambar publik (JPG, PNG, WebP) dari hosting, Google Drive direct, Imgur, Cloudinary, dll.
+                Mendukung tautan gambar publik (JPG, PNG, WebP) dari hosting, Imgur, Cloudinary, dll. Link Google Drive otomatis dikonversi — atau gunakan tab khusus Google Drive.
               </span>
             </div>
 
-            <!-- Panel C: Upload File Komputer / Smartphone -->
+            <!-- Panel C: Link Google Drive (otomatis dikonversi ke gambar langsung) -->
+            <div id="panel-src-drive" class="slide-source-panel">
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="url" id="slide-input-drive" class="form-control" placeholder="https://drive.google.com/file/d/.../view?usp=sharing" oninput="HavalandSlider.handleDriveInput()">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandSlider.handleDriveInput()" style="white-space: nowrap;">Terapkan</button>
+              </div>
+              <div id="drive-convert-status" style="font-size: 0.75rem; margin-top: 0.4rem; color: var(--text-muted);">Tempel link berbagi Google Drive, sistem mengubahnya menjadi gambar slide otomatis.</div>
+              <img id="drive-preview-img" alt="Pratinjau Google Drive" style="display: none; width: 100%; max-height: 160px; object-fit: cover; border-radius: var(--radius-md); margin-top: 0.5rem; border: 1px solid var(--surface-border);">
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.5; background: var(--bg-subtle); border: 1px solid var(--surface-border); border-radius: var(--radius-md); padding: 0.55rem 0.7rem;">
+                <strong style="color: var(--text-primary);">Cara bagikan foto Drive agar tampil:</strong>
+                <ol style="margin: 0.3rem 0 0; padding-left: 1.1rem;">
+                  <li>Upload foto ke Google Drive.</li>
+                  <li>Klik kanan file → <strong>Bagikan</strong> → ubah ke <strong>“Siapa saja yang memiliki link”</strong> (Viewer).</li>
+                  <li>Pilih <strong>Salin link</strong>, tempel di kolom atas, klik <strong>Terapkan</strong>.</li>
+                </ol>
+              </div>
+            </div>
+
+            <!-- Panel D: Upload File Komputer / Smartphone -->
             <div id="panel-src-upload" class="slide-source-panel">
               <div class="slide-upload-dropzone" onclick="document.getElementById('slide-input-file').click()">
                 <svg class="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                <div style="font-weight: 600; font-size: 0.85rem; margin-top: 0.35rem;">Klik untuk pilih file foto</div>
-                <div style="font-size: 0.72rem; color: var(--text-muted);">Format JPG, PNG, atau WebP (Otomatis dioptimalkan)</div>
+                <div style="font-weight: 600; font-size: 0.85rem; margin-top: 0.35rem;">Klik untuk pilih foto dari HP / PC</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Bisa pilih banyak foto sekaligus — format JPG, PNG, atau WebP (otomatis dioptimalkan maks. 1280px)</div>
               </div>
-              <input type="file" id="slide-input-file" accept="image/*" style="display: none;" onchange="HavalandSlider.handleFileUpload(event)">
+              <input type="file" id="slide-input-file" accept="image/*" multiple style="display: none;" onchange="HavalandSlider.handleFileUpload(event)">
+              <div id="upload-pending-list" style="display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.5rem;"></div>
+              <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 0.35rem;">
+                Foto tersimpan di peramban ini (kapasitas ±5 MB). Untuk banyak foto besar, disarankan memakai tab Google Drive agar tidak penuh.
+              </span>
             </div>
           </div>
 
