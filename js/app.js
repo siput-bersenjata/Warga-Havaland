@@ -45,7 +45,7 @@ const HavalandApp = {
     // Listener URL hash & popstate
     window.addEventListener("hashchange", () => {
       const hash = window.location.hash.replace("#", "");
-      if (hash && ["beranda", "kas", "rincian", "kegiatan", "warga", "kontak"].includes(hash)) {
+      if (hash && ["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata"].includes(hash)) {
         this.navigate(hash, false);
       }
     });
@@ -68,7 +68,7 @@ const HavalandApp = {
     });
 
     const initialHash = window.location.hash.replace("#", "");
-    if (initialHash && ["beranda", "kas", "rincian", "kegiatan", "warga", "kontak"].includes(initialHash)) {
+    if (initialHash && ["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata"].includes(initialHash)) {
       this.navigate(initialHash, false);
     }
     this.initialized = true;
@@ -259,7 +259,7 @@ const HavalandApp = {
 
   // Router Navigasi Tab
   navigate(tabName, updateHash = true) {
-    if (!["beranda", "kas", "rincian", "kegiatan", "warga", "kontak"].includes(tabName)) return;
+    if (!["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata"].includes(tabName)) return;
 
     this.activeTab = tabName;
     if (updateHash) window.location.hash = tabName;
@@ -674,7 +674,7 @@ const HavalandApp = {
                     Kwitansi
                   </button>
                   ${(typeof HavalandAuth !== 'undefined' && (HavalandAuth.isAdmin() || HavalandAuth.isBendahara())) ? `
-                  <button class="btn btn-secondary btn-sm" style="padding: 4px 6px;" onclick="HavalandApp.openEditTransaksiModal('${e(t.id)}', event)" title="Edit Transaksi">
+                  <button class="btn btn-secondary btn-sm" style="padding: 4px 6px;" onclick="HavalandApp.openEditPage('transaksi','${e(t.id)}', event)" title="Edit Transaksi">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                   </button>
                   ` : ''}
@@ -724,7 +724,7 @@ const HavalandApp = {
                 <div style="display: flex; gap: 4px; align-items: center; justify-content: flex-end; margin-top: 4px;">
                   <span class="badge ${isMasuk ? 'badge-success' : 'badge-danger'}">Kwitansi →</span>
                   ${(typeof HavalandAuth !== 'undefined' && (HavalandAuth.isAdmin() || HavalandAuth.isBendahara())) ? `
-                  <button class="btn btn-secondary btn-sm" style="padding: 2px 6px;" onclick="HavalandApp.openEditTransaksiModal('${e2(t.id)}', event)" title="Edit Transaksi">
+                  <button class="btn btn-secondary btn-sm" style="padding: 2px 6px;" onclick="HavalandApp.openEditPage('transaksi','${e2(t.id)}', event)" title="Edit Transaksi">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                   </button>
                   ` : ''}
@@ -855,7 +855,7 @@ const HavalandApp = {
               Simpan ke Kalender
             </button>
             ${(typeof HavalandAuth !== 'undefined' && (HavalandAuth.isAdmin() || HavalandAuth.isPengurus())) ? `
-            <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem;" onclick="HavalandApp.openEditKegiatanModal('${ek2(k.id)}')" title="Edit Jadwal Kegiatan">
+            <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem;" onclick="HavalandApp.openEditPage('kegiatan','${ek2(k.id)}')" title="Edit Jadwal Kegiatan">
               <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
               Edit Jadwal
             </button>
@@ -1000,7 +1000,7 @@ END:VCALENDAR`;
 
             ${(typeof HavalandAuth !== 'undefined' && HavalandAuth.isAdmin()) ? `
               <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--surface-border); display: flex; justify-content: flex-end; gap: 0.4rem;" onclick="event.stopPropagation()">
-                <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.72rem; height: 26px;" onclick="HavalandApp.openFormWargaModal('${w.id}')" title="Edit Data Warga">
+                <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.72rem; height: 26px;" onclick="HavalandApp.openEditPage('warga','${w.id}')" title="Edit Data Warga">
                   ✏️ Edit
                 </button>
                 <button type="button" class="btn btn-sm" style="color: var(--danger); padding: 2px 8px; font-size: 0.72rem; height: 26px; border: 1px solid rgba(239, 68, 68, 0.25); background: transparent;" onclick="HavalandApp.hapusWarga('${w.id}')" title="Hapus Warga">
@@ -1087,7 +1087,7 @@ END:VCALENDAR`;
         </div>
         `}
         ${(typeof HavalandAuth !== 'undefined' && HavalandAuth.isAdmin()) ? `
-          <button type="button" class="btn btn-secondary" style="flex: 1; min-width: 110px;" onclick="HavalandApp.closeModal('modal-detail-warga'); HavalandApp.openFormWargaModal('${w.id}')">
+          <button type="button" class="btn btn-secondary" style="flex: 1; min-width: 110px;" onclick="HavalandApp.openEditPage('warga','${w.id}')">
             ✏️ Edit Data
           </button>
           <button type="button" class="btn btn-danger" style="flex: 0 0 auto;" onclick="HavalandApp.closeModal('modal-detail-warga'); HavalandApp.hapusWarga('${w.id}')">
@@ -1133,7 +1133,7 @@ END:VCALENDAR`;
               </a>
             ` : ''}
             ${(typeof HavalandAuth !== 'undefined' && HavalandAuth.isAdmin()) ? `
-              <button type="button" class="btn btn-secondary btn-sm" style="white-space: nowrap; height: 34px; padding: 0 9px; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 4px;" onclick="HavalandApp.openFormKontakModal(${index})" title="Edit Kontak">
+              <button type="button" class="btn btn-secondary btn-sm" style="white-space: nowrap; height: 34px; padding: 0 9px; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 4px;" onclick="HavalandApp.openEditPage('kontak',${index})" title="Edit Kontak">
                 <span>✏️ Edit</span>
               </button>
               <button type="button" class="btn btn-sm" style="white-space: nowrap; height: 34px; padding: 0 8px; font-size: 0.72rem; color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.25); background: transparent; display: inline-flex; align-items: center;" onclick="HavalandApp.hapusKontak(${index})" title="Hapus Kontak">
@@ -1174,7 +1174,7 @@ END:VCALENDAR`;
             <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
               <span style="font-size: 0.75rem; font-weight: 700; color: var(--danger);">Urgensi: ${ea(a.urgensi)}</span>
               ${(typeof HavalandAuth !== 'undefined' && HavalandAuth.isAdmin()) ? `
-              <button type="button" class="btn btn-secondary btn-sm" style="padding: 1px 7px; font-size: 0.7rem; height: 24px;" onclick="HavalandApp.openEditAspirasiModal('${ea(a.id)}')" title="Edit / Tanggapi Laporan">
+              <button type="button" class="btn btn-secondary btn-sm" style="padding: 1px 7px; font-size: 0.7rem; height: 24px;" onclick="HavalandApp.openEditPage('aspirasi','${ea(a.id)}')" title="Edit / Tanggapi Laporan">
                 ✏️ Edit & Tanggapi
               </button>
               <button type="button" class="btn btn-sm" style="color: var(--danger); padding: 1px 6px; border: 1px solid rgba(239, 68, 68, 0.25); background: transparent; font-size: 0.7rem; height: 24px;" onclick="HavalandApp.hapusAspirasi('${ea(a.id)}')" title="Hapus Aspirasi (Admin RT)">
@@ -4082,6 +4082,492 @@ const HavalandUserManagement = {
     container.innerHTML = html;
   }
 };
+
+// =============================================================================
+// MODUL 6B: HALAMAN EDIT DATA (pengganti modal edit — full page khusus admin)
+// Dibuka via HavalandApp.openEditPage(type, key). Tipe: kontak, aspirasi,
+// transaksi, kegiatan, warga. Penyimpanan memakai kunci storage, render, dan
+// toast yang SAMA dengan versi modal sehingga sinkron cloud tetap jalan.
+// =============================================================================
+Object.assign(HavalandApp, {
+  editReturnTab: "beranda",
+
+  openEditPage(type, key, e) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    const guards = {
+      kontak: () => HavalandAuth.isAdmin(),
+      warga: () => HavalandAuth.isAdmin(),
+      transaksi: () => HavalandAuth.isAdmin() || HavalandAuth.isBendahara(),
+      kegiatan: () => HavalandAuth.isAdmin() || HavalandAuth.isPengurus(),
+      aspirasi: () => HavalandAuth.isAdmin() || HavalandAuth.isPengurus()
+    };
+    if (!guards[type] || !guards[type]()) {
+      HavalandUtils.showToast("Akses Terbatas", "Hanya pengurus yang dapat mengedit data ini.", "error");
+      return;
+    }
+    const built = this.buildEditForm(type, key);
+    if (!built) {
+      HavalandUtils.showToast("Data Tidak Ditemukan", "Data yang diminta sudah tidak ada. Muat ulang halaman.", "warning");
+      return;
+    }
+    if (this.activeTab !== "editdata") this.editReturnTab = this.activeTab || "beranda";
+    document.getElementById("editpage-title").textContent = built.title;
+    document.getElementById("editpage-sub").textContent = built.sub;
+    document.getElementById("ep-type").value = type;
+    document.getElementById("ep-id").value = built.id || "";
+    document.getElementById("ep-index").value = (built.index === undefined || built.index === null) ? "" : built.index;
+    document.getElementById("ep-orig").value = built.orig || "";
+    document.getElementById("editpage-fields").innerHTML = built.html;
+    this.closeModal("modal-detail-warga");
+    this.navigate("editdata");
+  },
+
+  closeEditPage() {
+    this.navigate(this.editReturnTab || "beranda");
+  },
+
+  epOpts(options, current) {
+    return options.map(o => {
+      const val = Array.isArray(o) ? o[0] : o;
+      const label = Array.isArray(o) ? o[1] : o;
+      return `<option value="${HavalandUtils.escapeHtml(val)}"${String(val) === String(current) ? " selected" : ""}>${HavalandUtils.escapeHtml(label)}</option>`;
+    }).join("");
+  },
+
+  toggleEpSampaiSelesai() {
+    const box = document.getElementById("ep-waktu-selesai");
+    const chk = document.getElementById("ep-sampai-selesai");
+    if (!box || !chk) return;
+    box.disabled = chk.checked;
+    if (chk.checked) box.value = "";
+  },
+
+  submitEditPage(event) {
+    event.preventDefault();
+    const val = (id) => {
+      const el = document.getElementById(id);
+      return el ? el.value.trim() : "";
+    };
+    const type = document.getElementById("ep-type").value;
+    const epId = document.getElementById("ep-id").value;
+    const epIndex = document.getElementById("ep-index").value;
+    const epOrig = document.getElementById("ep-orig").value;
+
+    // ---- KONTAK ----
+    if (type === "kontak") {
+      if (!HavalandAuth.isAdmin()) return;
+      const idx = parseInt(epIndex, 10);
+      if (isNaN(idx) || !HavalandData.profile.kontakDarurat[idx]) return;
+      HavalandData.profile.kontakDarurat[idx] = {
+        nama: val("ep-kontak-nama"),
+        role: val("ep-kontak-role"),
+        nomor: val("ep-kontak-nomor"),
+        wa: val("ep-kontak-wa").replace(/[^0-9]/g, ""),
+        icon: "phone"
+      };
+      if (!HavalandData.profile.kontakDarurat[idx].nama || !HavalandData.profile.kontakDarurat[idx].nomor) {
+        HavalandUtils.showToast("Data Belum Lengkap", "Nama dan nomor telepon wajib diisi.", "warning");
+        return;
+      }
+      HavalandUtils.saveStorage("custom_kontak_v1", HavalandData.profile.kontakDarurat);
+      this.renderKontak();
+      if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+      HavalandUtils.showToast("Kontak Diperbarui", "Kontak berhasil diperbarui!", "success");
+      this.closeEditPage();
+      return;
+    }
+
+    // ---- ASPIRASI ----
+    if (type === "aspirasi") {
+      if (!HavalandAuth.isAdmin() && !HavalandAuth.isPengurus()) return;
+      const a = HavalandData.aspirasi.find(item => item.id === epId);
+      if (!a) return;
+      a.pelapor = val("ep-asp-pelapor");
+      a.kategori = document.getElementById("ep-asp-kategori").value;
+      a.judul = val("ep-asp-judul");
+      a.status = document.getElementById("ep-asp-status").value;
+      a.urgensi = document.getElementById("ep-asp-urgensi").value;
+      a.tanggapan = val("ep-asp-tanggapan");
+      HavalandUtils.saveStorage("custom_aspirasi_v2", HavalandData.aspirasi);
+      HavalandUtils.saveStorage("custom_aspirasi", HavalandData.aspirasi);
+      this.renderAspirasi();
+      if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+      HavalandUtils.showToast("Laporan Diperbarui", "Status laporan berhasil diperbarui!", "success");
+      this.closeEditPage();
+      return;
+    }
+
+    // ---- TRANSAKSI ----
+    if (type === "transaksi") {
+      if (!HavalandAuth.isAdmin() && !HavalandAuth.isBendahara()) return;
+      const t = HavalandData.transaksi.find(item => item.id === epId);
+      if (!t) return;
+      t.tanggal = document.getElementById("ep-trx-tanggal").value;
+      t.jenis = document.getElementById("ep-trx-jenis").value;
+      t.kategori = val("ep-trx-kategori");
+      t.nominal = parseInt(document.getElementById("ep-trx-nominal").value, 10) || 0;
+      t.uraian = val("ep-trx-uraian");
+      t.metode = val("ep-trx-metode");
+      t.pj = val("ep-trx-pj");
+      t.catatan = val("ep-trx-catatan");
+      HavalandUtils.saveStorage("custom_transaksi_full", HavalandData.transaksi);
+      this.recalculateSummary();
+      this.filterTransaksi();
+      this.renderKPIs();
+      if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+      HavalandUtils.showToast("Transaksi Diperbarui", `Catatan transaksi ${t.id} berhasil diperbarui!`, "success");
+      this.closeEditPage();
+      return;
+    }
+
+    // ---- KEGIATAN ----
+    if (type === "kegiatan") {
+      if (!HavalandAuth.isAdmin() && !HavalandAuth.isPengurus()) return;
+      const k = HavalandData.kegiatan.find(item => item.id === epId);
+      if (!k) return;
+      k.judul = val("ep-keg-judul");
+      k.kategori = document.getElementById("ep-keg-kategori").value;
+      k.tipe = document.getElementById("ep-keg-tipe").value;
+      const tgl = document.getElementById("ep-keg-tanggal").value;
+      const mulai = document.getElementById("ep-keg-waktu-mulai").value;
+      const selesai = document.getElementById("ep-keg-waktu-selesai").value;
+      const sampai = document.getElementById("ep-sampai-selesai")?.checked;
+      if (tgl) {
+        const tglTeks = HavalandUtils.formatHariTanggal(tgl);
+        const mulaiTeks = HavalandUtils.formatJamID(mulai);
+        const selesaiTeks = HavalandUtils.formatJamID(selesai);
+        k.waktuNext = sampai && mulaiTeks
+          ? `${tglTeks} • ${mulaiTeks} WIB s.d. selesai`
+          : (mulaiTeks
+            ? (selesaiTeks ? `${tglTeks} • ${mulaiTeks} - ${selesaiTeks} WIB` : `${tglTeks} • ${mulaiTeks} WIB`)
+            : tglTeks);
+      } else {
+        k.waktuNext = epOrig || k.waktuNext;
+      }
+      k.lokasi = val("ep-keg-lokasi");
+      k.koordinator = val("ep-keg-koordinator") || "Belum ditentukan";
+      k.statusBadge = val("ep-keg-badge");
+      k.deskripsi = val("ep-keg-deskripsi");
+      HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
+      this.renderKegiatan("semua");
+      this.renderBerandaHighlights();
+      if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+      HavalandUtils.showToast("Kegiatan Diperbarui", `Jadwal "${k.judul}" berhasil diperbarui!`, "success");
+      this.closeEditPage();
+      return;
+    }
+
+    // ---- WARGA ----
+    if (type === "warga") {
+      if (!HavalandAuth.isAdmin()) return;
+      const idx = HavalandData.warga.findIndex(w => w.id === epId);
+      if (idx === -1) return;
+      const blokVal = val("ep-warga-blok").toUpperCase();
+      const iuranVal = document.getElementById("ep-warga-iuran").value;
+      const isLunas = iuranVal === "Lunas";
+      const terakhirFmt = HavalandUtils.formatBulanID(val("ep-warga-terakhir"));
+      const platRaw = val("ep-warga-plat");
+      HavalandData.warga[idx] = {
+        ...HavalandData.warga[idx],
+        blok: blokVal,
+        namaKK: val("ep-warga-nama"),
+        cluster: val("ep-warga-cluster") || `Blok ${blokVal.charAt(0)} (Jl. Havaland)`,
+        statusHunian: document.getElementById("ep-warga-hunian").value,
+        jabatan: val("ep-warga-jabatan") || "Warga",
+        jumlahJiwa: parseInt(document.getElementById("ep-warga-jiwa").value, 10) || 1,
+        kontak: val("ep-warga-kontak") || "-",
+        platKendaraan: platRaw ? platRaw.split(",").map(p => p.trim()).filter(p => p.length > 0) : ["-"],
+        statusIuran: iuranVal,
+        iuranBulanIni: isLunas,
+        terakhirBayar: terakhirFmt === "-" ? HavalandData.warga[idx].terakhirBayar : terakhirFmt
+      };
+      if (HavalandData.kasSummary) {
+        HavalandData.kasSummary.totalKK = HavalandData.warga.length;
+        HavalandData.kasSummary.wargaSudahBayar = HavalandData.warga.filter(w => w.iuranBulanIni).length;
+      }
+      HavalandUtils.saveStorage("custom_warga_v2", HavalandData.warga);
+      this.filterWarga();
+      this.renderKPIs();
+      if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+      HavalandUtils.showToast("Data Diperbarui", `Data warga ${blokVal} berhasil diperbarui!`, "success");
+      this.closeEditPage();
+      return;
+    }
+  },
+
+  buildEditForm(type, key) {
+    const ea = HavalandUtils.escapeHtml.bind(HavalandUtils);
+    const grid2 = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem;';
+
+    // ---- KONTAK DARURAT (kunci = index array) ----
+    if (type === "kontak") {
+      const idx = parseInt(key, 10);
+      const c = HavalandData.profile.kontakDarurat[idx];
+      if (!c) return null;
+      return {
+        title: `Edit Kontak: ${c.nama}`,
+        sub: "Perbarui direktori kontak penting & darurat",
+        index: idx,
+        html: `
+          <div class="form-group">
+            <label class="form-label" for="ep-kontak-nama">Nama Kontak / Instansi:</label>
+            <input type="text" id="ep-kontak-nama" class="form-control" required value="${ea(c.nama)}">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ep-kontak-role">Peran / Bidang Tugas:</label>
+            <input type="text" id="ep-kontak-role" class="form-control" required value="${ea(c.role)}">
+          </div>
+          <div style="${grid2}">
+            <div class="form-group">
+              <label class="form-label" for="ep-kontak-nomor">Nomor Telepon (Panggilan):</label>
+              <input type="text" id="ep-kontak-nomor" class="form-control" required value="${ea(c.nomor)}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-kontak-wa">Nomor WhatsApp (Opsional):</label>
+              <input type="text" id="ep-kontak-wa" class="form-control" value="${ea(c.wa || "")}">
+            </div>
+          </div>`
+      };
+    }
+
+    // ---- ASPIRASI / LAPORAN (kunci = id) ----
+    if (type === "aspirasi") {
+      const a = HavalandData.aspirasi.find(item => item.id === key);
+      if (!a) return null;
+      return {
+        title: "Edit & Tanggapi Laporan Warga",
+        sub: "Perbarui status penanganan dan tanggapan resmi pengurus RT",
+        id: a.id,
+        html: `
+          <div style="${grid2}">
+            <div class="form-group">
+              <label class="form-label" for="ep-asp-pelapor">Nama Pelapor & Blok:</label>
+              <input type="text" id="ep-asp-pelapor" class="form-control" required value="${ea(a.pelapor)}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-asp-kategori">Kategori Fasilitas:</label>
+              <select id="ep-asp-kategori" class="form-control" required>
+                ${this.epOpts(["Penerangan Jalan (PJU)", "Taman & Lingkungan", "Keamanan", "Fasilitas Umum", "Kebersihan & Sampah", "Lainnya"], a.kategori)}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ep-asp-judul">Uraian / Isi Laporan:</label>
+            <textarea id="ep-asp-judul" class="form-control" rows="2" required>${ea(a.judul)}</textarea>
+          </div>
+          <div style="${grid2}">
+            <div class="form-group">
+              <label class="form-label" for="ep-asp-status">Status Tindak Lanjut:</label>
+              <select id="ep-asp-status" class="form-control" required>
+                ${this.epOpts(["Ditinjau", "Diproses", "Selesai"], a.status)}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-asp-urgensi">Tingkat Urgensi:</label>
+              <select id="ep-asp-urgensi" class="form-control" required>
+                ${this.epOpts(["Rendah", "Sedang", "Penting", "Darurat"], a.urgensi)}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ep-asp-tanggapan">Tanggapan Resmi Pengurus RT:</label>
+            <textarea id="ep-asp-tanggapan" class="form-control" rows="3" required>${ea(a.tanggapan || "")}</textarea>
+          </div>`
+      };
+    }
+
+    // ---- TRANSAKSI KAS (kunci = id) ----
+    if (type === "transaksi") {
+      const t = HavalandData.transaksi.find(item => item.id === key);
+      if (!t) return null;
+      return {
+        title: `Edit Transaksi Kas (${t.id})`,
+        sub: "Perbarui nominal, uraian, atau kategori pembukuan kas",
+        id: t.id,
+        html: `
+          <div style="${grid2}">
+            <div class="form-group">
+              <label class="form-label" for="ep-trx-tanggal">Tanggal Transaksi:</label>
+              <input type="date" id="ep-trx-tanggal" class="form-control" required value="${ea(t.tanggal)}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-trx-jenis">Jenis Arus Kas:</label>
+              <select id="ep-trx-jenis" class="form-control" required>
+                ${this.epOpts([["masuk", "Pemasukan (+)"], ["keluar", "Pengeluaran (-)"]], t.jenis)}
+              </select>
+            </div>
+          </div>
+          <div style="${grid2}">
+            <div class="form-group">
+              <label class="form-label" for="ep-trx-kategori">Kategori:</label>
+              <input type="text" id="ep-trx-kategori" class="form-control" required value="${ea(t.kategori)}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-trx-nominal">Nominal (Rp):</label>
+              <input type="number" id="ep-trx-nominal" class="form-control" min="1000" step="1000" required value="${t.nominal}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ep-trx-uraian">Uraian / Keterangan Transaksi:</label>
+            <input type="text" id="ep-trx-uraian" class="form-control" required value="${ea(t.uraian)}">
+          </div>
+          <div style="${grid2}">
+            <div class="form-group">
+              <label class="form-label" for="ep-trx-metode">Metode Pembayaran:</label>
+              <input type="text" id="ep-trx-metode" class="form-control" required value="${ea(t.metode)}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-trx-pj">Penanggung Jawab:</label>
+              <input type="text" id="ep-trx-pj" class="form-control" required value="${ea(t.pj)}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ep-trx-catatan">Catatan Tambahan:</label>
+            <textarea id="ep-trx-catatan" class="form-control" rows="2">${ea(t.catatan || "")}</textarea>
+          </div>`
+      };
+    }
+
+    // ---- KEGIATAN / AGENDA (kunci = id) ----
+    if (type === "kegiatan") {
+      const k = HavalandData.kegiatan.find(item => item.id === key);
+      if (!k) return null;
+      const parsed = HavalandUtils.parseWaktuNext(k.waktuNext || k.frekuensi || "");
+      const origTeks = k.waktuNext || k.frekuensi || "";
+      const sampaiAktif = /s\.d\.|selesai/i.test(origTeks);
+      return {
+        title: "Edit Jadwal Kegiatan",
+        sub: `Perbarui rincian "${k.judul}"`,
+        id: k.id,
+        orig: origTeks,
+        html: `
+          <div class="form-group">
+            <label class="form-label" for="ep-keg-judul">Nama Kegiatan / Agenda:</label>
+            <input type="text" id="ep-keg-judul" class="form-control" required value="${ea(k.judul)}">
+          </div>
+          <div style="${grid2}">
+            <div class="form-group">
+              <label class="form-label" for="ep-keg-kategori">Kategori Kegiatan:</label>
+              <select id="ep-keg-kategori" class="form-control" required>
+                ${this.epOpts(["Keamanan", "Kebersihan", "Olahraga", "Keagamaan", "Pertemuan", "Sosial"], k.kategori)}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-keg-tipe">Tipe Pelaksanaan:</label>
+              <select id="ep-keg-tipe" class="form-control" required>
+                ${this.epOpts([["Rutin", "Rutin Berkala"], ["Bulanan", "Bulanan"], ["Triwulanan", "Triwulanan"], ["Insidental", "Agenda Khusus / Insidental"]], k.tipe || "Rutin")}
+              </select>
+            </div>
+          </div>
+          <div style="${grid2}">
+            <div class="form-group">
+              <label class="form-label" for="ep-keg-tanggal">Tanggal Pelaksanaan:</label>
+              <input type="date" id="ep-keg-tanggal" class="form-control" value="${ea(parsed.date || "")}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-keg-waktu-mulai">Jam Mulai:</label>
+              <input type="time" id="ep-keg-waktu-mulai" class="form-control" value="${ea(parsed.start || "")}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-keg-waktu-selesai">Jam Selesai:</label>
+              <input type="time" id="ep-keg-waktu-selesai" class="form-control" value="${ea(parsed.end || "")}"${sampaiAktif ? " disabled" : ""}>
+              <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.35rem; cursor: pointer; font-weight: 600;">
+                <input type="checkbox" id="ep-sampai-selesai" style="width: 15px; height: 15px; accent-color: var(--primary);" onchange="HavalandApp.toggleEpSampaiSelesai()"${sampaiAktif ? " checked" : ""}>
+                <span>Sampai acara selesai</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ep-keg-lokasi">Lokasi Pelaksanaan:</label>
+            <input type="text" id="ep-keg-lokasi" class="form-control" required value="${ea(k.lokasi)}">
+          </div>
+          <div style="${grid2}">
+            <div class="form-group">
+              <label class="form-label" for="ep-keg-koordinator">Koordinator / Penanggung Jawab: <span style="font-weight: 400; color: var(--text-muted);">(opsional)</span></label>
+              <input type="text" id="ep-keg-koordinator" class="form-control" value="${ea(k.koordinator)}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-keg-badge">Badge Label:</label>
+              <input type="text" id="ep-keg-badge" class="form-control" value="${ea(k.statusBadge || "")}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ep-keg-deskripsi">Deskripsi Kegiatan:</label>
+            <textarea id="ep-keg-deskripsi" class="form-control" rows="2" required>${ea(k.deskripsi)}</textarea>
+          </div>`
+      };
+    }
+
+    // ---- WARGA / PENGHUNI (kunci = id) ----
+    if (type === "warga") {
+      const w = HavalandData.warga.find(item => item.id === key);
+      if (!w) return null;
+      const platTeks = Array.isArray(w.platKendaraan) ? w.platKendaraan.filter(p => p !== "-").join(", ") : "";
+      return {
+        title: `Edit Data Warga: ${w.blok} - ${w.namaKK}`,
+        sub: "Kelola data penghuni rumah dan catatan kependudukan",
+        id: w.id,
+        html: `
+          <div style="${grid2}">
+            <div class="form-group">
+              <label class="form-label" for="ep-warga-blok">Nomor Blok:</label>
+              <input type="text" id="ep-warga-blok" class="form-control" required value="${ea(w.blok)}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-warga-nama">Nama Kepala Keluarga (KK):</label>
+              <input type="text" id="ep-warga-nama" class="form-control" required value="${ea(w.namaKK)}">
+            </div>
+          </div>
+          <div style="${grid2}">
+            <div class="form-group">
+              <label class="form-label" for="ep-warga-cluster">Cluster / Jalan:</label>
+              <input type="text" id="ep-warga-cluster" class="form-control" required value="${ea(w.cluster || "")}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-warga-hunian">Status Hunian:</label>
+              <select id="ep-warga-hunian" class="form-control" required>
+                ${this.epOpts([["Tetap", "Warga Tetap"], ["Kontrak", "Sewa / Kontrak"], ["Kosong", "Rumah Kosong"]], w.statusHunian)}
+              </select>
+            </div>
+          </div>
+          <div style="${grid2}">
+            <div class="form-group">
+              <label class="form-label" for="ep-warga-jabatan">Peran / Jabatan di Lingkungan:</label>
+              <input type="text" id="ep-warga-jabatan" class="form-control" required value="${ea(w.jabatan || "Warga")}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-warga-jiwa">Jumlah Jiwa (Anggota):</label>
+              <input type="number" id="ep-warga-jiwa" class="form-control" min="1" max="20" required value="${w.jumlahJiwa || 3}">
+            </div>
+          </div>
+          <div style="${grid2}">
+            <div class="form-group">
+              <label class="form-label" for="ep-warga-kontak">Nomor HP / WhatsApp:</label>
+              <input type="text" id="ep-warga-kontak" class="form-control" value="${ea(w.kontak && w.kontak !== "-" ? w.kontak : "")}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-warga-plat">Plat Kendaraan (Pisahkan koma):</label>
+              <input type="text" id="ep-warga-plat" class="form-control" value="${ea(platTeks)}">
+            </div>
+          </div>
+          <div style="${grid2}">
+            <div class="form-group">
+              <label class="form-label" for="ep-warga-iuran">Status Iuran Kas RT:</label>
+              <select id="ep-warga-iuran" class="form-control" required>
+                ${this.epOpts([["Lunas", "Lunas Bulan Ini"], ["Belum", "Belum Lunas"]], w.iuranBulanIni ? "Lunas" : "Belum")}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ep-warga-terakhir">Bulan Terakhir Bayar:</label>
+              <input type="month" id="ep-warga-terakhir" class="form-control" value="${ea(HavalandUtils.parseBulanID(w.terakhirBayar || ""))}">
+            </div>
+          </div>`
+      };
+    }
+
+    return null;
+  }
+});
 
 // =============================================================================
 // MODUL 7: GOOGLE MAPS PHOTO SLIDER & CAROUSEL BERANDA (DENGAN CRUD ADMIN)

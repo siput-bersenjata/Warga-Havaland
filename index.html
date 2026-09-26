@@ -774,6 +774,30 @@
       </div>
     </section>
 
+    <!-- =======================================================================
+         TAB 7: HALAMAN EDIT DATA (khusus admin/pengurus, dibuka via tombol Edit)
+         ======================================================================= -->
+    <section id="view-editdata" class="tab-view">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandApp.closeEditPage()" style="margin-bottom: 1rem;">
+        ← Kembali
+      </button>
+      <div class="card" style="padding: 1.5rem; max-width: 640px; margin: 0 auto;">
+        <h2 class="section-title" id="editpage-title">Edit Data</h2>
+        <p class="section-subtitle" id="editpage-sub" style="margin-bottom: 1.25rem;"></p>
+        <form id="form-editpage" onsubmit="HavalandApp.submitEditPage(event)">
+          <input type="hidden" id="ep-type">
+          <input type="hidden" id="ep-id">
+          <input type="hidden" id="ep-index">
+          <input type="hidden" id="ep-orig">
+          <div id="editpage-fields"></div>
+          <div style="display: flex; gap: 0.5rem; margin-top: 1.25rem; flex-wrap: wrap;">
+            <button type="button" class="btn btn-secondary" onclick="HavalandApp.closeEditPage()" style="flex: 1;">Batal</button>
+            <button type="submit" class="btn btn-primary" style="flex: 2;">Simpan Perubahan</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
   </main>
 
   <!-- =========================================================================
