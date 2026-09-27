@@ -638,7 +638,7 @@ const HavalandApp = {
     const tbody = document.getElementById("trx-table-body");
     if (tbody) {
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">Tidak ditemukan transaksi yang cocok dengan kriteria pencarian.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">Tidak ditemukan transaksi yang cocok. Coba ubah kata kunci atau rentang periode filter.</td></tr>`;
       } else {
         let tHtml = "";
         const e = HavalandUtils.escapeHtml.bind(HavalandUtils);
@@ -696,7 +696,7 @@ const HavalandApp = {
     const mobileStream = document.getElementById("trx-mobile-stream");
     if (mobileStream) {
       if (filtered.length === 0) {
-        mobileStream.innerHTML = `<div class="card" style="text-align: center; padding: 2rem; color: var(--text-muted);">Tidak ditemukan transaksi.</div>`;
+        mobileStream.innerHTML = `<div class="card" style="text-align: center; padding: 2rem; color: var(--text-muted);">Tidak ditemukan transaksi. Coba ubah kata kunci atau rentang periode filter.</div>`;
       } else {
         let mHtml = "";
         const e2 = HavalandUtils.escapeHtml.bind(HavalandUtils);
@@ -787,6 +787,11 @@ const HavalandApp = {
       if (kategoriFilter === "semua") return true;
       return k.kategori === kategoriFilter;
     });
+
+    if (list.length === 0) {
+      container.innerHTML = `<div class="card" style="text-align: center; padding: 2rem; color: var(--text-muted);">Belum ada jadwal pada kategori ini. Pilih filter lain atau tambah jadwal baru.</div>`;
+      return;
+    }
 
     let html = "";
     list.forEach(k => {
@@ -968,7 +973,7 @@ END:VCALENDAR`;
     if (!grid) return;
 
     if (filtered.length === 0) {
-      grid.innerHTML = `<div class="card" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-muted);">Tidak ada warga yang sesuai pencarian.</div>`;
+      grid.innerHTML = `<div class="card" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-muted);">Tidak ada warga yang sesuai pencarian. Coba kata kunci atau filter lain.</div>`;
       return;
     }
 
@@ -1175,6 +1180,11 @@ END:VCALENDAR`;
     const badgeCount = document.getElementById("aspirasi-count-badge");
     if (badgeCount) badgeCount.textContent = `${list.length} Laporan`;
 
+    if (list.length === 0) {
+      container.innerHTML = `<div style="background: var(--bg-subtle); border: 1px solid var(--surface-border); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; color: var(--text-muted);">Belum ada laporan fasilitas. Sampaikan laporan pertama lewat tombol "Kirim Laporan Fasilitas Baru" di atas.</div>`;
+      return;
+    }
+
     let html = "";
     const ea = HavalandUtils.escapeHtml.bind(HavalandUtils);
     list.forEach(a => {
@@ -1278,8 +1288,10 @@ END:VCALENDAR`;
       return;
     }
     const user = HavalandAuth.getCurrentUser();
-    if (!confirm(`Hapus catatan aspirasi ${aspId}? Tindakan ini akan dicatat atas nama ${user.nama}.`)) return;
+    const targetAsp = HavalandData.aspirasi.find(item => item.id === aspId);
+    if (!confirm(`Hapus laporan "${targetAsp ? targetAsp.judul : aspId}"? Data yang dihapus tidak bisa dikembalikan. Tindakan ini dicatat atas nama ${user.nama}.`)) return;
 
+    HavalandData.aspirasi = HavalandData.aspirasi.filter(item => item.id !== aspId);
     HavalandUtils.saveStorage("custom_aspirasi_v2", HavalandData.aspirasi);
     HavalandUtils.saveStorage("custom_aspirasi", HavalandData.aspirasi);
     this.renderAspirasi();
@@ -1779,7 +1791,7 @@ END:VCALENDAR`;
     const bukti = document.getElementById("new-trx-bukti").value.trim() || `KWT-${Date.now().toString().slice(-4)}`;
 
     if (!uraian || isNaN(nominal) || nominal <= 0) {
-      HavalandUtils.showToast("Gagal", "Mohon isi uraian dan nominal yang valid", "error");
+      HavalandUtils.showToast("Data Belum Lengkap", "Mohon isi uraian dan nominal yang valid (angka lebih dari 0).", "error");
       return;
     }
 
@@ -1961,14 +1973,15 @@ END:VCALENDAR`;
       return;
     }
     const user = HavalandAuth.getCurrentUser();
-    if (!confirm(`Hapus jadwal kegiatan ini? Tindakan ini akan dicatat atas nama ${user.nama}.`)) return;
+    const target = HavalandData.kegiatan.find(item => item.id === kegId);
+    if (!confirm(`Hapus "${target ? target.judul : kegId}" dari jadwal kegiatan? Data yang dihapus tidak bisa dikembalikan. Tindakan ini dicatat atas nama ${user.nama}.`)) return;
 
     HavalandData.kegiatan = HavalandData.kegiatan.filter(k => k.id !== kegId);
     HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
     this.renderKegiatan("semua");
     this.renderBerandaHighlights();
     if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
-    HavalandUtils.showToast("Agenda Dihapus", `Kegiatan berhasil dihapus oleh ${user.nama}`, "info");
+    HavalandUtils.showToast("Agenda Dihapus", `"${target ? target.judul : kegId}" berhasil dihapus oleh ${user.nama}.`, "info");
   },
 
   // Burger menu header: buka/tutup dropdown Akun, Kelola Akun, Pengaturan
@@ -3570,7 +3583,7 @@ const HavalandBackup = {
 
       HavalandUtils.showToast("Dipulihkan", "Data berhasil dikembalikan dari snapshot terakhir!", "success");
     } catch (e) {
-      HavalandUtils.showToast("Gagal", "Format snapshot rusak.", "error");
+      HavalandUtils.showToast("Backup Rusak", "Format berkas snapshot tidak dikenali. Pilih berkas JSON cadangan yang lain.", "error");
     }
   }
 };
@@ -3695,13 +3708,14 @@ const HavalandProposals = {
       return;
     }
     const user = HavalandAuth.getCurrentUser();
-    if (!confirm(`Hapus usulan ide warga ini? Tindakan ini akan dicatat atas nama ${user.nama}.`)) return;
+    const targetIde = HavalandData.usulanIde.find(item => item.id === ideaId);
+    if (!confirm(`Hapus usulan "${targetIde ? targetIde.judul : ideaId}"? Data yang dihapus tidak bisa dikembalikan. Tindakan ini dicatat atas nama ${user.nama}.`)) return;
 
     HavalandData.usulanIde = HavalandData.usulanIde.filter(u => u.id !== ideaId);
     HavalandUtils.saveStorage("custom_usulan_v2", HavalandData.usulanIde);
     this.renderSlider();
     if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
-    HavalandUtils.showToast("Usulan Dihapus", `Usulan ide berhasil dihapus oleh ${user.nama}.`, "info");
+    HavalandUtils.showToast("Usulan Dihapus", `Usulan "${targetIde ? targetIde.judul : ideaId}" berhasil dihapus oleh ${user.nama}.`, "info");
   },
 
   shareIdeaWA(ideaId) {
@@ -3746,7 +3760,7 @@ const HavalandProposals = {
     const manfaat = document.getElementById("usulan-manfaat").value.trim();
 
     if (!judul || !deskripsi) {
-      HavalandUtils.showToast("Gagal", "Mohon lengkapi judul dan deskripsi usulan ide Anda", "error");
+      HavalandUtils.showToast("Belum Lengkap", "Mohon lengkapi judul dan deskripsi usulan ide Anda.", "error");
       return;
     }
 
