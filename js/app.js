@@ -4834,6 +4834,7 @@ const HavalandSlider = {
   startAutoPlay() {
     this.stopAutoPlay();
     if (this.isPaused) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     this.autoplayInterval = setInterval(() => {
       this.goTo(this.currentIndex + 1);
     }, this.autoplayDuration);

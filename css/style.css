@@ -1390,6 +1390,7 @@ html[data-btn-size="xlarge"] .nav-link {
   align-items: center;
   justify-content: center;
   padding: 0;
+  transition: transform var(--transition-fast), background var(--transition-fast);
 }
 
 .hero-arrow svg {
@@ -1480,8 +1481,30 @@ html[data-btn-size="xlarge"] .nav-link {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   .hero-bg-slides img {
     transition: none;
+  }
+  /* Matikan gerakan spasial (masuk/tab geser/putar), pertahankan umpan
+     balik instan (scale tekan) dan transisi opacity/warna yang bermakna. */
+  .tab-view.active {
+    animation: none;
+  }
+  .ideas-track,
+  .slider-track {
+    scroll-behavior: auto;
+  }
+  .slider-track {
+    transition: none !important;
+  }
+  .pulse-dot,
+  .live-pulse-dot {
+    animation: none !important;
+  }
+  .toast-item {
+    animation: none !important;
   }
 }
 

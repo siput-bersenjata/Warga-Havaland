@@ -1580,6 +1580,19 @@ textarea.form-control {
   border-color: var(--primary);
 }
 
+/* Umpan sentuh global: tombol ditekan sedikit mengecil (transform saja).
+   Hover yang memakai translateY otomatis tergantikan sesaat saat ditekan.
+   Dikecualikan: panah slider/lightbox (posisinya memakai translateY). */
+.btn:active,
+.icon-btn:active,
+.pill-btn:active,
+.hero-arrow:active,
+.bottom-nav-item:active,
+.quick-action-btn:active,
+.carousel-nav-btn:active {
+  transform: scale(0.96);
+}
+
 /* ==========================================================================
    Settings Modal Elements
    ========================================================================== */
