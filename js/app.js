@@ -374,7 +374,7 @@ const HavalandApp = {
               <div class="activity-details">
                 <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 2px;">
                   <span class="badge badge-info">${k.kategori}</span>
-                  <span style="font-size: 0.75rem; color: var(--primary); font-weight: 700;">${k.waktuNext}</span>
+                  <span style="font-size: 0.75rem; color: var(--primary-text); font-weight: 700;">${k.waktuNext}</span>
                 </div>
                 <h3>${k.judul}</h3>
                 <p>${k.deskripsi}</p>
@@ -806,7 +806,7 @@ const HavalandApp = {
         });
         piketTableHtml = `
           <div style="margin-top: 0.85rem; border-top: 1px dashed var(--surface-border); padding-top: 0.75rem;">
-            <div style="font-size: 0.82rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--primary);">Jadwal Giliran Ronda Tiap Malam:</div>
+            <div style="font-size: 0.82rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--primary-text);">Jadwal Giliran Ronda Tiap Malam:</div>
             <div class="table-responsive">
               <table class="piket-table">
                 <thead>
@@ -830,7 +830,7 @@ const HavalandApp = {
             <div class="activity-details" style="flex: 1;">
               <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 4px; flex-wrap: wrap;">
                 <span class="badge badge-success">${ek2(k.statusBadge || 'Aktif')}</span>
-                <span style="font-size: 0.78rem; font-weight: 700; color: var(--primary);">⏱ ${ek2(k.waktuNext)}</span>
+                <span style="font-size: 0.78rem; font-weight: 700; color: var(--primary-text);">⏱ ${ek2(k.waktuNext)}</span>
               </div>
               <h3 style="font-size: 1.15rem; font-weight: 800;">${ek2(k.judul)}</h3>
               <p style="font-size: 0.85rem; color: var(--text-secondary);">${ek2(k.deskripsi)}</p>
@@ -1028,7 +1028,7 @@ END:VCALENDAR`;
               </div>
             ` : `
               <div style="margin-top: 8px; text-align: right;">
-                <span style="font-size: 0.78rem; font-weight: 700; color: var(--primary);">Lihat Profil & Kontak →</span>
+                <span style="font-size: 0.78rem; font-weight: 700; color: var(--primary-text);">Lihat Profil & Kontak →</span>
               </div>
             `}
           </div>
@@ -1057,7 +1057,7 @@ END:VCALENDAR`;
         <div>
           <div class="house-badge" style="display: inline-flex; margin-bottom: 4px;">${w.blok}</div>
           <h3 style="font-size: 1.25rem; font-weight: 800;">${w.namaKK}</h3>
-          <div style="font-size: 0.85rem; color: var(--primary); font-weight: 600;">${w.cluster}</div>
+          <div style="font-size: 0.85rem; color: var(--primary-text); font-weight: 600;">${w.cluster}</div>
         </div>
         <span class="badge ${isLunas ? 'badge-success' : 'badge-danger'}" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">
           ${isLunas ? 'Iuran Lunas' : 'Belum Lunas'}
@@ -1088,7 +1088,7 @@ END:VCALENDAR`;
       </div>
 
       <div style="margin-top: 1.25rem; background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md);">
-        <div style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--primary);">Kendaraan Terdata untuk Keamanan Satpam:</div>
+        <div style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--primary-text);">Kendaraan Terdata untuk Keamanan Satpam:</div>
         <ul style="padding-left: 1.25rem; font-size: 0.82rem; color: var(--text-secondary);">
           ${vehicleList}
         </ul>
@@ -1132,7 +1132,7 @@ END:VCALENDAR`;
       html += `
         <div class="kontak-card-item">
           <div style="display: flex; align-items: center; gap: 0.85rem; min-width: 0; flex: 1 1 auto;">
-            <div style="width: 42px; height: 42px; min-width: 42px; border-radius: var(--radius-full); background: rgba(6, 95, 70, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <div style="width: 42px; height: 42px; min-width: 42px; border-radius: var(--radius-full); background: rgba(6, 95, 70, 0.1); color: var(--primary-text); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
             </div>
             <div style="min-width: 0; flex: 1;">
@@ -3248,7 +3248,7 @@ const HavalandSettings = {
     container.innerHTML = `
       <div style="display: flex; flex-direction: column; gap: 0.85rem;">
         <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent); padding: 0.6rem 0.85rem; border-radius: var(--radius-md);">
-          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; color: var(--primary);">
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; color: var(--primary-text);">
             <span>🛡️ Akses Terverifikasi:</span>
             <span>${HavalandAuth.getCurrentUser()?.nama} (${HavalandAuth.getCurrentUser()?.role})</span>
           </div>
@@ -3295,7 +3295,7 @@ const HavalandSettings = {
 
           <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px dashed var(--surface-border); padding-top: 0.6rem; margin-top: 0.6rem; font-size: 0.75rem;">
             <span style="color: var(--text-muted);">Snapshot Terakhir: <strong style="color: var(--text-primary);">${lastSnapshot}</strong></span>
-            <button type="button" class="btn btn-sm" style="font-size: 0.72rem; color: var(--primary); text-decoration: underline; background: transparent; padding: 0;" onclick="HavalandBackup.restoreLastSnapshot()">
+            <button type="button" class="btn btn-sm" style="font-size: 0.72rem; color: var(--primary-text); text-decoration: underline; background: transparent; padding: 0;" onclick="HavalandBackup.restoreLastSnapshot()">
               Pulihkan dari Snapshot
             </button>
           </div>
@@ -3329,7 +3329,7 @@ const HavalandSettings = {
       : 0;
     container.innerHTML = `
       <div style="display: flex; flex-direction: column; gap: 0.6rem;">
-        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent); padding: 0.6rem 0.85rem; border-radius: var(--radius-md); font-size: 0.82rem; font-weight: 700; color: var(--primary);">
+        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent); padding: 0.6rem 0.85rem; border-radius: var(--radius-md); font-size: 0.82rem; font-weight: 700; color: var(--primary-text);">
           <span>🖼️ ${count} foto aktif di slide beranda & hero</span>
           <span class="badge badge-success" style="font-size: 0.7rem;">Admin</span>
         </div>
@@ -3606,7 +3606,7 @@ const HavalandProposals = {
         <div class="idea-card">
           <div>
             <div class="idea-top">
-              <span class="badge" style="background: var(--bg-subtle); color: var(--primary); font-size: 0.72rem;">${item.kategori}</span>
+              <span class="badge" style="background: var(--bg-subtle); color: var(--primary-text); font-size: 0.72rem;">${item.kategori}</span>
               <span class="badge ${statusBadgeClass}" style="font-size: 0.7rem;">${item.status}</span>
             </div>
             <h4 class="idea-title">${item.judul}</h4>
@@ -3631,7 +3631,7 @@ const HavalandProposals = {
                 <strong>(${item.dukungan || 0})</strong>
               </button>
               <div style="display: flex; gap: 4px; align-items: center;">
-                <button type="button" class="btn btn-sm" style="font-size: 0.72rem; color: var(--primary); background: transparent; padding: 0;" onclick="HavalandProposals.shareIdeaWA('${item.id}')">
+                <button type="button" class="btn btn-sm" style="font-size: 0.72rem; color: var(--primary-text); background: transparent; padding: 0;" onclick="HavalandProposals.shareIdeaWA('${item.id}')">
                   Bagikan WA →
                 </button>
                 ${(typeof HavalandAuth !== 'undefined' && HavalandAuth.isAdmin()) ? `
@@ -4083,7 +4083,7 @@ const HavalandUserManagement = {
           </div>
           <div>
             ${isPrimaryAdmin ? `
-              <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--primary); font-size: 0.72rem; padding: 0.35rem 0.65rem; border-radius: var(--radius-full); font-weight: 600;">
+              <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--primary-text); font-size: 0.72rem; padding: 0.35rem 0.65rem; border-radius: var(--radius-full); font-weight: 600;">
                 Dilindungi
               </span>
             ` : `
@@ -4491,7 +4491,7 @@ Object.assign(HavalandApp, {
               <label class="form-label" for="ep-keg-waktu-selesai">Jam Selesai:</label>
               <input type="time" id="ep-keg-waktu-selesai" class="form-control" value="${ea(parsed.end || "")}"${sampaiAktif ? " disabled" : ""}>
               <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.35rem; cursor: pointer; font-weight: 600;">
-                <input type="checkbox" id="ep-sampai-selesai" style="width: 15px; height: 15px; accent-color: var(--primary);" onchange="HavalandApp.toggleEpSampaiSelesai()"${sampaiAktif ? " checked" : ""}>
+                <input type="checkbox" id="ep-sampai-selesai" style="width: 15px; height: 15px; accent-color: var(--primary-text);" onchange="HavalandApp.toggleEpSampaiSelesai()"${sampaiAktif ? " checked" : ""}>
                 <span>Sampai acara selesai</span>
               </label>
             </div>
@@ -5369,7 +5369,7 @@ const HavalandSlider = {
         <img src="${s.url}" alt="${HavalandUtils.escapeHtml(s.title)}" class="manage-slide-thumb" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=200'">
         <div class="manage-slide-info">
           <div style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.2rem;">
-            <span class="badge" style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.15); color: var(--primary);">#${idx + 1}</span>
+            <span class="badge" style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.15); color: var(--primary-text);">#${idx + 1}</span>
             <span class="badge" style="font-size: 0.65rem; background: var(--surface-hover); color: var(--text-secondary);">${HavalandUtils.escapeHtml(s.badge || 'Foto')}</span>
             <span style="font-size: 0.68rem; color: var(--text-muted);">${HavalandUtils.escapeHtml(s.source || 'Google Maps')}</span>
           </div>
