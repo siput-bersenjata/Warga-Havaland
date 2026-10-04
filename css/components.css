@@ -3339,4 +3339,325 @@ textarea.form-control {
   border-color: #27272a;
 }
 
+/* ==========================================================================
+   HALAMAN KELOLA & BUAT AKUN WARGA (ADMINISTRATOR RT)
+   ========================================================================== */
+.account-manager-header-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.account-manager-header-info {
+  flex: 1;
+  min-width: 260px;
+}
+
+.account-manager-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Legend Card */
+.account-legend-card {
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+}
+
+.account-legend-title {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  margin-bottom: 0.65rem;
+}
+
+.account-legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.account-legend-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.account-legend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 700;
+  font-size: 0.78rem;
+  width: fit-content;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+/* Form Card & Table Card */
+.account-form-card,
+.account-table-card {
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.5rem;
+}
+
+.account-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.15rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.account-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.account-card-subtitle {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin: 0.25rem 0 0;
+  line-height: 1.4;
+}
+
+.account-edit-banner {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.account-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .account-form-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+.account-error-box {
+  color: var(--danger);
+  font-size: 0.8rem;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--danger);
+  margin-bottom: 0.85rem;
+}
+
+.account-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+/* Table Toolbar */
+.account-table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.account-search-box {
+  position: relative;
+  min-width: 220px;
+}
+
+.account-search-box .search-icon {
+  position: absolute;
+  left: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.account-search-box input {
+  padding-left: 2rem;
+}
+
+/* Responsive Table */
+.account-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  -webkit-overflow-scrolling: touch;
+}
+
+.account-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.account-table th {
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--surface-border);
+  white-space: nowrap;
+}
+
+.account-table td {
+  padding: 0.85rem 0.85rem;
+  border-bottom: 1px solid var(--surface-border);
+  vertical-align: middle;
+  color: var(--text-primary);
+}
+
+.account-table-row:hover {
+  background: var(--bg-subtle);
+  transition: background 0.15s ease;
+}
+
+.account-table-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--bg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+  border: 1px solid var(--surface-border);
+}
+
+.account-table-avatar.avatar-admin {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.account-username-badge {
+  font-size: 0.78rem;
+  background: var(--bg-subtle);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--surface-border);
+  color: var(--primary-text);
+  font-family: monospace;
+}
+
+.account-blok-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border: 1px solid var(--surface-border);
+  white-space: nowrap;
+}
+
+.account-role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.badge-role-admin {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-role-bendahara {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-role-pengurus {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-role-warga {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--primary-text);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.account-actions-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.account-table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--surface-border);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+[data-theme="amoled"] .account-form-card,
+[data-theme="amoled"] .account-table-card {
+  background: #000000;
+  border-color: #27272a;
+}
+
+[data-theme="amoled"] .account-table-responsive {
+  background: #000000;
+  border-color: #27272a;
+}
+
+[data-theme="amoled"] .account-legend-card,
+[data-theme="amoled"] .account-table th {
+  background: #09090b;
+  border-color: #27272a;
+}
+
+
 

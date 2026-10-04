@@ -18,7 +18,7 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/style.css?v=20260926y">
-  <link rel="stylesheet" href="css/components.css?v=20261004a">
+  <link rel="stylesheet" href="css/components.css?v=20261004b">
 </head>
 <body>
 
@@ -81,7 +81,7 @@
             </button>
 
             <!-- Kelola Akun Button (Admin Only - Hidden by default) -->
-            <button id="btn-kelola-akun" class="admin-nav-pill burger-item" style="display: none;" onclick="HavalandUserManagement.openModal()" title="Kelola Akun & Hak Akses Warga" role="menuitem">
+            <button id="btn-kelola-akun" class="admin-nav-pill burger-item" style="display: none;" onclick="HavalandApp.openAccountManagerPage()" title="Kelola Akun & Hak Akses Warga" role="menuitem">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
               <span>Kelola Akun</span>
             </button>
@@ -1009,6 +1009,209 @@
       </div>
     </section>
 
+    <!-- =======================================================================
+         TAB 9: HALAMAN KELOLA & BUAT AKUN WARGA (Khusus Administrator RT)
+         ======================================================================= -->
+    <section id="view-kelolaakun" class="tab-view">
+      <!-- Top Navigation & Header Bar -->
+      <div class="account-manager-header-bar">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandApp.closeAccountManagerPage()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          <span>Kembali</span>
+        </button>
+        <div class="account-manager-header-info">
+          <div class="account-manager-title-row">
+            <h2 class="section-title" style="margin: 0; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <span>👥 Kelola Akun & Hak Akses Warga</span>
+              <span class="badge badge-emerald" style="font-size: 0.72rem;">Admin RT</span>
+            </h2>
+          </div>
+          <p class="section-subtitle" style="margin: 0.25rem 0 0;">
+            Kelola akun dan hak akses sistem secara leluasa. Tambah akun warga baru, sesuaikan peran (Warga, Pengurus, Bendahara, Admin), dan pantau akun terdaftar.
+          </p>
+        </div>
+      </div>
+
+      <!-- Role Legend Info Card -->
+      <div class="card account-legend-card">
+        <div class="account-legend-title">
+          <span>🛡️ Panduan Hak Akses Sesuai Peran:</span>
+        </div>
+        <div class="account-legend-grid">
+          <div class="account-legend-item">
+            <span class="account-legend-badge badge-role-warga">👤 Warga Tetap</span>
+            <span>Akses fitur umum, kirim ide inovasi, vote usulan, lapor fasilitas rusak, cek laporan iuran.</span>
+          </div>
+          <div class="account-legend-item">
+            <span class="account-legend-badge badge-role-pengurus">📋 Pengurus RT</span>
+            <span>Hak warga + kelola jadwal kegiatan, update status agenda, tanggapi laporan & aspirasi warga.</span>
+          </div>
+          <div class="account-legend-item">
+            <span class="account-legend-badge badge-role-bendahara">💰 Bendahara RT</span>
+            <span>Hak warga + catat transaksi kas masuk/keluar, update saldo kas, kelola status iuran warga.</span>
+          </div>
+          <div class="account-legend-item">
+            <span class="account-legend-badge badge-role-admin">👑 Administrator RT</span>
+            <span>Akses penuh sistem + tambah/edit/hapus akun warga, kelola foto slide, dan backup data.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1. Formulir Tambah / Ubah Akun Warga -->
+      <div class="card account-form-card" id="card-akun-form">
+        <div class="account-card-header">
+          <div>
+            <h3 class="account-card-title" id="akun-form-mode-title">
+              <span id="akun-form-mode-title-text">➕ Buat Akun Warga Baru</span>
+            </h3>
+            <p class="account-card-subtitle" id="akun-form-mode-desc">
+              Pilih nama dari direktori warga untuk otomatis mengisi data atau masukkan data manual.
+            </p>
+          </div>
+          <button type="button" id="btn-cancel-edit-akun" class="btn btn-secondary btn-xs" style="display: none;" onclick="HavalandUserManagement.resetForm()">
+            ✕ Batalkan Edit
+          </button>
+        </div>
+
+        <!-- Banner jika dalam mode edit -->
+        <div id="akun-edit-alert" class="account-edit-banner" style="display: none;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.1rem;">✏️</span>
+            <div>
+              <strong style="color: var(--primary-text);">Sedang Mengubah Hak Akses:</strong>
+              <span id="akun-edit-nama-preview" style="font-weight: 600;"></span>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Ubah peran, blok, atau isi kata sandi baru jika ingin mereset password, lalu klik Simpan Perubahan.</div>
+            </div>
+          </div>
+        </div>
+
+        <form id="form-kelola-akun-page" onsubmit="HavalandUserManagement.handleFormSubmit(event)">
+          <input type="hidden" id="akun-edit-id" value="">
+
+          <!-- Dropdown Cepat dari Direktori Warga -->
+          <div class="form-group" id="group-select-warga">
+            <label class="form-label" for="akun-select-warga">Pilih dari Direktori Warga Havaland (Otomatis Isi):</label>
+            <select id="akun-select-warga" class="form-control" onchange="HavalandUserManagement.onWargaSelected()">
+              <!-- Populated dynamically with 25 residents -->
+            </select>
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">
+              💡 Memilih warga akan otomatis mengisi Nama Lengkap, Blok Rumah, dan rekomendasi Username login yang rapi.
+            </div>
+          </div>
+
+          <div class="account-form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="akun-nama">Nama Lengkap Warga: <span class="text-danger">*</span></label>
+              <input type="text" id="akun-nama" class="form-control" placeholder="Contoh: Bu Tutik / Bpk. Bambang" required autocomplete="name">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="akun-blok">Blok Rumah: <span class="text-danger">*</span></label>
+              <input type="text" id="akun-blok" class="form-control" placeholder="Contoh: D1, F8, dll" required>
+            </div>
+          </div>
+
+          <div class="account-form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="akun-username">Username Login: <span class="text-danger">*</span></label>
+              <input type="text" id="akun-username" class="form-control" placeholder="contoh: tutik_d1" required autocomplete="username" pattern="[a-zA-Z0-9_]{3,30}" title="3-30 karakter alfanumerik atau garis bawah">
+              <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; display: block;">Hanya huruf, angka, dan garis bawah (_).</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="akun-password" id="akun-password-label">Kata Sandi / Password: <span class="text-danger" id="akun-password-req">*</span></label>
+              <input type="password" id="akun-password" class="form-control" placeholder="Minimal 6 karakter" required autocomplete="new-password" minlength="6">
+              <span id="akun-password-hint" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; display: block;">Minimal 6 karakter. Wajib diisi saat membuat akun baru.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="akun-role">Peran & Hak Akses Sistem: <span class="text-danger">*</span></label>
+            <select id="akun-role" class="form-control" required>
+              <option value="Warga Tetap" selected>👤 Warga Tetap (Kirim Usulan, Vote Ide, Lapor Fasilitas, Cek Iuran)</option>
+              <option value="Pengurus RT">📋 Pengurus RT (Hak Warga + Kelola Jadwal Kegiatan & Tanggapan Aspirasi)</option>
+              <option value="Bendahara RT">💰 Bendahara RT (Hak Warga + Pencatatan Kas Masuk/Keluar & Cek Iuran)</option>
+              <option value="Administrator RT">👑 Administrator RT (Akses Penuh + Kelola Akun, Slide, & Backup Data)</option>
+            </select>
+          </div>
+
+          <div id="akun-form-error-msg" class="account-error-box" style="display: none;"></div>
+
+          <div class="account-form-actions">
+            <button type="submit" id="akun-form-submit-btn" class="btn btn-primary">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+              <span id="akun-form-submit-text">+ Buat & Daftarkan Akun Warga</span>
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="HavalandUserManagement.resetForm()">
+              <span>Reset Form</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- 2. Tabel Daftar Akun Pengguna Terdaftar -->
+      <div class="card account-table-card">
+        <div class="account-card-header" style="flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <h3 class="account-card-title">
+              <span>Daftar Akun Pengguna Terdaftar</span>
+              <span class="badge badge-emerald" id="account-total-count" style="margin-left: 0.5rem; font-size: 0.75rem;">0 Akun</span>
+            </h3>
+            <p class="account-card-subtitle">
+              Seluruh akun warga dan pengurus yang memiliki hak akses login ke sistem informasi RT 04 Havaland.
+            </p>
+          </div>
+
+          <!-- Filter & Search Controls -->
+          <div class="account-table-toolbar">
+            <div class="account-search-box">
+              <svg class="w-4 h-4 search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input type="text" id="search-account-input" class="form-control form-control-sm" placeholder="Cari nama, username, blok..." oninput="HavalandUserManagement.onSearchInput(this.value)">
+            </div>
+            <select id="filter-account-role" class="form-control form-control-sm" onchange="HavalandUserManagement.onRoleFilterChange(this.value)" style="width: auto; min-width: 150px;">
+              <option value="">Semua Peran</option>
+              <option value="Administrator RT">👑 Admin RT</option>
+              <option value="Bendahara RT">💰 Bendahara RT</option>
+              <option value="Pengurus RT">📋 Pengurus RT</option>
+              <option value="Warga Tetap">👤 Warga Tetap</option>
+            </select>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandUserManagement.loadUsers()" title="Segarkan Data Akun">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabel Responsif -->
+        <div class="account-table-responsive">
+          <table class="account-table" id="table-daftar-akun">
+            <thead>
+              <tr>
+                <th style="width: 48px; text-align: center;">No</th>
+                <th>Nama Warga</th>
+                <th>Username</th>
+                <th>Blok</th>
+                <th>Peran / Hak Akses</th>
+                <th>Terdaftar</th>
+                <th style="text-align: center;">Status</th>
+                <th style="text-align: center; width: 160px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="daftar-pengguna-tbody">
+              <!-- Rendered dynamically by HavalandUserManagement.render() -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="account-table-footer">
+          <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <span>🛡️ Akun <strong>admin</strong> utama dilindungi dan tidak dapat dihapus atau diturunkan hak aksesnya.</span>
+          </div>
+          <button type="button" class="btn btn-outline-primary btn-xs" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
+            ↑ Kembali ke Atas
+          </button>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- =========================================================================
@@ -1861,129 +2064,7 @@
     </div>
   </div>
 
-  <!-- 10. Modal Kelola Akun & Hak Akses Warga (Administrator RT Only) -->
-  <div id="modal-kelola-akun" class="modal-overlay" onclick="HavalandApp.handleBackdropClick(event, 'modal-kelola-akun')">
-    <div class="modal-container" style="max-width: 680px;">
-      <div class="modal-header">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <div class="quick-action-icon icon-emerald" style="width: 34px; height: 34px; min-width: 34px; min-height: 34px;">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-          </div>
-          <div>
-            <h3 style="margin: 0; font-size: 1.1rem;">Kelola Akun & Hak Akses Warga</h3>
-            <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);">Atur akun warga dan tetapkan peran (Warga Tetap, Pengurus RT, Bendahara, Admin)</p>
-          </div>
-        </div>
-        <button class="icon-btn" onclick="HavalandApp.closeModal('modal-kelola-akun')" aria-label="Tutup">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-
-      <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-        <!-- Top Action Bar -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-          <div>
-            <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-primary);">Daftar Akun Pengguna Terdaftar</span>
-            <div style="font-size: 0.72rem; color: var(--text-muted);">Warga dapat berpartisipasi usul ide, vote inovasi, dan lapor aspirasi.</div>
-          </div>
-          <button type="button" class="btn btn-primary btn-sm" onclick="HavalandUserManagement.openTambahModal()">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
-            Buat Akun Warga Baru
-          </button>
-        </div>
-
-        <!-- Role Legend Info Card -->
-        <div class="card" style="background: var(--bg-subtle); padding: 0.75rem 0.9rem; margin-bottom: 1rem; border-radius: var(--radius-md); font-size: 0.75rem; border: 1px solid var(--surface-border);">
-          <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
-            <span>🛡️ Hak Akses Sesuai Peran:</span>
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.5rem; color: var(--text-secondary); line-height: 1.4;">
-            <div><strong style="color: var(--primary-text);">• Warga Tetap:</strong> Kirim ide inovasi, vote usulan, lapor fasilitas, cek iuran.</div>
-            <div><strong style="color: var(--accent-blue);">• Pengurus RT:</strong> Hak warga + kelola jadwal kegiatan, tanggapan aspirasi.</div>
-            <div><strong style="color: var(--accent-gold);">• Bendahara RT:</strong> Hak warga + catat transaksi buku kas, status iuran.</div>
-            <div><strong style="color: var(--danger);">• Administrator RT:</strong> Akses penuh sistem + tambah/hapus akun warga.</div>
-          </div>
-        </div>
-
-        <!-- Users List Container -->
-        <div id="daftar-pengguna-container">
-          <!-- Dynamically populated by HavalandUserManagement.render() -->
-        </div>
-      </div>
-
-      <div class="modal-footer" style="justify-content: space-between;">
-        <span style="font-size: 0.72rem; color: var(--text-muted);">Akun admin utama dilindungi oleh sistem keamanan.</span>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandApp.closeModal('modal-kelola-akun')">Tutup</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 11. Modal Buat Akun Warga Baru -->
-  <div id="modal-tambah-akun" class="modal-overlay" onclick="HavalandApp.handleBackdropClick(event, 'modal-tambah-akun')">
-    <div class="modal-container" style="max-width: 520px;">
-      <div class="modal-header">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <div class="quick-action-icon icon-emerald" style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
-          </div>
-          <div>
-            <h3 style="margin: 0; font-size: 1.1rem;">Buat Akun Warga Baru</h3>
-            <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);">Pilih warga dari direktori atau masukkan data manual</p>
-          </div>
-        </div>
-        <button class="icon-btn" onclick="HavalandApp.closeModal('modal-tambah-akun')" aria-label="Tutup">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-
-      <form id="form-tambah-akun" onsubmit="HavalandUserManagement.handleFormSubmit(event)">
-        <div class="modal-body" style="max-height: 72vh; overflow-y: auto;">
-          <!-- Direktori Picker -->
-          <div class="form-group">
-            <label class="form-label" for="akun-select-warga">Pilih dari Direktori Warga Havaland (Praktis):</label>
-            <select id="akun-select-warga" class="form-control" onchange="HavalandUserManagement.onWargaSelected()">
-              <!-- Populated dynamically with 25 residents -->
-            </select>
-            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">
-              Memilih warga akan otomatis mengisi Nama Lengkap, Blok Rumah, dan saran Username.
-            </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem;">
-            <div class="form-group">
-              <label class="form-label" for="akun-nama">Nama Lengkap Warga:</label>
-              <input type="text" id="akun-nama" class="form-control" placeholder="Contoh: Bu Tutik" required autocomplete="name">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="akun-blok">Blok Rumah:</label>
-              <input type="text" id="akun-blok" class="form-control" placeholder="D1" required>
-            </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-            <div class="form-group">
-              <label class="form-label" for="akun-username">Username Login:</label>
-              <input type="text" id="akun-username" class="form-control" placeholder="contoh: tutik_d1" required autocomplete="username" pattern="[a-zA-Z0-9_]{3,30}" title="3-30 karakter alfanumerik atau garis bawah">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="akun-password">Kata Sandi / Password:</label>
-              <input type="password" id="akun-password" class="form-control" placeholder="Min. 6 karakter" required autocomplete="new-password" minlength="6">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="akun-role">Peran & Hak Akses Sistem:</label>
-            <select id="akun-role" class="form-control" required>
-              <option value="Warga Tetap" selected>Warga Tetap (Kirim Usulan, Vote Ide, Lapor Fasilitas, Cek Iuran)</option>
-              <option value="Pengurus RT">Pengurus RT (Hak Warga + Kelola Jadwal Kegiatan & Tanggapan Aspirasi)</option>
-              <option value="Bendahara RT">Bendahara RT (Hak Warga + Pencatatan Kas Masuk/Keluar & Verifikasi Iuran)</option>
-              <option value="Administrator RT">Administrator RT (Akses Penuh + Kelola Akun & Backup Data)</option>
-            </select>
-          </div>
-
-          <div id="tambah-akun-error-msg" style="display: none; color: var(--danger); font-size: 0.8rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--danger); margin-bottom: 0.75rem;">
-          </div>
-        </div>
+  <!-- Catatan: Modal Kelola Akun & Tambah Akun telah dipindahkan ke halaman khusus (view-kelolaakun) agar lebih leluasa -->
 
   <!-- 12. Modal Tambah & Edit Data Warga (Administrator RT) -->
   <div id="modal-form-warga" class="modal-overlay" onclick="HavalandApp.handleBackdropClick(event, 'modal-form-warga')">
@@ -2434,7 +2515,7 @@
   <!-- Scripts -->
   <script src="js/data.js?v=20260926y"></script>
   <script src="js/utils.js?v=20260926y"></script>
-  <script src="js/app.js?v=20261004a"></script>
+  <script src="js/app.js?v=20261004b"></script>
 
 </body>
 </html>

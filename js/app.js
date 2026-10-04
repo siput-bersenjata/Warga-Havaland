@@ -45,7 +45,7 @@ const HavalandApp = {
     // Listener URL hash & popstate
     window.addEventListener("hashchange", () => {
       const hash = window.location.hash.replace("#", "");
-      if (hash && ["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata", "kelolaslide"].includes(hash)) {
+      if (hash && ["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata", "kelolaslide", "kelolaakun"].includes(hash)) {
         this.navigate(hash, false);
       }
     });
@@ -68,7 +68,7 @@ const HavalandApp = {
     });
 
     const initialHash = window.location.hash.replace("#", "");
-    if (initialHash && ["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata", "kelolaslide"].includes(initialHash)) {
+    if (initialHash && ["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata", "kelolaslide", "kelolaakun"].includes(initialHash)) {
       this.navigate(initialHash, false);
     }
     this.initialized = true;
@@ -259,7 +259,7 @@ const HavalandApp = {
 
   // Router Navigasi Tab
   navigate(tabName, updateHash = true) {
-    if (!["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata", "kelolaslide"].includes(tabName)) return;
+    if (!["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata", "kelolaslide", "kelolaakun"].includes(tabName)) return;
 
     if (tabName === "kelolaslide") {
       if (typeof HavalandAuth !== "undefined" && !HavalandAuth.isAdmin()) {
@@ -269,6 +269,15 @@ const HavalandApp = {
       }
       if (typeof HavalandSlider !== "undefined") {
         setTimeout(() => HavalandSlider.initSlidePage(), 10);
+      }
+    } else if (tabName === "kelolaakun") {
+      if (typeof HavalandAuth !== "undefined" && !HavalandAuth.isAdmin()) {
+        HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat mengelola akun warga.", "warning");
+        this.navigate("beranda");
+        return;
+      }
+      if (typeof HavalandUserManagement !== "undefined") {
+        setTimeout(() => HavalandUserManagement.initAccountPage(), 10);
       }
     }
 
@@ -3280,7 +3289,7 @@ const HavalandSettings = {
         </div>
 
         <!-- Tombol Manajemen Akun Warga & Akses -->
-        <button type="button" class="btn btn-outline-primary btn-sm" onclick="HavalandApp.closeModal('modal-pengaturan'); HavalandUserManagement.openModal();" style="justify-content: center; width: 100%; padding: 0.5rem 0.85rem; font-weight: 600;">
+        <button type="button" class="btn btn-outline-primary btn-sm" onclick="HavalandApp.openAccountManagerPage();" style="justify-content: center; width: 100%; padding: 0.5rem 0.85rem; font-weight: 600;">
           <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
           👥 Buka Manajemen Akun & Hak Akses Warga
         </button>
@@ -3816,8 +3825,22 @@ const HavalandProposals = {
 const HavalandUserManagement = {
   users: [],
   isLoading: false,
+  searchQuery: "",
+  roleFilter: "",
 
   init() {
+    this.loadUsers();
+  },
+
+  initAccountPage() {
+    this.searchQuery = "";
+    this.roleFilter = "";
+    const sInput = document.getElementById("search-account-input");
+    if (sInput) sInput.value = "";
+    const rFilter = document.getElementById("filter-account-role");
+    if (rFilter) rFilter.value = "";
+    this.resetForm();
+    this.populateWargaDropdown();
     this.loadUsers();
   },
 
@@ -3869,21 +3892,15 @@ const HavalandUserManagement = {
   },
 
   openModal() {
-    if (!HavalandAuth.isAdmin()) {
-      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat mengelola akun warga.", "danger");
-      return;
-    }
-    this.loadUsers();
-    HavalandApp.openModal("modal-kelola-akun");
+    HavalandApp.openAccountManagerPage();
   },
 
   openTambahModal() {
-    this.populateWargaDropdown();
-    const form = document.getElementById("form-tambah-akun");
-    if (form) form.reset();
-    const err = document.getElementById("tambah-akun-error-msg");
-    if (err) err.style.display = "none";
-    HavalandApp.openModal("modal-tambah-akun");
+    HavalandApp.openAccountManagerPage();
+    setTimeout(() => {
+      const formCard = document.getElementById("card-akun-form");
+      if (formCard) formCard.scrollIntoView({ behavior: "smooth" });
+    }, 120);
   },
 
   populateWargaDropdown() {
@@ -3891,7 +3908,7 @@ const HavalandUserManagement = {
     if (!sel) return;
 
     let optionsHtml = '<option value="">-- Pilih Warga dari Direktori (Otomatis Isi) --</option>';
-    if (HavalandData && HavalandData.warga) {
+    if (typeof HavalandData !== "undefined" && HavalandData.warga) {
       HavalandData.warga.forEach(w => {
         optionsHtml += `<option value="${w.id}" data-nama="${HavalandUtils.escapeHtml(w.namaKK)}" data-blok="${HavalandUtils.escapeHtml(w.blok)}">${HavalandUtils.escapeHtml(w.namaKK)} (Blok ${HavalandUtils.escapeHtml(w.blok)})</option>`;
       });
@@ -3924,7 +3941,6 @@ const HavalandUserManagement = {
     if (blokInput) blokInput.value = blok;
 
     if (userInput && nama) {
-      // Suggest clean username from name & blok
       let clean = nama.toLowerCase().replace(/^(bu|pak|bapak|ibu|mbak|mas)\s+/i, "").trim();
       clean = clean.replace(/[^a-z0-9]/g, "");
       const blokClean = blok.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -3932,18 +3948,195 @@ const HavalandUserManagement = {
     }
   },
 
+  onSearchInput(val) {
+    this.searchQuery = (val || "").trim().toLowerCase();
+    this.render();
+  },
+
+  onRoleFilterChange(val) {
+    this.roleFilter = (val || "").trim();
+    this.render();
+  },
+
+  editUser(userId) {
+    const u = this.users.find(x => x.id === userId || x.username === userId);
+    if (!u) {
+      HavalandUtils.showToast("Data Tidak Ditemukan", "Akun warga tidak ditemukan dalam daftar.", "warning");
+      return;
+    }
+
+    if (u.username === "admin") {
+      HavalandUtils.showToast("Akun Dilindungi", "Akun Administrator RT utama dilindungi oleh sistem dan tidak dapat diubah di sini.", "warning");
+      return;
+    }
+
+    const editIdInput = document.getElementById("akun-edit-id");
+    const namaInput = document.getElementById("akun-nama");
+    const blokInput = document.getElementById("akun-blok");
+    const usernameInput = document.getElementById("akun-username");
+    const passwordInput = document.getElementById("akun-password");
+    const roleInput = document.getElementById("akun-role");
+    const errBox = document.getElementById("akun-form-error-msg");
+
+    if (editIdInput) editIdInput.value = u.id;
+    if (namaInput) namaInput.value = u.nama || "";
+    if (blokInput) blokInput.value = u.blok || "";
+    if (usernameInput) {
+      usernameInput.value = u.username || "";
+      usernameInput.readOnly = true;
+    }
+    if (roleInput) roleInput.value = u.role || "Warga Tetap";
+    if (passwordInput) {
+      passwordInput.value = "";
+      passwordInput.required = false;
+      passwordInput.placeholder = "Kosongkan jika kata sandi tidak diubah";
+    }
+
+    const reqLabel = document.getElementById("akun-password-req");
+    if (reqLabel) reqLabel.style.display = "none";
+    const hintLabel = document.getElementById("akun-password-hint");
+    if (hintLabel) hintLabel.textContent = "Kosongkan kolom sandi jika tidak ingin mengubah password akun ini.";
+
+    const editAlert = document.getElementById("akun-edit-alert");
+    if (editAlert) editAlert.style.display = "block";
+    const editPreview = document.getElementById("akun-edit-nama-preview");
+    if (editPreview) editPreview.textContent = `${u.nama} (@${u.username})`;
+
+    const titleText = document.getElementById("akun-form-mode-title-text");
+    if (titleText) titleText.textContent = "✏️ Ubah Hak Akses / Data Akun";
+    const descText = document.getElementById("akun-form-mode-desc");
+    if (descText) descText.textContent = `Sesuaikan peran, hak akses, atau blok untuk akun warga ${u.nama}.`;
+
+    const submitText = document.getElementById("akun-form-submit-text");
+    if (submitText) submitText.textContent = "💾 Simpan Perubahan Akun";
+
+    const cancelBtn = document.getElementById("btn-cancel-edit-akun");
+    if (cancelBtn) cancelBtn.style.display = "inline-flex";
+
+    if (errBox) { errBox.style.display = "none"; errBox.textContent = ""; }
+
+    const formCard = document.getElementById("card-akun-form");
+    if (formCard) formCard.scrollIntoView({ behavior: "smooth" });
+  },
+
+  resetForm() {
+    const editIdInput = document.getElementById("akun-edit-id");
+    if (editIdInput) editIdInput.value = "";
+
+    const form = document.getElementById("form-kelola-akun-page");
+    if (form) form.reset();
+
+    const usernameInput = document.getElementById("akun-username");
+    if (usernameInput) usernameInput.readOnly = false;
+
+    const passwordInput = document.getElementById("akun-password");
+    if (passwordInput) {
+      passwordInput.required = true;
+      passwordInput.placeholder = "Minimal 6 karakter";
+    }
+
+    const reqLabel = document.getElementById("akun-password-req");
+    if (reqLabel) reqLabel.style.display = "inline";
+    const hintLabel = document.getElementById("akun-password-hint");
+    if (hintLabel) hintLabel.textContent = "Minimal 6 karakter. Wajib diisi saat membuat akun baru.";
+
+    const editAlert = document.getElementById("akun-edit-alert");
+    if (editAlert) editAlert.style.display = "none";
+
+    const titleText = document.getElementById("akun-form-mode-title-text");
+    if (titleText) titleText.textContent = "➕ Buat Akun Warga Baru";
+    const descText = document.getElementById("akun-form-mode-desc");
+    if (descText) descText.textContent = "Pilih nama dari direktori warga untuk otomatis mengisi data atau masukkan data manual.";
+
+    const submitText = document.getElementById("akun-form-submit-text");
+    if (submitText) submitText.textContent = "+ Buat & Daftarkan Akun Warga";
+
+    const cancelBtn = document.getElementById("btn-cancel-edit-akun");
+    if (cancelBtn) cancelBtn.style.display = "none";
+
+    const errBox = document.getElementById("akun-form-error-msg");
+    if (errBox) { errBox.style.display = "none"; errBox.textContent = ""; }
+
+    const sel = document.getElementById("akun-select-warga");
+    if (sel) sel.selectedIndex = 0;
+  },
+
   async handleFormSubmit(event) {
     event.preventDefault();
-    const nama = document.getElementById("akun-nama").value.trim();
-    const blok = document.getElementById("akun-blok").value.trim() || "-";
-    const username = document.getElementById("akun-username").value.trim().toLowerCase();
-    const password = document.getElementById("akun-password").value;
-    const role = document.getElementById("akun-role").value;
-    const errEl = document.getElementById("tambah-akun-error-msg");
+    const editId = (document.getElementById("akun-edit-id")?.value || "").trim();
+    const nama = (document.getElementById("akun-nama")?.value || "").trim();
+    const blok = (document.getElementById("akun-blok")?.value || "").trim() || "-";
+    const username = (document.getElementById("akun-username")?.value || "").trim().toLowerCase();
+    const password = (document.getElementById("akun-password")?.value || "");
+    const role = document.getElementById("akun-role")?.value || "Warga Tetap";
+    const errEl = document.getElementById("akun-form-error-msg");
     const submitBtn = event.target.querySelector('button[type="submit"]');
 
-    if (!username || !password || !nama) {
-      if (errEl) { errEl.textContent = "Semua bidang wajib diisi."; errEl.style.display = "block"; }
+    if (!username || !nama) {
+      if (errEl) { errEl.textContent = "Nama lengkap dan username wajib diisi."; errEl.style.display = "block"; }
+      return;
+    }
+
+    // MODE EDIT / PERUBAHAN HAK AKSES
+    if (editId) {
+      if (password && password.length < 6) {
+        if (errEl) { errEl.textContent = "Kata sandi baru minimal 6 karakter jika ingin diubah."; errEl.style.display = "block"; }
+        return;
+      }
+
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Menyimpan Perubahan..."; }
+
+      try {
+        const token = HavalandAuth.serverToken || (HavalandAuth.currentSession ? HavalandAuth.currentSession.token : null);
+        if (token) {
+          const payload = { id: editId, username, nama, role, blok };
+          if (password) payload.password = password;
+
+          const res = await fetch("/api/users", {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+          });
+          const result = await res.json();
+          if (!result.success) {
+            throw new Error(result.error || result.message || "Gagal memperbarui akun di server.");
+          }
+        }
+      } catch (e) {
+        console.warn("API server update call:", e.message);
+      }
+
+      // Update local storage mirror
+      const local = localStorage.getItem("havaland_custom_users");
+      let customUsers = [];
+      if (local) {
+        try { customUsers = JSON.parse(local); } catch (err) {}
+      }
+
+      const idx = customUsers.findIndex(u => u.id === editId || u.username === username);
+      if (idx !== -1) {
+        customUsers[idx].nama = nama;
+        customUsers[idx].blok = blok;
+        customUsers[idx].role = role;
+        customUsers[idx].is_admin = (role === "Administrator RT" || role === "Admin RT");
+        if (password) customUsers[idx].password = password;
+        customUsers[idx].updated_at = new Date().toISOString();
+        localStorage.setItem("havaland_custom_users", JSON.stringify(customUsers));
+      }
+
+      HavalandUtils.showToast("Berhasil Diperbarui", `Hak akses & data akun "${nama}" (${role}) berhasil disimpan!`, "success");
+      this.resetForm();
+      this.loadUsers();
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "+ Buat & Daftarkan Akun Warga"; }
+      return;
+    }
+
+    // MODE BUAT AKUN BARU
+    if (!password) {
+      if (errEl) { errEl.textContent = "Kata sandi wajib diisi untuk akun baru."; errEl.style.display = "block"; }
       return;
     }
 
@@ -3952,7 +4145,7 @@ const HavalandUserManagement = {
       return;
     }
 
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Menyimpan..."; }
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Mendaftarkan Akun..."; }
 
     let createdOnServer = false;
     try {
@@ -3974,15 +4167,14 @@ const HavalandUserManagement = {
       }
     } catch (e) {
       console.warn("API server call:", e.message);
-      // If error is 409 Conflict (username already used), show it
       if (e.message && e.message.toLowerCase().includes("sudah digunakan")) {
         if (errEl) { errEl.textContent = e.message; errEl.style.display = "block"; }
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Simpan Akun Baru"; }
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "+ Buat & Daftarkan Akun Warga"; }
         return;
       }
     }
 
-    // Always mirror to local storage for instant offline functionality
+    // Mirror to localStorage
     const local = localStorage.getItem("havaland_custom_users");
     let customUsers = [];
     if (local) {
@@ -3991,8 +4183,8 @@ const HavalandUserManagement = {
 
     if (username === "admin" || customUsers.some(u => u.username === username)) {
       if (!createdOnServer) {
-        if (errEl) { errEl.textContent = `Username "${username}" sudah digunakan.`; errEl.style.display = "block"; }
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Simpan Akun Baru"; }
+        if (errEl) { errEl.textContent = `Username "${username}" sudah digunakan. Silakan gunakan username lain.`; errEl.style.display = "block"; }
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "+ Buat & Daftarkan Akun Warga"; }
         return;
       }
     }
@@ -4012,9 +4204,9 @@ const HavalandUserManagement = {
     localStorage.setItem("havaland_custom_users", JSON.stringify(customUsers));
 
     HavalandUtils.showToast("Akun Berhasil Dibuat", `Akun warga "${nama}" (${role}) berhasil didaftarkan dan siap login!`, "success");
-    HavalandApp.closeModal("modal-tambah-akun");
+    this.resetForm();
     this.loadUsers();
-    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Simpan Akun Baru"; }
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "+ Buat & Daftarkan Akun Warga"; }
   },
 
   async deleteUser(userId, username) {
@@ -4023,7 +4215,7 @@ const HavalandUserManagement = {
       return;
     }
 
-    if (!confirm(`Apakah Anda yakin ingin menghapus akun "${username}"? Akses login warga ini akan dicabut.`)) {
+    if (!confirm(`Apakah Anda yakin ingin menghapus akun "${username}"? Akses login warga ini akan dicabut permanen.`)) {
       return;
     }
 
@@ -4053,81 +4245,157 @@ const HavalandUserManagement = {
       } catch (err) {}
     }
 
+    // If currently editing this user, reset form
+    const currentEditId = document.getElementById("akun-edit-id")?.value;
+    if (currentEditId === userId) {
+      this.resetForm();
+    }
+
     HavalandUtils.showToast("Akun Dihapus", `Akun "${username}" telah berhasil dihapus dari sistem.`, "info");
     this.loadUsers();
   },
 
   render() {
-    const container = document.getElementById("daftar-pengguna-container");
-    if (!container) return;
+    const tbody = document.getElementById("daftar-pengguna-tbody");
+    const totalCountEl = document.getElementById("account-total-count");
+
+    if (totalCountEl) {
+      const totalNum = (this.users && Array.isArray(this.users)) ? this.users.length : 0;
+      totalCountEl.textContent = `${totalNum} Akun`;
+    }
+
+    if (!tbody) return;
 
     if (this.isLoading) {
-      container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Memuat daftar akun warga...</div>';
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <span>Memuat daftar akun warga...</span>
+            </div>
+          </td>
+        </tr>`;
       return;
     }
 
     if (!this.users || this.users.length === 0) {
-      container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Belum ada akun terdaftar.</div>';
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+            Belum ada akun warga yang terdaftar.
+          </td>
+        </tr>`;
       return;
     }
 
-    let html = `<div style="display: flex; flex-direction: column; gap: 0.75rem;">`;
+    // Filter accounts by query and role
+    const filtered = this.users.filter(u => {
+      const matchQuery = !this.searchQuery || 
+        (u.nama && u.nama.toLowerCase().includes(this.searchQuery)) ||
+        (u.username && u.username.toLowerCase().includes(this.searchQuery)) ||
+        (u.blok && u.blok.toLowerCase().includes(this.searchQuery));
+      
+      const matchRole = !this.roleFilter || (u.role === this.roleFilter);
+      return matchQuery && matchRole;
+    });
 
-    this.users.forEach(u => {
+    if (filtered.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+            Tidak ada akun yang cocok dengan filter pencarian.
+          </td>
+        </tr>`;
+      return;
+    }
+
+    let rowsHtml = "";
+    filtered.forEach((u, index) => {
       const isPrimaryAdmin = (u.username === "admin");
-      let roleBadgeClass = "badge-secondary";
+      let roleBadgeClass = "badge-role-warga";
       let roleIcon = "👤";
       if (u.role === "Administrator RT" || u.role === "Admin RT") {
-        roleBadgeClass = "badge-danger";
+        roleBadgeClass = "badge-role-admin";
         roleIcon = "👑";
       } else if (u.role === "Bendahara RT") {
-        roleBadgeClass = "badge-warning";
+        roleBadgeClass = "badge-role-bendahara";
         roleIcon = "💰";
       } else if (u.role === "Pengurus RT") {
-        roleBadgeClass = "badge-info";
+        roleBadgeClass = "badge-role-pengurus";
         roleIcon = "📋";
-      } else if (u.role === "Warga Tetap") {
-        roleBadgeClass = "badge-success";
-        roleIcon = "👤";
       }
 
-      html += `
-        <div class="card" style="padding: 0.85rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; border: 1px solid var(--surface-border); border-radius: var(--radius-md);">
-          <div style="display: flex; align-items: center; gap: 0.85rem; min-width: 0;">
-            <div style="width: 40px; height: 40px; border-radius: 50%; background: ${isPrimaryAdmin ? 'rgba(16, 185, 129, 0.15)' : 'var(--bg-subtle)'}; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
-              ${roleIcon}
-            </div>
-            <div style="min-width: 0;">
-              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary);">${HavalandUtils.escapeHtml(u.nama)}</span>
-                <span class="badge ${roleBadgeClass}" style="font-size: 0.7rem;">${HavalandUtils.escapeHtml(u.role)}</span>
-                ${isPrimaryAdmin ? '<span class="badge badge-primary" style="font-size: 0.65rem;">Utama</span>' : ''}
+      // Format date
+      let dateFormatted = "-";
+      if (u.created_at) {
+        try {
+          const d = new Date(u.created_at);
+          if (!isNaN(d.getTime())) {
+            dateFormatted = d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+          }
+        } catch (e) {}
+      }
+
+      rowsHtml += `
+        <tr class="account-table-row">
+          <td style="text-align: center; font-weight: 600; color: var(--text-muted); font-size: 0.8rem;">
+            ${index + 1}
+          </td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 0.65rem;">
+              <div class="account-table-avatar ${isPrimaryAdmin ? 'avatar-admin' : ''}">
+                ${roleIcon}
               </div>
-              <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.6rem; margin-top: 0.2rem; flex-wrap: wrap;">
-                <span>Username: <code style="font-size: 0.75rem; background: var(--surface); padding: 1px 4px; border-radius: 3px;">${HavalandUtils.escapeHtml(u.username)}</code></span>
-                <span>•</span>
-                <span>Blok: <strong>${HavalandUtils.escapeHtml(u.blok || '-')}</strong></span>
+              <div>
+                <strong style="color: var(--text-primary); font-size: 0.88rem; display: block;">${HavalandUtils.escapeHtml(u.nama || '-')}</strong>
+                ${isPrimaryAdmin ? '<span class="badge badge-emerald" style="font-size: 0.65rem; padding: 1px 6px;">Akun Induk</span>' : ''}
               </div>
             </div>
-          </div>
-          <div>
+          </td>
+          <td>
+            <code class="account-username-badge">${HavalandUtils.escapeHtml(u.username)}</code>
+          </td>
+          <td>
+            <span class="account-blok-badge">Blok ${HavalandUtils.escapeHtml(u.blok || '-')}</span>
+          </td>
+          <td>
+            <span class="account-role-pill ${roleBadgeClass}">
+              <span>${roleIcon}</span>
+              <span>${HavalandUtils.escapeHtml(u.role || 'Warga Tetap')}</span>
+            </span>
+          </td>
+          <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">
+            ${dateFormatted}
+          </td>
+          <td style="text-align: center;">
+            ${isPrimaryAdmin 
+              ? '<span class="badge badge-primary" style="font-size: 0.7rem;">Admin Utama</span>' 
+              : '<span class="badge badge-emerald" style="font-size: 0.7rem;">● Aktif</span>'
+            }
+          </td>
+          <td style="text-align: center;">
             ${isPrimaryAdmin ? `
-              <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--primary-text); font-size: 0.72rem; padding: 0.35rem 0.65rem; border-radius: var(--radius-full); font-weight: 600;">
+              <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: var(--primary-text); font-size: 0.72rem; padding: 0.35rem 0.65rem; border-radius: var(--radius-full); font-weight: 600;">
                 Dilindungi
               </span>
             ` : `
-              <button type="button" class="btn btn-outline-danger btn-sm" style="font-size: 0.72rem; padding: 0.3rem 0.6rem; display: inline-flex; align-items: center; gap: 0.3rem;" onclick="HavalandUserManagement.deleteUser('${u.id}', '${HavalandUtils.escapeHtml(u.username)}')">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                Hapus
-              </button>
+              <div class="account-actions-wrapper">
+                <button type="button" class="btn btn-outline-primary btn-xs" onclick="HavalandUserManagement.editUser('${u.id}')" title="Ubah Hak Akses & Blok">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                  <span>Edit Akses</span>
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-xs" onclick="HavalandUserManagement.deleteUser('${u.id}', '${HavalandUtils.escapeHtml(u.username)}')" title="Hapus Akun">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  <span>Hapus</span>
+                </button>
+              </div>
             `}
-          </div>
-        </div>
+          </td>
+        </tr>
       `;
     });
 
-    html += `</div>`;
-    container.innerHTML = html;
+    tbody.innerHTML = rowsHtml;
   }
 };
 
@@ -4193,6 +4461,27 @@ Object.assign(HavalandApp, {
 
   closeSlideManagerPage() {
     this.navigate(this.slideManagerReturnTab || "beranda");
+  },
+
+  accountManagerReturnTab: "beranda",
+
+  openAccountManagerPage() {
+    if (typeof HavalandAuth !== "undefined" && !HavalandAuth.isAdmin()) {
+      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat mengelola akun warga.", "warning");
+      return;
+    }
+    if (this.activeTab !== "kelolaakun") {
+      this.accountManagerReturnTab = this.activeTab || "beranda";
+    }
+    this.closeModal("modal-pengaturan");
+    this.navigate("kelolaakun");
+    if (typeof HavalandUserManagement !== "undefined") {
+      HavalandUserManagement.initAccountPage();
+    }
+  },
+
+  closeAccountManagerPage() {
+    this.navigate(this.accountManagerReturnTab || "beranda");
   },
 
   epOpts(options, current) {

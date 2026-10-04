@@ -122,6 +122,82 @@ module.exports = async function handler(req, res) {
   }
 
   // ==========================================
+  // PUT: Update user account (role, blok, nama, optional password)
+  // ==========================================
+  if (req.method === 'PUT') {
+    try {
+      const { id, username, nama, role, blok, password } = req.body || {};
+
+      if (!id && !username) {
+        return safeErrorResponse(res, 400, "ID atau username pengguna yang akan diperbarui wajib disertakan.");
+      }
+
+      if (!db.isConfigured) {
+        return res.status(200).json({
+          success: false,
+          isConfigured: false,
+          message: "Database belum terhubung di Vercel."
+        });
+      }
+
+      // 1. Fetch existing user
+      const targetQuery = id 
+        ? await db.query('SELECT * FROM pengguna_havaland WHERE id = $1', [id])
+        : await db.query('SELECT * FROM pengguna_havaland WHERE LOWER(username) = $1', [String(username).toLowerCase()]);
+
+      if (!targetQuery.rows || targetQuery.rows.length === 0) {
+        return safeErrorResponse(res, 404, "Akun pengguna tidak ditemukan.");
+      }
+
+      const existingUser = targetQuery.rows[0];
+      const isTargetPrimaryAdmin = (existingUser.username.toLowerCase() === 'admin');
+
+      // 2. Prepare updated fields
+      let cleanNama = existingUser.nama;
+      if (nama && typeof nama === 'string' && nama.trim().length >= 2) {
+        cleanNama = nama.trim().slice(0, 100);
+      }
+
+      let cleanBlok = existingUser.blok;
+      if (typeof blok === 'string') {
+        cleanBlok = blok.trim().slice(0, 20) || '-';
+      }
+
+      let selectedRole = existingUser.role;
+      let isAdmin = existingUser.is_admin;
+      if (role && VALID_ROLES.includes(role)) {
+        if (isTargetPrimaryAdmin && role !== 'Administrator RT' && role !== 'Admin RT') {
+          return safeErrorResponse(res, 403, "Peran akun admin utama tidak dapat diturunkan demi keamanan sistem.");
+        }
+        selectedRole = role;
+        isAdmin = (role === 'Administrator RT' || role === 'Admin RT');
+      }
+
+      let passwordHash = existingUser.password_hash;
+      if (password && typeof password === 'string' && password.trim().length >= 6) {
+        passwordHash = crypto.createHash('sha256').update(password.trim()).digest('hex');
+      }
+
+      // 3. Update query
+      const updateResult = await db.query(
+        `UPDATE pengguna_havaland 
+         SET nama = $1, role = $2, blok = $3, is_admin = $4, password_hash = $5, updated_at = NOW()
+         WHERE id = $6
+         RETURNING id, username, nama, role, blok, is_admin, created_at, updated_at`,
+        [cleanNama, selectedRole, cleanBlok, isAdmin, passwordHash, existingUser.id]
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: `Data dan hak akses akun "${existingUser.username}" berhasil diperbarui.`,
+        data: updateResult.rows[0]
+      });
+    } catch (error) {
+      return safeErrorResponse(res, 500, "Gagal memperbarui akun pengguna.", error);
+    }
+  }
+
+  // ==========================================
   // DELETE: Remove user account
   // ==========================================
   if (req.method === 'DELETE') {
