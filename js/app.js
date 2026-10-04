@@ -45,7 +45,7 @@ const HavalandApp = {
     // Listener URL hash & popstate
     window.addEventListener("hashchange", () => {
       const hash = window.location.hash.replace("#", "");
-      if (hash && ["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata"].includes(hash)) {
+      if (hash && ["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata", "kelolaslide"].includes(hash)) {
         this.navigate(hash, false);
       }
     });
@@ -68,7 +68,7 @@ const HavalandApp = {
     });
 
     const initialHash = window.location.hash.replace("#", "");
-    if (initialHash && ["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata"].includes(initialHash)) {
+    if (initialHash && ["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata", "kelolaslide"].includes(initialHash)) {
       this.navigate(initialHash, false);
     }
     this.initialized = true;
@@ -259,7 +259,18 @@ const HavalandApp = {
 
   // Router Navigasi Tab
   navigate(tabName, updateHash = true) {
-    if (!["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata"].includes(tabName)) return;
+    if (!["beranda", "kas", "rincian", "kegiatan", "warga", "kontak", "editdata", "kelolaslide"].includes(tabName)) return;
+
+    if (tabName === "kelolaslide") {
+      if (typeof HavalandAuth !== "undefined" && !HavalandAuth.isAdmin()) {
+        HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat mengelola foto slide.", "warning");
+        this.navigate("beranda");
+        return;
+      }
+      if (typeof HavalandSlider !== "undefined") {
+        setTimeout(() => HavalandSlider.initSlidePage(), 10);
+      }
+    }
 
     this.activeTab = tabName;
     if (updateHash) window.location.hash = tabName;
@@ -3346,17 +3357,21 @@ const HavalandSettings = {
           <span>🖼️ ${count} foto aktif di slide beranda & hero</span>
           <span class="badge badge-success" style="font-size: 0.7rem;">Admin</span>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
-          <button type="button" class="btn btn-primary btn-sm" onclick="HavalandApp.closeModal('modal-pengaturan'); HavalandSlider.openAddModal('upload');" style="justify-content: center;">
-            📱 Tambah dari HP / PC
+        <button type="button" class="btn btn-primary" onclick="HavalandApp.openSlideManagerPage();" style="justify-content: center; width: 100%; padding: 0.65rem 1rem; font-weight: 700; font-size: 0.85rem; gap: 0.5rem; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);">
+          <span>🖼️ Buka Halaman Kelola & Edit Slide</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick="HavalandApp.openSlideManagerPage('upload');" style="justify-content: center; font-size: 0.76rem;">
+            📱 Tambah via Upload
           </button>
-          <button type="button" class="btn btn-primary btn-sm" onclick="HavalandApp.closeModal('modal-pengaturan'); HavalandSlider.openAddModal('drive');" style="justify-content: center;">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick="HavalandApp.openSlideManagerPage('drive');" style="justify-content: center; font-size: 0.76rem;">
             📁 Tambah via Drive
           </button>
         </div>
-        <button type="button" class="btn btn-outline-primary btn-sm" onclick="HavalandApp.closeModal('modal-pengaturan'); HavalandSlider.openManageModal();" style="justify-content: center; width: 100%; padding: 0.5rem 0.85rem; font-weight: 600;">
-          ⚙️ Kelola Urutan & Hapus Slide
-        </button>
+        <div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; text-align: center;">
+          Pindah ke halaman khusus untuk menambah, mengedit, mengatur urutan, dan menghapus foto slide secara leluasa.
+        </div>
       </div>
     `;
   }
@@ -4159,6 +4174,27 @@ Object.assign(HavalandApp, {
     this.navigate(this.editReturnTab || "beranda");
   },
 
+  slideManagerReturnTab: "beranda",
+
+  openSlideManagerPage(sourceTab = "gmap") {
+    if (typeof HavalandAuth !== "undefined" && !HavalandAuth.isAdmin()) {
+      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat mengelola foto slide.", "warning");
+      return;
+    }
+    if (this.activeTab !== "kelolaslide") {
+      this.slideManagerReturnTab = this.activeTab || "beranda";
+    }
+    this.closeModal("modal-pengaturan");
+    this.navigate("kelolaslide");
+    if (typeof HavalandSlider !== "undefined") {
+      HavalandSlider.initSlidePage(sourceTab);
+    }
+  },
+
+  closeSlideManagerPage() {
+    this.navigate(this.slideManagerReturnTab || "beranda");
+  },
+
   epOpts(options, current) {
     return options.map(o => {
       const val = Array.isArray(o) ? o[0] : o;
@@ -4940,47 +4976,165 @@ const HavalandSlider = {
   // ADMIN ACTIONS: TAMBAH SLIDE
   // -------------------------------------------------------------
   openAddModal(tabKey = "gmap") {
+    HavalandApp.openSlideManagerPage(tabKey);
+  },
+
+  openManageModal() {
+    HavalandApp.openSlideManagerPage();
+  },
+
+  initSlidePage(tabKey = "gmap") {
     if (typeof HavalandAuth !== "undefined" && !HavalandAuth.isAdmin()) {
-      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat menambahkan gambar slide.", "warning");
+      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat mengelola gambar slide.", "warning");
       return;
     }
 
+    this.cancelEditMode();
     const allowedTabs = ["gmap", "url", "drive", "upload"];
     const startTab = allowedTabs.includes(tabKey) ? tabKey : "gmap";
+    this.switchSourceTab(startTab);
+    this.renderGmapLibrary();
+    if (startTab === "gmap") {
+      this.selectLibraryPhoto(0);
+    }
+    const takenDateMax = document.getElementById("slide-add-takendate");
+    if (takenDateMax) takenDateMax.max = new Date().toISOString().split("T")[0];
+    this.updateLivePreview();
+    this.renderSlidePageList();
+  },
+
+  cancelEditMode() {
+    const editId = document.getElementById("slide-edit-id");
+    if (editId) editId.value = "";
+
+    const titleEl = document.getElementById("slide-form-mode-title-text");
+    if (titleEl) titleEl.textContent = "➕ Tambah Foto Slide Baru";
+
+    const descEl = document.getElementById("slide-form-mode-desc");
+    if (descEl) descEl.textContent = "Pilih sumber foto dari Google Maps, link Drive, upload HP/PC, atau URL online.";
+
+    const alertEl = document.getElementById("slide-edit-alert");
+    if (alertEl) alertEl.style.display = "none";
+
+    const btnCancel = document.getElementById("btn-cancel-edit-slide");
+    if (btnCancel) btnCancel.style.display = "none";
+
+    const btnSubmitText = document.getElementById("btn-submit-slide-text");
+    if (btnSubmitText) btnSubmitText.textContent = "Tambahkan ke Slide Beranda";
 
     const form = document.getElementById("form-tambah-slide");
     if (form) form.reset();
 
-    // Reset state pilihan sebelumnya agar tidak tercampur antar sumber
     this.selectedLibraryIndex = -1;
     this.pendingUploads = [];
     this.renderPendingUploads();
+
     const hiddenUrl = document.getElementById("slide-selected-image-url");
     if (hiddenUrl) hiddenUrl.value = "";
-    const driveInput = document.getElementById("slide-input-drive");
-    if (driveInput) driveInput.value = "";
+
     const drivePreview = document.getElementById("drive-preview-img");
     if (drivePreview) drivePreview.style.display = "none";
+
     const driveStatus = document.getElementById("drive-convert-status");
     if (driveStatus) {
       driveStatus.className = "";
       driveStatus.textContent = "Tempel link berbagi Google Drive, sistem mengubahnya menjadi gambar slide otomatis.";
     }
 
-    this.switchSourceTab(startTab);
-    if (startTab === "gmap") {
-      this.renderGmapLibrary();
-      // Default select photo index 0
-      this.selectLibraryPhoto(0);
-    } else {
-      this.renderGmapLibrary();
-    }
-    // Batasi tanggal ambil maksimal hari ini
-    const takenDateMax = document.getElementById("slide-add-takendate");
-    if (takenDateMax) takenDateMax.max = new Date().toISOString().split("T")[0];
-    this.updateLivePreview();
+    document.querySelectorAll(".gmap-library-card").forEach(c => c.classList.remove("selected"));
 
-    HavalandApp.openModal("modal-tambah-slide");
+    this.updateLivePreview();
+    this.renderSlidePageList();
+  },
+
+  resetForm() {
+    this.cancelEditMode();
+    this.switchSourceTab("gmap");
+    this.selectLibraryPhoto(0);
+    HavalandUtils.showToast("Formulir Direset", "Formulir dikembalikan ke kondisi awal.", "info");
+  },
+
+  loadSlideToEdit(slideId) {
+    if (typeof HavalandAuth !== "undefined" && !HavalandAuth.isAdmin()) {
+      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat mengedit slide.", "warning");
+      return;
+    }
+
+    const slide = this.slides.find(s => s.id === slideId);
+    if (!slide) return;
+
+    const editId = document.getElementById("slide-edit-id");
+    if (editId) editId.value = slide.id;
+
+    const titleEl = document.getElementById("slide-form-mode-title-text");
+    if (titleEl) titleEl.textContent = "✏️ Edit Informasi Slide";
+
+    const descEl = document.getElementById("slide-form-mode-desc");
+    if (descEl) descEl.textContent = "Perbarui judul, kategori, deskripsi, tanggal, atau gambar foto ini.";
+
+    const alertEl = document.getElementById("slide-edit-alert");
+    if (alertEl) alertEl.style.display = "block";
+
+    const previewName = document.getElementById("slide-edit-title-preview");
+    if (previewName) previewName.textContent = ' "' + slide.title + '"';
+
+    const btnCancel = document.getElementById("btn-cancel-edit-slide");
+    if (btnCancel) btnCancel.style.display = "inline-flex";
+
+    const btnSubmitText = document.getElementById("btn-submit-slide-text");
+    if (btnSubmitText) btnSubmitText.textContent = "Simpan Perubahan Foto";
+
+    const titleInput = document.getElementById("slide-add-title");
+    const badgeSelect = document.getElementById("slide-add-badge");
+    const descInput = document.getElementById("slide-add-desc");
+    const takenDateInput = document.getElementById("slide-add-takendate");
+    const hiddenUrl = document.getElementById("slide-selected-image-url");
+    const hiddenSrc = document.getElementById("slide-selected-source");
+
+    if (titleInput) titleInput.value = slide.title || "";
+    if (badgeSelect) badgeSelect.value = slide.badge || "Dokumentasi Warga 📸";
+    if (descInput) descInput.value = slide.desc || "";
+    if (takenDateInput) takenDateInput.value = slide.takenAt || "";
+    if (hiddenUrl) hiddenUrl.value = slide.url || "";
+    if (hiddenSrc) hiddenSrc.value = slide.source || "Google Maps Resmi";
+
+    const src = slide.source || "";
+    if (src.includes("Drive")) {
+      this.switchSourceTab("drive");
+      const driveInput = document.getElementById("slide-input-drive");
+      if (driveInput) driveInput.value = slide.url || "";
+      const drivePreview = document.getElementById("drive-preview-img");
+      if (drivePreview) {
+        drivePreview.src = slide.url;
+        drivePreview.style.display = "block";
+      }
+    } else if (src.includes("Upload")) {
+      this.switchSourceTab("upload");
+    } else if (src.includes("Maps")) {
+      this.switchSourceTab("gmap");
+      this.renderGmapLibrary();
+      if (HavalandData && HavalandData.googleMapsPhotos) {
+        const foundIdx = HavalandData.googleMapsPhotos.findIndex(p => slide.url && slide.url.startsWith(p.url));
+        if (foundIdx !== -1) {
+          this.selectedLibraryIndex = foundIdx;
+          document.querySelectorAll(".gmap-library-card").forEach((c, i) => c.classList.toggle("selected", i === foundIdx));
+        }
+      }
+    } else {
+      this.switchSourceTab("url");
+      const urlInput = document.getElementById("slide-input-url");
+      if (urlInput) urlInput.value = slide.url || "";
+    }
+
+    this.updateLivePreview();
+    this.renderSlidePageList();
+
+    const formCard = document.getElementById("card-slide-form");
+    if (formCard) {
+      formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    HavalandUtils.showToast("Mode Edit Aktif", 'Foto "' + slide.title + '" siap diedit.', "info");
   },
 
   switchSourceTab(tabKey) {
@@ -5266,10 +5420,11 @@ const HavalandSlider = {
   handleFormAddSlide(event) {
     event.preventDefault();
     if (typeof HavalandAuth !== "undefined" && !HavalandAuth.isAdmin()) {
-      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat menambahkan gambar slide.", "warning");
+      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat menambahkan/mengedit gambar slide.", "warning");
       return;
     }
 
+    const editId = document.getElementById("slide-edit-id")?.value.trim();
     const titleVal = document.getElementById("slide-add-title")?.value.trim();
     const descVal = document.getElementById("slide-add-desc")?.value.trim();
     const badgeVal = document.getElementById("slide-add-badge")?.value.trim();
@@ -5280,6 +5435,39 @@ const HavalandSlider = {
     if (!titleVal || !descVal || !imgUrl) {
       HavalandUtils.showToast("Data Belum Lengkap", "Pastikan Judul, Keterangan, dan Gambar foto telah dipilih.", "warning");
       return;
+    }
+
+    // MODE EDIT: jika editId terisi, simpan perubahan pada slide yang ada
+    if (editId) {
+      const idx = this.slides.findIndex(s => s.id === editId);
+      if (idx !== -1) {
+        this.slides[idx].title = titleVal;
+        this.slides[idx].desc = descVal;
+        this.slides[idx].badge = badgeVal;
+        this.slides[idx].takenAt = takenAtVal;
+        this.slides[idx].url = imgUrl;
+        this.slides[idx].fullUrl = imgUrl;
+        this.slides[idx].source = sourceVal;
+
+        if (sourceVal === "Google Drive") {
+          const fileId = this.parseDriveFileId(document.getElementById("slide-input-drive")?.value || "") || this.parseDriveFileId(imgUrl);
+          if (fileId) {
+            this.slides[idx].url = this.toDriveDirectUrl(fileId, 1200);
+            this.slides[idx].fullUrl = this.toDriveDirectUrl(fileId, 1600);
+          }
+        }
+
+        if (!this.saveSlides()) {
+          HavalandUtils.showToast("Gagal Menyimpan", "Kapasitas penyimpanan peramban penuh.", "error");
+          return;
+        }
+
+        this.render();
+        this.renderSlidePageList();
+        this.cancelEditMode();
+        HavalandUtils.showToast("Slide Diperbarui!", 'Perubahan pada foto "' + titleVal + '" berhasil disimpan.', "success");
+        return;
+      }
     }
 
     const newSlide = {
@@ -5338,9 +5526,10 @@ const HavalandSlider = {
     this.pendingUploads = [];
     this.renderPendingUploads();
     this.render();
+    this.renderSlidePageList();
     this.goTo(0, true);
+    this.cancelEditMode();
 
-    HavalandApp.closeModal("modal-tambah-slide");
     HavalandUtils.showToast(
       addedSlides.length > 1 ? "Slide Ditambahkan!" : "Slide Ditambahkan!",
       addedSlides.length > 1
@@ -5351,48 +5540,52 @@ const HavalandSlider = {
   },
 
   // -------------------------------------------------------------
-  // ADMIN ACTIONS: KELOLA SLIDES
+  // ADMIN ACTIONS: KELOLA & EDIT SLIDES (HALAMAN KHUSUS)
   // -------------------------------------------------------------
-  openManageModal() {
-    if (typeof HavalandAuth !== "undefined" && !HavalandAuth.isAdmin()) {
-      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat mengelola slide.", "warning");
-      return;
-    }
-
+  renderSlidePageList() {
     this.renderManageList();
-    HavalandApp.openModal("modal-kelola-slides");
   },
 
   renderManageList() {
     const list = document.getElementById("manage-slides-list");
     const countLabel = document.getElementById("manage-slide-count");
+    const pageBadge = document.getElementById("page-slide-badge");
     if (!list) return;
 
     if (countLabel) countLabel.textContent = this.slides.length;
+    if (pageBadge) pageBadge.textContent = `${this.slides.length} Foto Aktif`;
 
     if (this.slides.length === 0) {
       list.innerHTML = `
-        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
-          Belum ada foto slide. Silakan klik tombol Tambah Foto Baru di atas.
+        <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); background: var(--bg-subtle); border-radius: var(--radius-md); border: 1px dashed var(--surface-border);">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🖼️</div>
+          <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Belum ada foto slide</div>
+          <div style="font-size: 0.8rem;">Gunakan formulir di sebelah kiri untuk menambahkan foto ke slide beranda.</div>
         </div>
       `;
       return;
     }
 
+    const currentEditId = document.getElementById("slide-edit-id")?.value || "";
+
     list.innerHTML = this.slides.map((s, idx) => `
-      <div class="manage-slide-item">
-        <img src="${s.url}" alt="${HavalandUtils.escapeHtml(s.title)}" class="manage-slide-thumb" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=200'">
+      <div class="manage-slide-item ${s.id === currentEditId ? 'editing' : ''}">
+        <img src="${s.url}" alt="${HavalandUtils.escapeHtml(s.title)}" class="manage-slide-thumb" onclick="HavalandSlider.openLightbox(${idx})" title="Klik untuk pratinjau penuh" style="cursor: pointer;" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=200'">
         <div class="manage-slide-info">
-          <div style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.2rem;">
-            <span class="badge" style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.15); color: var(--primary-text);">#${idx + 1}</span>
+          <div style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.2rem; flex-wrap: wrap;">
+            <span class="badge" style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.15); color: var(--primary-text); font-weight: 700;">#${idx + 1}</span>
             <span class="badge" style="font-size: 0.65rem; background: var(--surface-hover); color: var(--text-secondary);">${HavalandUtils.escapeHtml(s.badge || 'Foto')}</span>
             <span style="font-size: 0.68rem; color: var(--text-muted);">${HavalandUtils.escapeHtml(s.source || 'Google Maps')}</span>
+            ${s.takenAt ? `<span style="font-size: 0.68rem; color: var(--text-muted);">📅 ${HavalandUtils.escapeHtml(s.takenAt)}</span>` : ''}
           </div>
-          <div class="manage-slide-title">${HavalandUtils.escapeHtml(s.title)}</div>
-          <div class="manage-slide-desc">${HavalandUtils.escapeHtml(s.desc)}</div>
+          <div class="manage-slide-title" title="${HavalandUtils.escapeHtml(s.title)}">${HavalandUtils.escapeHtml(s.title)}</div>
+          <div class="manage-slide-desc" title="${HavalandUtils.escapeHtml(s.desc)}">${HavalandUtils.escapeHtml(s.desc)}</div>
         </div>
         <div class="manage-slide-actions">
-          <button type="button" class="manage-btn-icon" title="Geser ke Atas" onclick="HavalandSlider.moveSlide(${idx}, -1)" ${idx === 0 ? 'disabled style="opacity: 0.35; cursor: not-allowed;"' : ''}>
+          <button type="button" class="manage-btn-icon btn-edit" title="Edit Informasi Foto Ini" onclick="HavalandSlider.loadSlideToEdit('${s.id}')">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </button>
+          <button type="button" class="manage-btn-icon" title="Geser ke Atas (Tampil Lebih Awal)" onclick="HavalandSlider.moveSlide(${idx}, -1)" ${idx === 0 ? 'disabled style="opacity: 0.35; cursor: not-allowed;"' : ''}>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
           </button>
           <button type="button" class="manage-btn-icon" title="Geser ke Bawah" onclick="HavalandSlider.moveSlide(${idx}, 1)" ${idx === this.slides.length - 1 ? 'disabled style="opacity: 0.35; cursor: not-allowed;"' : ''}>
@@ -5416,7 +5609,7 @@ const HavalandSlider = {
 
     this.saveSlides();
     this.render();
-    this.renderManageList();
+    this.renderSlidePageList();
   },
 
   deleteSlide(slideId) {
@@ -5433,7 +5626,12 @@ const HavalandSlider = {
       this.markSlideDeleted(slideId);
       this.saveSlides();
       this.render();
-      this.renderManageList();
+      this.renderSlidePageList();
+
+      if (document.getElementById("slide-edit-id")?.value === slideId) {
+        this.cancelEditMode();
+      }
+
       HavalandUtils.showToast("Slide Dihapus", `Foto "${title}" telah dihapus dari slide beranda.`, "info");
     }
   },
@@ -5449,7 +5647,8 @@ const HavalandSlider = {
       this.clearDeletedIds();
       this.saveSlides();
       this.render();
-      this.renderManageList();
+      this.renderSlidePageList();
+      this.cancelEditMode();
       HavalandUtils.showToast("Slide Direset", "Slide beranda telah dikembalikan ke foto resmi Google Maps.", "success");
     }
   },
