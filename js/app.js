@@ -2854,7 +2854,7 @@ const HavalandAuth = {
     }
 
     // Fallback: local authentication for offline mode
-    if (userVal === "admin" && passVal === "Amalia2125") {
+    if (userVal === "admin" && (passVal === "admin" || (window.DEFAULT_ADMIN_PASS && passVal === window.DEFAULT_ADMIN_PASS))) {
       const adminUser = HavalandData.akunPengguna.find(u => u.username === "admin") || {
         username: "admin",
         nama: "Admin RT 04 Havaland",

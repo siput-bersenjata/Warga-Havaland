@@ -21,7 +21,7 @@ Administrator RT dapat menambahkan akun baru agar warga perumahan dapat login da
 
 ### 1. Akses Akun Administrator Utama:
 * **Username**: `admin`
-* **Password**: `Amalia2125`
+* **Password**: Dikonfigurasi melalui environment variable (`ADMIN_PASSWORD_HASH`) atau pengaturan awal sistem.
 * **Keamanan**: Password dienkripsi dengan SHA-256 hash. Akun ini dilindungi dan tidak dapat dihapus.
 
 ### 2. Cara Admin Menambah Akun Warga Baru:

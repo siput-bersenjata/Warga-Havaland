@@ -130,15 +130,9 @@ Buka peramban Anda di: `http://localhost:3000`
 
 ---
 
-## 🔑 Kredensial Akun Default (Administrator)
+## 🔐 Autentikasi Administrator
 
-Untuk menguji fitur kelola data, menambah warga baru, mengedit kontak darurat, dan manajemen akun:
-
-| Parameter | Kredensial |
-|---|---|
-| **Username** | `admin` |
-| **Password** | `Amalia2125` |
-| **Role** | `Administrator RT` (Akses Penuh / Full CRUD) |
+Akun Administrator RT dikonfigurasi melalui konfigurasi keamanan internal dan *Environment Variables* Vercel (`ADMIN_PASSWORD_HASH`). Untuk pengujian lokal atau deployment publik, atur kredensial akun admin Anda secara aman melalui konfigurasi environment.
 
 ---
 
