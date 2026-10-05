@@ -224,24 +224,81 @@ const HavalandData = {
   kegiatan: [
     {
       id: "ACT-001",
-      judul: "Ronda Malam / Siskamling Bergilir",
-      kategori: "Keamanan",
+      judul: "Pengecekan Token Listrik PJU Luar Dalam & Tandon Air",
+      kategori: "Sarpras",
       tipe: "Rutin",
-      frekuensi: "Setiap Malam (23.00 - 04.00 WIB)",
-      waktuNext: "Malam ini, 23.00 WIB",
-      lokasi: "Pos Satpam Utama & Keliling Kompleks",
-      koordinator: "Pos Keamanan RT 04",
+      frekuensi: "Rutin Bulanan (Bergilir Tiap KK)",
+      waktuNext: "Piket Bulan Ini: Oktober 2026",
+      lokasi: "Panel Listrik PJU Luar/Dalam & Tandon Air Kompleks Havaland",
+      koordinator: "Seksi Sarana & Prasarana RT 04",
+      judulPiket: "Jadwal Giliran Bulanan Pengecekan Token Listrik PJU & Tandon Air (Per KK):",
+      thPeriode: "Bulan",
+      thPenanggungJawab: "Giliran KK (Penanggung Jawab)",
+      thTugas: "Fokus Pemeriksaan & Tugas Piket",
       jadwalPiket: [
-        { hari: "Senin", blok: "Warga Blok D (D1 - D10)", petugas: "Bu Tutik, Bu Wati, Bu Ami" },
-        { hari: "Selasa", blok: "Warga Blok E & F (E4, F4 - F5)", petugas: "Bu Gini, Bu Tere, Bu Ratna" },
-        { hari: "Rabu", blok: "Warga Blok F (F6 - F7)", petugas: "Bu Irma, Bu Maria" },
-        { hari: "Kamis", blok: "Warga Blok G (G2 - G7)", petugas: "Bu Pungky, Bu Aisyah, Bu Mely, Bu Jean" },
-        { hari: "Jumat", blok: "Warga Blok H (H6 - H10)", petugas: "Bu Lina, Bu Iin" },
-        { hari: "Sabtu", blok: "Warga Blok I (I3, I8, I10-11)", petugas: "Bu Nia, Bu Lia, Bu Natali" },
-        { hari: "Minggu", blok: "Warga Blok J (J1 - J10)", petugas: "Bu Sulaicha, Bu Sulis, Bu Tanti" }
+        {
+          bulan: "Januari 2026",
+          kk: "Bu Tutik (D1) & Bu Wati (D2)",
+          tugas: "Cek sisa kWh token PJU luar gerbang & tandon air utama (level air & pelampung otomatis)"
+        },
+        {
+          bulan: "Februari 2026",
+          kk: "Bu Ami (D5) & Bu Ana (D6)",
+          tugas: "Cek sisa kWh token PJU dalam kompleks & kuras/cek filter sedimen tandon air"
+        },
+        {
+          bulan: "Maret 2026",
+          kk: "Bu Diah (D7) & Bu Dewi (D9)",
+          tugas: "Cek token PJU luar & dalam serta cek kebersihan area penampungan tandon"
+        },
+        {
+          bulan: "April 2026",
+          kk: "Bu Shinta (D10) & Bu Gini (E4)",
+          tugas: "Cek sisa kWh token listrik PJU & uji kerja radar/otomatis pompa pendorong"
+        },
+        {
+          bulan: "Mei 2026",
+          kk: "Bu Tere (F4) & Bu Ratna (F5)",
+          tugas: "Cek token PJU luar gerbang & periksa fisik pipa suplai tandon air"
+        },
+        {
+          bulan: "Juni 2026",
+          kk: "Bu Irma (F6) & Bu Maria (F7)",
+          tugas: "Cek token PJU dalam & luar kompleks, catat pemakaian kWh bulanan ke grup WA"
+        },
+        {
+          bulan: "Juli 2026",
+          kk: "Bu Pungky (G2) & Bu Aisyah (G3)",
+          tugas: "Cek sisa token PJU & monitoring kelancaran debit air dari tandon ke rumah warga"
+        },
+        {
+          bulan: "Agustus 2026",
+          kk: "Bu Mely (G4) & Bu Jean (G7)",
+          tugas: "Cek kelistrikan PJU luar/dalam & bersihkan lumut/kerak dinding tandon air"
+        },
+        {
+          bulan: "September 2026",
+          kk: "Bu Melda (H6) & Bu Lina (H7)",
+          tugas: "Cek sisa token PJU luar/dalam & uji fungsi pelampung stop kran otomatis tandon"
+        },
+        {
+          bulan: "Oktober 2026",
+          kk: "Bu Iin (H10) & Bu Nia (I3)",
+          tugas: "Cek token PJU gerbang luar & dalam serta cek grounding & pompa tandon air"
+        },
+        {
+          bulan: "November 2026",
+          kk: "Bu Lia (I8) & Bu Natali (I10-11)",
+          tugas: "Cek sisa kWh token PJU & pastikan pasokan air tandon lancar menjelang musim hujan"
+        },
+        {
+          bulan: "Desember 2026",
+          kk: "Bu Sulaicha (J1), Bu Sulis (J7), & Bu Tanti (J10)",
+          tugas: "Cek akhir tahun: rekap kWh token PJU luar/dalam & servis berkala mesin tandon air"
+        }
       ],
-      deskripsi: "Patroli bersama anggota satpam bertugas menjaga ketertiban, cek gembok portal samping, dan monitoring pantauan CCTV.",
-      statusBadge: "Wajib Tiap Blok"
+      deskripsi: "Pemeriksaan rutin sisa kWh token meteran listrik PJU (Penerangan Jalan Umum) area luar gerbang dan dalam kompleks, serta pengecekan ketersediaan volume air, pelampung otomatis, dan kebersihan tandon air warga. Hasil sisa kWh dan kondisi tandon dicatat serta dilaporkan ke grup WhatsApp warga.",
+      statusBadge: "Piket Bulanan per KK"
     },
     {
       id: "ACT-002",
@@ -757,11 +814,34 @@ const HavalandData = {
   // Password TIDAK disimpan di sisi klien.
   akunPengguna: [
     {
+      id: "USR-ADMIN-01",
       username: "admin",
       nama: "Admin RT 04 Havaland",
       role: "Administrator RT",
       blok: "Kantor RT",
-      isAdmin: true
+      isAdmin: true,
+      isPengurus: true,
+      isBendahara: true
+    },
+    {
+      id: "USR-RT-01",
+      username: "rt",
+      nama: "Bpk. Bambang Sujarwo",
+      role: "Pengurus RT",
+      blok: "Blok A-01",
+      isAdmin: false,
+      isPengurus: true,
+      isBendahara: false
+    },
+    {
+      id: "USR-BENDAHARA-01",
+      username: "bendahara",
+      nama: "Ibu Citra Lestari, S.E.",
+      role: "Bendahara RT",
+      blok: "Blok B-02",
+      isAdmin: false,
+      isPengurus: false,
+      isBendahara: true
     }
   ],
 

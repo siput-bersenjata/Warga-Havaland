@@ -259,8 +259,52 @@ const HavalandUtils = {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  },
+
+  // Toggle visibilitas kata sandi (show/hide password)
+  togglePassword(inputId, btnEl) {
+    const input = typeof inputId === "string" ? document.getElementById(inputId) : inputId;
+    if (!input) return;
+
+    const isCurrentlyPassword = input.type === "password";
+    input.type = isCurrentlyPassword ? "text" : "password";
+
+    const btn = btnEl || (input.parentElement ? input.parentElement.querySelector(".password-toggle-btn") : null);
+    if (btn) {
+      const eyeShow = btn.querySelector(".eye-show");
+      const eyeHide = btn.querySelector(".eye-hide");
+      if (eyeShow && eyeHide) {
+        eyeShow.style.display = isCurrentlyPassword ? "none" : "block";
+        eyeHide.style.display = isCurrentlyPassword ? "block" : "none";
+      }
+      const label = isCurrentlyPassword ? "Sembunyikan kata sandi" : "Lihat kata sandi";
+      btn.setAttribute("aria-label", label);
+      btn.setAttribute("title", label);
+      btn.classList.toggle("is-revealed", isCurrentlyPassword);
+    }
+  },
+
+  // Reset visibilitas kata sandi ke status tersembunyi (password)
+  resetPasswordVisibility(inputId) {
+    const input = typeof inputId === "string" ? document.getElementById(inputId) : inputId;
+    if (!input) return;
+
+    input.type = "password";
+    const btn = input.parentElement ? input.parentElement.querySelector(".password-toggle-btn") : null;
+    if (btn) {
+      const eyeShow = btn.querySelector(".eye-show");
+      const eyeHide = btn.querySelector(".eye-hide");
+      if (eyeShow && eyeHide) {
+        eyeShow.style.display = "block";
+        eyeHide.style.display = "none";
+      }
+      btn.setAttribute("aria-label", "Lihat kata sandi");
+      btn.setAttribute("title", "Lihat kata sandi");
+      btn.classList.remove("is-revealed");
+    }
   }
 };
+
 
 // Export to window
 if (typeof window !== "undefined") {

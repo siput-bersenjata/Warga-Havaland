@@ -1283,6 +1283,64 @@ textarea.form-control {
   resize: vertical;
 }
 
+/* Password Input with Show/Hide Toggle Button */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input-wrapper .form-control {
+  padding-right: 2.75rem;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+  z-index: 2;
+  user-select: none;
+}
+
+.password-toggle-btn:hover {
+  color: var(--primary-text);
+  background-color: var(--surface-hover);
+}
+
+.password-toggle-btn:active {
+  transform: translateY(-50%) scale(0.92);
+}
+
+.password-toggle-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.password-toggle-btn.is-revealed {
+  color: var(--accent);
+}
+
+.password-toggle-btn svg {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -3658,6 +3716,106 @@ textarea.form-control {
   background: #09090b;
   border-color: #27272a;
 }
+
+/* =============================================================================
+   AUDIT LOG & ACTIVITY TRAIL (Khusus Administrator RT)
+   ============================================================================= */
+.audit-log-card {
+  border-top: 3px solid var(--primary);
+  position: relative;
+}
+
+.audit-table-row {
+  transition: background 0.15s ease;
+}
+
+.audit-table-row:hover {
+  background: var(--bg-hover) !important;
+}
+
+.audit-action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-action-login {
+  background: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.badge-action-kas-masuk {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.badge-action-kas-keluar {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.badge-action-ide {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.badge-action-kegiatan {
+  background: rgba(139, 92, 246, 0.12);
+  color: #8b5cf6;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.badge-action-akun {
+  background: rgba(14, 165, 233, 0.12);
+  color: #0ea5e9;
+  border: 1px solid rgba(14, 165, 233, 0.25);
+}
+
+.badge-action-aspirasi {
+  background: rgba(236, 72, 153, 0.12);
+  color: #ec4899;
+  border: 1px solid rgba(236, 72, 153, 0.25);
+}
+
+.badge-action-hapus {
+  background: rgba(225, 29, 72, 0.12);
+  color: #e11d48;
+  border: 1px solid rgba(225, 29, 72, 0.25);
+}
+
+.audit-desc-cell {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.audit-time-cell {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.audit-time-primary {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.audit-time-secondary {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  display: block;
+}
+
 
 
 

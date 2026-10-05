@@ -23,6 +23,7 @@ const HavalandApp = {
     HavalandAuth.init();
     HavalandProposals.init();
     HavalandUserManagement.init();
+    if (typeof HavalandAuditLog !== "undefined") HavalandAuditLog.init();
     HavalandSlider.init();
     if (typeof HavalandHero !== "undefined") HavalandHero.init();
     this.loadPersistedData();
@@ -207,6 +208,51 @@ const HavalandApp = {
       }
     }
 
+    // Migrasi otomatis ACT-001: Jika data di cache masih berisi jadwal lama Ronda Malam, perbarui ke jadwal PJU & Tandon Air
+    if (Array.isArray(HavalandData.kegiatan)) {
+      const idxOldRonda = HavalandData.kegiatan.findIndex(k => k.id === "ACT-001" || (k.judul && (k.judul.includes("Ronda") || k.judul.includes("Siskamling"))));
+      const defaultNewAct = {
+        id: "ACT-001",
+        judul: "Pengecekan Token Listrik PJU Luar Dalam & Tandon Air",
+        kategori: "Sarpras",
+        tipe: "Rutin",
+        frekuensi: "Rutin Bulanan (Bergilir Tiap KK)",
+        waktuNext: "Piket Bulan Ini: Oktober 2026",
+        lokasi: "Panel Listrik PJU Luar/Dalam & Tandon Air Kompleks Havaland",
+        koordinator: "Seksi Sarana & Prasarana RT 04",
+        judulPiket: "Jadwal Giliran Bulanan Pengecekan Token Listrik PJU & Tandon Air (Per KK):",
+        thPeriode: "Bulan",
+        thPenanggungJawab: "Giliran KK (Penanggung Jawab)",
+        thTugas: "Fokus Pemeriksaan & Tugas Piket",
+        jadwalPiket: [
+          { bulan: "Januari 2026", kk: "Bu Tutik (D1) & Bu Wati (D2)", tugas: "Cek sisa kWh token PJU luar gerbang & tandon air utama (level air & pelampung otomatis)" },
+          { bulan: "Februari 2026", kk: "Bu Ami (D5) & Bu Ana (D6)", tugas: "Cek sisa kWh token PJU dalam kompleks & kuras/cek filter sedimen tandon air" },
+          { bulan: "Maret 2026", kk: "Bu Diah (D7) & Bu Dewi (D9)", tugas: "Cek token PJU luar & dalam serta cek kebersihan area penampungan tandon" },
+          { bulan: "April 2026", kk: "Bu Shinta (D10) & Bu Gini (E4)", tugas: "Cek sisa kWh token listrik PJU & uji kerja radar/otomatis pompa pendorong" },
+          { bulan: "Mei 2026", kk: "Bu Tere (F4) & Bu Ratna (F5)", tugas: "Cek token PJU luar gerbang & periksa fisik pipa suplai tandon air" },
+          { bulan: "Juni 2026", kk: "Bu Irma (F6) & Bu Maria (F7)", tugas: "Cek token PJU dalam & luar kompleks, catat pemakaian kWh bulanan ke grup WA" },
+          { bulan: "Juli 2026", kk: "Bu Pungky (G2) & Bu Aisyah (G3)", tugas: "Cek sisa token PJU & monitoring kelancaran debit air dari tandon ke rumah warga" },
+          { bulan: "Agustus 2026", kk: "Bu Mely (G4) & Bu Jean (G7)", tugas: "Cek kelistrikan PJU luar/dalam & bersihkan lumut/kerak dinding tandon air" },
+          { bulan: "September 2026", kk: "Bu Melda (H6) & Bu Lina (H7)", tugas: "Cek sisa token PJU luar/dalam & uji fungsi pelampung stop kran otomatis tandon" },
+          { bulan: "Oktober 2026", kk: "Bu Iin (H10) & Bu Nia (I3)", tugas: "Cek token PJU gerbang luar & dalam serta cek grounding & pompa tandon air" },
+          { bulan: "November 2026", kk: "Bu Lia (I8) & Bu Natali (I10-11)", tugas: "Cek sisa kWh token PJU & pastikan pasokan air tandon lancar menjelang musim hujan" },
+          { bulan: "Desember 2026", kk: "Bu Sulaicha (J1), Bu Sulis (J7), & Bu Tanti (J10)", tugas: "Cek akhir tahun: rekap kWh token PJU luar/dalam & servis berkala mesin tandon air" }
+        ],
+        deskripsi: "Pemeriksaan rutin sisa kWh token meteran listrik PJU (Penerangan Jalan Umum) area luar gerbang dan dalam kompleks, serta pengecekan ketersediaan volume air, pelampung otomatis, dan kebersihan tandon air warga. Hasil sisa kWh dan kondisi tandon dicatat serta dilaporkan ke grup WhatsApp warga.",
+        statusBadge: "Piket Bulanan per KK"
+      };
+
+      if (idxOldRonda !== -1) {
+        if (HavalandData.kegiatan[idxOldRonda].judul.includes("Ronda") || HavalandData.kegiatan[idxOldRonda].judul.includes("Siskamling")) {
+          HavalandData.kegiatan[idxOldRonda] = defaultNewAct;
+          HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
+        }
+      } else {
+        HavalandData.kegiatan.unshift(defaultNewAct);
+        HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
+      }
+    }
+
     // ---- USULAN IDE (snapshot penuh) ----
     const snapUsulan = HavalandUtils.loadStorage("custom_usulan_v2", null);
     if (snapUsulan && Array.isArray(snapUsulan) && snapUsulan.length > 0) {
@@ -271,8 +317,8 @@ const HavalandApp = {
         setTimeout(() => HavalandSlider.initSlidePage(), 10);
       }
     } else if (tabName === "kelolaakun") {
-      if (typeof HavalandAuth !== "undefined" && !HavalandAuth.isAdmin()) {
-        HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat mengelola akun warga.", "warning");
+      if (typeof HavalandAuth !== "undefined" && !HavalandAuth.isAdmin() && !HavalandAuth.isPengurus()) {
+        HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT atau Pengurus RT yang dapat mengelola akun warga.", "warning");
         this.navigate("beranda");
         return;
       }
@@ -815,30 +861,50 @@ const HavalandApp = {
 
     let html = "";
     list.forEach(k => {
-      // Piket siskamling table if exists
+      // Piket / Giliran table if exists
       let piketTableHtml = "";
-      if (k.jadwalPiket) {
+      if (k.jadwalPiket && Array.isArray(k.jadwalPiket)) {
         let rows = "";
         const ek = HavalandUtils.escapeHtml.bind(HavalandUtils);
+        const hasBulan = k.jadwalPiket.some(p => p.bulan);
+        const thPeriode = k.thPeriode || (hasBulan ? "Bulan" : "Hari");
+        const thPenanggungJawab = k.thPenanggungJawab || (hasBulan ? "Giliran KK (Penanggung Jawab)" : "Giliran Blok");
+        const thTugas = k.thTugas || (hasBulan ? "Fokus Pemeriksaan & Tugas Piket" : "Warga Piket Pendamping");
+        const judulPiket = k.judulPiket || (hasBulan ? "Jadwal Giliran Bulanan Pengecekan Token Listrik PJU & Tandon Air (Per KK):" : "Jadwal Giliran Ronda Tiap Malam:");
+
         k.jadwalPiket.forEach(p => {
+          const periodeVal = p.bulan || p.hari || p.periode || "-";
+          const penanggungVal = p.kk || p.blok || "-";
+          const tugasVal = p.tugas || p.petugas || p.fokus || "-";
           rows += `
             <tr>
-              <td><strong>${ek(p.hari)}</strong></td>
-              <td><span class="badge badge-info">${ek(p.blok)}</span></td>
-              <td style="font-size: 0.8rem; color: var(--text-secondary);">${ek(p.petugas)}</td>
+              <td style="white-space: nowrap; font-weight: 700; color: var(--primary-text);">
+                <span>📅 ${ek(periodeVal)}</span>
+              </td>
+              <td>
+                <span class="badge badge-info" style="font-size: 0.78rem; font-weight: 600; padding: 0.35rem 0.65rem;">
+                  🏠 ${ek(penanggungVal)}
+                </span>
+              </td>
+              <td style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45;">
+                ${ek(tugasVal)}
+              </td>
             </tr>
           `;
         });
         piketTableHtml = `
-          <div style="margin-top: 0.85rem; border-top: 1px dashed var(--surface-border); padding-top: 0.75rem;">
-            <div style="font-size: 0.82rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--primary-text);">Jadwal Giliran Ronda Tiap Malam:</div>
-            <div class="table-responsive">
+          <div style="margin-top: 1rem; border-top: 1px dashed var(--surface-border); padding-top: 0.85rem;">
+            <div style="font-size: 0.85rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--primary-text); display: flex; align-items: center; gap: 0.4rem;">
+              <span>📋</span>
+              <span>${ek(judulPiket)}</span>
+            </div>
+            <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
               <table class="piket-table">
                 <thead>
                   <tr>
-                    <th>Hari</th>
-                    <th>Giliran Blok</th>
-                    <th>Warga Piket Pendamping</th>
+                    <th style="width: 140px;">${ek(thPeriode)}</th>
+                    <th style="min-width: 220px;">${ek(thPenanggungJawab)}</th>
+                    <th>${ek(thTugas)}</th>
                   </tr>
                 </thead>
                 <tbody>${rows}</tbody>
@@ -916,9 +982,19 @@ const HavalandApp = {
     if (desc) {
       lines.push("", `*Keterangan:* ${desc}`);
     }
+
+    if (k.jadwalPiket && Array.isArray(k.jadwalPiket) && k.jadwalPiket.length > 0) {
+      lines.push("", "*JADWAL GILIRAN PIKET (PER BULAN / PER KK):*");
+      k.jadwalPiket.forEach(p => {
+        const bln = p.bulan || p.hari || "-";
+        const pj = p.kk || p.blok || "-";
+        lines.push(`• *${bln}:* ${pj}`);
+      });
+    }
+
     lines.push(
       "",
-      "Terima kasih atas perhatian dan partisipasinya.",
+      "Terima kasih atas perhatian dan kerja samanya.",
       "Salam kompak & guyub warga Havaland! 🏡🌿"
     );
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
@@ -1262,8 +1338,9 @@ END:VCALENDAR`;
 
     if (!nama || !isi) return;
 
+    // Buat ID unik timestamp agar tidak pernah bertabrakan
     const newAspirasi = {
-      id: `ASP-00${HavalandData.aspirasi.length + 1}`,
+      id: `ASP-${Date.now().toString().slice(-6)}`,
       pelapor: nama,
       kategori: kategori,
       judul: isi,
@@ -1274,48 +1351,95 @@ END:VCALENDAR`;
       createdBy: `${user.nama} (${user.role})`
     };
 
-    HavalandData.aspirasi.unshift(newAspirasi);
+    if (typeof HavalandSync !== "undefined") {
+      HavalandSync.unmarkDeleted("aspirasi", newAspirasi.id);
+    }
 
-    // Simpan snapshot penuh sebagai backup
+    HavalandData.aspirasi.unshift(newAspirasi);
     HavalandUtils.saveStorage("custom_aspirasi_v2", HavalandData.aspirasi);
 
     this.renderAspirasi();
     this.closeModal("modal-aspirasi");
     document.getElementById("form-aspirasi").reset();
 
-    if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
     HavalandUtils.showToast("Laporan Terkirim", "Terima kasih, aspirasi fasilitas Anda telah dicatat pengurus RT!", "success");
 
-    // Kirim ke Vercel Cloud Database jika API tersedia
+    // Kirim langsung ke Cloud Database PostgreSQL via API
+    const token = HavalandAuth.syncToken || HavalandAuth.serverToken || (HavalandAuth.currentSession && HavalandAuth.currentSession.token) || "";
     try {
       const authHeaders = { "Content-Type": "application/json" };
-      if (HavalandAuth.serverToken) {
-        authHeaders["Authorization"] = `Bearer ${HavalandAuth.serverToken}`;
+      if (token) {
+        authHeaders["Authorization"] = `Bearer ${token}`;
       }
-      fetch("/api/aspirasi", {
+      await fetch("/api/aspirasi", {
         method: "POST",
         headers: authHeaders,
         body: JSON.stringify(newAspirasi)
       });
     } catch (e) {
-      console.log("Cloud sync aspirasi dilewati (mode offline).");
+      console.warn("Kirim ke /api/aspirasi error:", e);
+    }
+
+    // Pastikan sync_store juga menerima update snapshot aspirasi seketika
+    if (typeof HavalandSync !== "undefined") {
+      await HavalandSync.pushImmediate("aspirasi");
+    }
+
+    // Catat ke Audit Log sistem
+    if (typeof HavalandAuditLog !== "undefined") {
+      HavalandAuditLog.logActivity(
+        "KIRIM_ASPIRASI",
+        "Aspirasi & Fasilitas",
+        `Mengirim laporan fasilitas warga baru: "${isi}" (Kategori: ${kategori}, Urgensi: ${urgensi})`
+      );
     }
   },
 
-  hapusAspirasi(aspId) {
-    if (!HavalandAuth.isAdmin()) {
-      HavalandUtils.showToast("Akses Terbatas", "Hanya Administrator RT yang dapat menghapus catatan aspirasi.", "error");
+  async hapusAspirasi(aspId) {
+    if (!HavalandAuth.isAdmin() && !HavalandAuth.isPengurus()) {
+      HavalandUtils.showToast("Akses Terbatas", "Hanya Administrator RT atau Pengurus RT yang dapat menghapus catatan aspirasi.", "error");
       return;
     }
     const user = HavalandAuth.getCurrentUser();
     const targetAsp = HavalandData.aspirasi.find(item => item.id === aspId);
     if (!confirm(`Hapus laporan "${targetAsp ? targetAsp.judul : aspId}"? Data yang dihapus tidak bisa dikembalikan. Tindakan ini dicatat atas nama ${user.nama}.`)) return;
 
+    // 1. Tandai di tombstone agar tidak dibangkitkan ulang saat refresh
+    if (typeof HavalandSync !== "undefined") {
+      HavalandSync.markDeleted("aspirasi", aspId);
+    }
+
+    // 2. Hapus dari state memori lokal
     HavalandData.aspirasi = HavalandData.aspirasi.filter(item => item.id !== aspId);
     HavalandUtils.saveStorage("custom_aspirasi_v2", HavalandData.aspirasi);
     HavalandUtils.saveStorage("custom_aspirasi", HavalandData.aspirasi);
     this.renderAspirasi();
-    if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+
+    // 3. Hapus langsung dari tabel PostgreSQL aspirasi_warga & sync_store
+    const token = HavalandAuth.syncToken || HavalandAuth.serverToken || (HavalandAuth.currentSession && HavalandAuth.currentSession.token) || "";
+    try {
+      await fetch(`/api/aspirasi?id=${encodeURIComponent(aspId)}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+    } catch (_) {}
+
+    if (typeof HavalandSync !== "undefined") {
+      try {
+        await HavalandSync.deleteItem("aspirasi", aspId);
+        await HavalandSync.pushImmediate("aspirasi");
+      } catch (_) {}
+    }
+
+    // Catat ke Audit Log sistem
+    if (typeof HavalandAuditLog !== "undefined") {
+      HavalandAuditLog.logActivity(
+        "HAPUS_ASPIRASI",
+        "Aspirasi & Fasilitas",
+        `Menghapus laporan fasilitas warga: "${targetAsp ? targetAsp.judul : aspId}"`
+      );
+    }
+
     HavalandUtils.showToast("Aspirasi Dihapus", `Laporan ${aspId} berhasil dihapus oleh ${user.nama}`, "info");
   },
 
@@ -1598,7 +1722,7 @@ END:VCALENDAR`;
     this.openModal("modal-edit-aspirasi");
   },
 
-  simpanEditAspirasi(event) {
+  async simpanEditAspirasi(event) {
     event.preventDefault();
     if (!HavalandAuth.isAdmin() && !HavalandAuth.isPengurus()) {
       HavalandUtils.showToast("Akses Terbatas", "Hanya Administrator atau Pengurus RT yang dapat menyimpan tanggapan aspirasi.", "error");
@@ -1620,7 +1744,24 @@ END:VCALENDAR`;
     HavalandUtils.saveStorage("custom_aspirasi", HavalandData.aspirasi);
     this.closeModal("modal-edit-aspirasi");
     this.renderAspirasi();
-    if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+
+    // Kirim update ke cloud database
+    const token = HavalandAuth.syncToken || HavalandAuth.serverToken || (HavalandAuth.currentSession && HavalandAuth.currentSession.token) || "";
+    try {
+      await fetch("/api/aspirasi", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(a)
+      });
+    } catch (_) {}
+
+    if (typeof HavalandSync !== "undefined") {
+      HavalandSync.pushImmediate("aspirasi");
+    }
+
     HavalandUtils.showToast("Laporan Diperbarui", `Status laporan "${a.judul.slice(0, 30)}..." berhasil diperbarui ke "${a.status}"!`, "success");
   },
 
@@ -1669,7 +1810,7 @@ END:VCALENDAR`;
     this.openModal("modal-edit-kegiatan");
   },
 
-  handleEditKegiatan(event) {
+  async handleEditKegiatan(event) {
     event.preventDefault();
     if (!HavalandAuth.isAdmin() && !HavalandAuth.isPengurus()) {
       HavalandUtils.showToast("Akses Terbatas", "Hanya Administrator atau Pengurus RT yang dapat mengedit jadwal kegiatan.", "error");
@@ -1709,7 +1850,11 @@ END:VCALENDAR`;
     HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
     this.closeModal("modal-edit-kegiatan");
     this.renderKegiatan("semua");
-    if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+
+    if (typeof HavalandSync !== "undefined") {
+      HavalandSync.pushImmediate("kegiatan");
+    }
+
     HavalandUtils.showToast("Kegiatan Diperbarui", `Jadwal "${k.judul}" berhasil diperbarui!`, "success");
   },
 
@@ -1759,6 +1904,9 @@ END:VCALENDAR`;
     t.catatan = document.getElementById("edit-trx-catatan").value.trim();
 
     HavalandUtils.saveStorage("custom_transaksi_full", HavalandData.transaksi);
+    if (typeof HavalandSync !== "undefined") {
+      HavalandSync.pushImmediate("transaksi");
+    }
     this.recalculateSummary();
     this.closeModal("modal-edit-transaksi");
     this.filterTransaksi();
@@ -1853,23 +2001,38 @@ END:VCALENDAR`;
 
     HavalandUtils.showToast("Berhasil Dicatat", `Transaksi ${newTrx.id} dicatat oleh ${pencatatInfo}!`, "success");
 
-    // Kirim ke Vercel Cloud Database jika API tersedia
+    // Catat ke Audit Log sistem
+    if (typeof HavalandAuditLog !== "undefined") {
+      const formattedNominal = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(nominal);
+      HavalandAuditLog.logActivity(
+        jenis === "Masuk" ? "KAS_MASUK" : "KAS_KELUAR",
+        "Keuangan Kas",
+        `Mencatat kas ${jenis.toLowerCase()} sebesar ${formattedNominal} untuk "${uraian}" (${kategori}, via ${metode})`
+      );
+    }
+
+    // Kirim sinkronisasi cloud instan (baik sync_store maupun transaksi_kas)
+    if (typeof HavalandSync !== "undefined") {
+      HavalandSync.pushImmediate("transaksi");
+    }
     try {
       const authHeaders = { "Content-Type": "application/json" };
-      if (HavalandAuth.serverToken) {
-        authHeaders["Authorization"] = `Bearer ${HavalandAuth.serverToken}`;
+      const token = HavalandAuth.syncToken || HavalandAuth.serverToken;
+      if (token) {
+        authHeaders["Authorization"] = `Bearer ${token}`;
+        authHeaders["X-Sync-Token"] = token;
       }
       fetch("/api/transaksi", {
         method: "POST",
         headers: authHeaders,
         body: JSON.stringify(newTrx)
-      });
+      }).catch(() => {});
     } catch (e) {
       console.log("Cloud sync transaksi dilewati (mode offline).");
     }
   },
 
-  hapusTransaksi(trxId, e) {
+  async hapusTransaksi(trxId, e) {
     if (e) e.stopPropagation();
     if (!HavalandAuth.isLoggedIn()) {
       HavalandUtils.showToast("Akses Terbatas", "Anda dalam Mode Tamu (Hanya Lihat). Silakan masuk akun terlebih dahulu untuk menghapus transaksi kas.", "warning");
@@ -1879,13 +2042,40 @@ END:VCALENDAR`;
     const user = HavalandAuth.getCurrentUser();
     if (!confirm(`Hapus catatan transaksi ${trxId}? Tindakan ini akan dicatat atas nama ${user.nama}.`)) return;
 
+    if (typeof HavalandSync !== "undefined") {
+      HavalandSync.markDeleted("transaksi", trxId);
+    }
+
     HavalandData.transaksi = HavalandData.transaksi.filter(t => t.id !== trxId);
     HavalandUtils.saveStorage("custom_transaksi_full", HavalandData.transaksi);
+    if (typeof HavalandSync !== "undefined") {
+      await HavalandSync.deleteItem("transaksi", trxId);
+      await HavalandSync.pushImmediate("transaksi");
+    }
+    try {
+      const authHeaders = { "Content-Type": "application/json" };
+      const token = HavalandAuth.syncToken || HavalandAuth.serverToken;
+      if (token) {
+        authHeaders["Authorization"] = `Bearer ${token}`;
+        authHeaders["X-Sync-Token"] = token;
+      }
+      fetch("/api/transaksi", {
+        method: "DELETE",
+        headers: authHeaders,
+        body: JSON.stringify({ id: trxId })
+      }).catch(() => {});
+    } catch (_) {}
     this.recalculateSummary();
     this.renderKPIs();
     this.filterTransaksi();
     this.renderBerandaHighlights();
     if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+
+    // Catat ke Audit Log sistem
+    if (typeof HavalandAuditLog !== "undefined") {
+      HavalandAuditLog.logActivity("HAPUS_KAS", "Keuangan Kas", `Menghapus catatan transaksi kas ID: ${trxId}`);
+    }
+
     HavalandUtils.showToast("Dihapus", `Transaksi ${trxId} berhasil dihapus oleh ${user.nama}`, "info");
   },
 
@@ -1960,7 +2150,7 @@ END:VCALENDAR`;
     const pencatatInfo = `${user.nama} (${user.role})`;
 
     const newKeg = {
-      id: `ACT-${Date.now().toString().slice(-4)}`,
+      id: `ACT-${Date.now().toString().slice(-5)}`,
       tipe: "Agenda Khusus",
       kategori: kategori,
       judul: nama,
@@ -1974,6 +2164,10 @@ END:VCALENDAR`;
       createdAt: new Date().toISOString()
     };
 
+    if (typeof HavalandSync !== "undefined") {
+      HavalandSync.unmarkDeleted("kegiatan", newKeg.id);
+    }
+
     HavalandData.kegiatan.unshift(newKeg);
     HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
 
@@ -1982,11 +2176,24 @@ END:VCALENDAR`;
     this.closeModal("modal-tambah-kegiatan");
     document.getElementById("form-tambah-kegiatan").reset();
 
-    if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+    // Langsung simpan ke Database Cloud
+    if (typeof HavalandSync !== "undefined") {
+      HavalandSync.pushImmediate("kegiatan");
+    }
+
+    // Catat ke Audit Log sistem
+    if (typeof HavalandAuditLog !== "undefined") {
+      HavalandAuditLog.logActivity(
+        "TAMBAH_KEGIATAN",
+        "Agenda Kegiatan",
+        `Menjadwalkan agenda baru: "${nama}" (Kategori: ${kategori}, Waktu: ${waktu}, Lokasi: ${lokasi})`
+      );
+    }
+
     HavalandUtils.showToast("Jadwal Ditambahkan", `Agenda '${nama}' dicatat oleh ${user.nama}!`, "success");
   },
 
-  hapusKegiatan(kegId) {
+  async hapusKegiatan(kegId) {
     if (!HavalandAuth.isLoggedIn()) {
       HavalandUtils.showToast("Akses Terbatas", "Anda dalam Mode Tamu (Hanya Lihat). Silakan masuk akun untuk menghapus jadwal kegiatan.", "warning");
       HavalandAuth.openLoginModal();
@@ -1996,11 +2203,37 @@ END:VCALENDAR`;
     const target = HavalandData.kegiatan.find(item => item.id === kegId);
     if (!confirm(`Hapus "${target ? target.judul : kegId}" dari jadwal kegiatan? Data yang dihapus tidak bisa dikembalikan. Tindakan ini dicatat atas nama ${user.nama}.`)) return;
 
+    // 1. Tandai di tombstone agar tidak pernah hidup kembali saat refresh
+    if (typeof HavalandSync !== "undefined") {
+      HavalandSync.markDeleted("kegiatan", kegId);
+    }
+
+    // 2. Hapus dari state lokal
     HavalandData.kegiatan = HavalandData.kegiatan.filter(k => k.id !== kegId);
     HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
+
     this.renderKegiatan("semua");
     this.renderBerandaHighlights();
-    if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+
+    // 3. Hapus langsung dari Database Cloud secara permanen
+    if (typeof HavalandSync !== "undefined") {
+      try {
+        await HavalandSync.deleteItem("kegiatan", kegId);
+        await HavalandSync.pushImmediate("kegiatan");
+      } catch (e) {
+        console.warn("Gagal hapus kegiatan di cloud:", e);
+      }
+    }
+
+    // Catat ke Audit Log sistem
+    if (typeof HavalandAuditLog !== "undefined") {
+      HavalandAuditLog.logActivity(
+        "HAPUS_KEGIATAN",
+        "Agenda Kegiatan",
+        `Menghapus jadwal agenda kegiatan: "${target ? target.judul : kegId}"`
+      );
+    }
+
     HavalandUtils.showToast("Agenda Dihapus", `"${target ? target.judul : kegId}" berhasil dihapus oleh ${user.nama}.`, "info");
   },
 
@@ -2662,6 +2895,18 @@ END:VCALENDAR`;
     }
   },
 
+  togglePassword(inputId, btnEl) {
+    if (typeof HavalandUtils !== "undefined" && HavalandUtils.togglePassword) {
+      HavalandUtils.togglePassword(inputId, btnEl);
+    }
+  },
+
+  resetPasswordVisibility(inputId) {
+    if (typeof HavalandUtils !== "undefined" && HavalandUtils.resetPasswordVisibility) {
+      HavalandUtils.resetPasswordVisibility(inputId);
+    }
+  },
+
   initDateInputs() {
     const today = new Date().toISOString().slice(0, 10);
     const dateInput = document.getElementById("new-trx-tanggal");
@@ -2715,8 +2960,8 @@ const HavalandAuth = {
           this.currentUser = session.user;
           this.currentSession = session;
           // Kembalikan token server & sinkronisasi agar tulis cloud tetap jalan
-          this.serverToken = session.serverToken || null;
-          this.syncToken = session.syncToken || null;
+          this.serverToken = session.serverToken || session.token || null;
+          this.syncToken = session.syncToken || session.token || null;
           const sisaHari = session.expiresAt
             ? Math.max(1, Math.ceil((session.expiresAt - now) / (24 * 60 * 60 * 1000)))
             : null;
@@ -2811,6 +3056,7 @@ const HavalandAuth = {
 
     if (userInput) userInput.value = "";
     if (passInput) passInput.value = "";
+    HavalandApp.resetPasswordVisibility("login-password");
     if (errMsg) errMsg.style.display = "none";
     if (rememberCheckbox) rememberCheckbox.checked = true;
 
@@ -2847,13 +3093,14 @@ const HavalandAuth = {
       if (result.success && result.user) {
         // Server auth succeeded — save session with server token
         const serverUser = result.user;
-        this.serverToken = result.token;
-        this.syncToken = result.syncToken || null;
-        this.saveSession(serverUser, rememberMe, result.token, result.syncToken || null);
+        const validToken = result.token || result.syncToken || null;
+        this.serverToken = validToken;
+        this.syncToken = result.syncToken || validToken;
+        this.saveSession(serverUser, rememberMe, validToken, this.syncToken);
         this.updateUI();
         HavalandApp.closeModal("modal-login");
         // Tarik data cloud terbaru agar tidak menimpa cloud dengan lokal yang basi
-        if (result.syncToken && typeof HavalandSync !== "undefined") {
+        if (validToken && typeof HavalandSync !== "undefined") {
           HavalandSync.pullOnLogin();
         }
 
@@ -2874,63 +3121,70 @@ const HavalandAuth = {
     }
 
     // Fallback: local authentication for offline mode
-    if (userVal === "admin" && (passVal === "admin" || (window.DEFAULT_ADMIN_PASS && passVal === window.DEFAULT_ADMIN_PASS))) {
-      const adminUser = HavalandData.akunPengguna.find(u => u.username === "admin") || {
-        username: "admin",
-        nama: "Admin RT 04 Havaland",
-        role: "Administrator RT",
-        blok: "Kantor RT",
-        isAdmin: true
+    // 1. Cek apakah ada akun custom di localStorage (termasuk akun RT/Bendahara yang disetel passwordnya oleh pengguna)
+    let foundUser = null;
+    const local = localStorage.getItem("havaland_custom_users");
+    if (local) {
+      try {
+        const list = JSON.parse(local);
+        foundUser = list.find(u => u.username.toLowerCase() === userVal && u.password === passVal);
+      } catch (e) {}
+    }
+
+    if (foundUser) {
+      const sessionUser = {
+        username: foundUser.username,
+        nama: foundUser.nama,
+        role: foundUser.role,
+        blok: foundUser.blok,
+        isAdmin: Boolean(foundUser.is_admin || foundUser.role === 'Administrator RT' || foundUser.role === 'Admin RT'),
+        isBendahara: Boolean(foundUser.role === 'Bendahara RT'),
+        isPengurus: Boolean(foundUser.role === 'Pengurus RT' || foundUser.role === 'Bendahara RT')
       };
-      this.saveSession(adminUser, rememberMe);
+      this.saveSession(sessionUser, rememberMe);
       this.updateUI();
       HavalandApp.closeModal("modal-login");
       const durasiMsg = rememberMe ? " (Ingat Saya: 30 hari aktif)" : "";
       HavalandUtils.showToast(
         "Berhasil Masuk",
-        `Selamat datang, ${adminUser.nama}! Anda masuk sebagai Administrator RT.${durasiMsg}`,
+        `Selamat datang, ${sessionUser.nama}! Anda masuk sebagai ${sessionUser.role}.${durasiMsg}`,
         "success"
       );
       if (typeof HavalandSettings !== "undefined") {
         HavalandSettings.renderBackupSection();
       }
-    } else {
-      // Check custom users created in localStorage
-      let foundUser = null;
-      const local = localStorage.getItem("havaland_custom_users");
-      if (local) {
-        try {
-          const list = JSON.parse(local);
-          foundUser = list.find(u => u.username.toLowerCase() === userVal && u.password === passVal);
-        } catch (e) {}
-      }
+      if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = "Masuk"; }
+      return;
+    }
 
-      if (foundUser) {
-        const sessionUser = {
-          username: foundUser.username,
-          nama: foundUser.nama,
-          role: foundUser.role,
-          blok: foundUser.blok,
-          isAdmin: Boolean(foundUser.is_admin)
-        };
-        this.saveSession(sessionUser, rememberMe);
+    // 2. Cek akun resmi bawaan sistem di HavalandData.akunPengguna (admin, rt, bendahara)
+    const officialTarget = (HavalandData.akunPengguna || []).find(u => u.username.toLowerCase() === userVal);
+    if (officialTarget) {
+      const isDefaultPassValid = (userVal === "admin" && (passVal === "admin" || passVal === "Amalia2125" || (window.DEFAULT_ADMIN_PASS && passVal === window.DEFAULT_ADMIN_PASS))) ||
+                                (userVal === "rt" && (passVal === "rt" || passVal === "admin" || passVal === "Amalia2125" || passVal === "rt123456")) ||
+                                (userVal === "bendahara" && (passVal === "bendahara" || passVal === "admin" || passVal === "Amalia2125" || passVal === "bendahara123"));
+
+      if (isDefaultPassValid) {
+        this.saveSession(officialTarget, rememberMe);
         this.updateUI();
         HavalandApp.closeModal("modal-login");
         const durasiMsg = rememberMe ? " (Ingat Saya: 30 hari aktif)" : "";
         HavalandUtils.showToast(
           "Berhasil Masuk",
-          `Selamat datang, ${sessionUser.nama}! Anda masuk sebagai ${sessionUser.role}.${durasiMsg}`,
+          `Selamat datang, ${officialTarget.nama}! Anda masuk sebagai ${officialTarget.role}.${durasiMsg}`,
           "success"
         );
         if (typeof HavalandSettings !== "undefined") {
           HavalandSettings.renderBackupSection();
         }
-      } else {
-        if (errMsg) {
-          errMsg.textContent = "Nama pengguna atau kata sandi tidak cocok. Silakan coba lagi.";
-          errMsg.style.display = "block";
-        }
+        if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = "Masuk"; }
+        return;
       }
+    }
+
+    if (errMsg) {
+      errMsg.textContent = "Nama pengguna atau kata sandi tidak cocok. Silakan coba lagi.";
+      errMsg.style.display = "block";
     }
 
     if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = "Masuk"; }
@@ -3044,15 +3298,28 @@ const HavalandAuth = {
       document.body.setAttribute("data-auth-state", "guest");
     }
 
-    // Toggle Kelola Akun button visibility for Administrator RT only
+    // Toggle Kelola Akun button visibility for Administrator RT & Pengurus RT (Ketua RT)
     if (btnKelola) {
-      btnKelola.style.display = this.isAdmin() ? "inline-flex" : "none";
+      btnKelola.style.display = (this.isAdmin() || this.isPengurus()) ? "inline-flex" : "none";
     }
 
     // Toggle tombol khusus admin (Tambah Warga, Tambah Kontak, dll.)
     document.querySelectorAll(".admin-only-btn").forEach(el => {
       el.style.display = this.isAdmin() ? "inline-flex" : "none";
     });
+
+    // Toggle Card Audit Log (HANYA Administrator RT yang boleh melihat tabel ini)
+    const cardAuditLog = document.getElementById("card-audit-log");
+    if (cardAuditLog) {
+      if (this.isAdmin()) {
+        cardAuditLog.style.display = "block";
+        if (typeof HavalandAuditLog !== "undefined" && typeof HavalandApp !== "undefined" && HavalandApp.activeTab === "kelolaakun") {
+          HavalandAuditLog.loadLogs();
+        }
+      } else {
+        cardAuditLog.style.display = "none";
+      }
+    }
 
     // Refresh antarmuka dinamis sesuai status hak akses (CRUD/Hapus/Vote/Iuran)
     if (typeof HavalandApp !== "undefined" && HavalandApp.initialized) {
@@ -3563,20 +3830,8 @@ const HavalandBackup = {
   },
 
   autoSnapshot() {
-    const isAuto = localStorage.getItem("havaland_auto_backup") === "true";
-    if (!isAuto) return;
-
-    const payload = {
-      timestamp: new Date().toISOString(),
-      transaksi: HavalandData.transaksi,
-      kegiatan: HavalandData.kegiatan,
-      usulanIde: HavalandData.usulanIde,
-      kasSummary: HavalandData.kasSummary
-    };
-
-    localStorage.setItem("havaland_latest_snapshot", JSON.stringify(payload));
-    localStorage.setItem("havaland_last_snapshot_time", new Date().toLocaleString("id-ID"));
-    console.log("Auto-snapshot data Havaland berhasil disimpan.");
+    // Nonaktif sesuai instruksi pengguna agar data selalu live dan sinkron langsung ke database
+    return;
   },
 
   restoreLastSnapshot() {
@@ -3713,12 +3968,22 @@ const HavalandProposals = {
       const idx = votedIds.indexOf(ideaId);
       votedIds.splice(idx, 1);
       localStorage.setItem("havaland_voted_ideas", JSON.stringify(votedIds));
+
+      if (typeof HavalandAuditLog !== "undefined") {
+        HavalandAuditLog.logActivity("VOTE_IDE", "Usulan Ide", `Membatalkan dukungan untuk usulan ide: "${item.judul}"`);
+      }
+
       HavalandUtils.showToast("Dukungan Dibatalkan", `Dukungan untuk '${item.judul}' dibatalkan.`, "info");
     } else {
       // Tambah vote
       item.dukungan = (item.dukungan || 0) + 1;
       votedIds.push(ideaId);
       localStorage.setItem("havaland_voted_ideas", JSON.stringify(votedIds));
+
+      if (typeof HavalandAuditLog !== "undefined") {
+        HavalandAuditLog.logActivity("VOTE_IDE", "Usulan Ide", `Memberikan dukungan untuk usulan ide: "${item.judul}" (Total: ${item.dukungan} suara)`);
+      }
+
       HavalandUtils.showToast("Terima Kasih", `Dukungan Anda untuk '${item.judul}' berhasil dicatat!`, "success");
     }
 
@@ -3739,6 +4004,11 @@ const HavalandProposals = {
     HavalandUtils.saveStorage("custom_usulan_v2", HavalandData.usulanIde);
     this.renderSlider();
     if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+
+    if (typeof HavalandAuditLog !== "undefined") {
+      HavalandAuditLog.logActivity("HAPUS_IDE", "Usulan Ide", `Menghapus usulan ide warga: "${targetIde ? targetIde.judul : ideaId}"`);
+    }
+
     HavalandUtils.showToast("Usulan Dihapus", `Usulan "${targetIde ? targetIde.judul : ideaId}" berhasil dihapus oleh ${user.nama}.`, "info");
   },
 
@@ -3811,6 +4081,14 @@ const HavalandProposals = {
       HavalandBackup.autoSnapshot();
     }
 
+    if (typeof HavalandAuditLog !== "undefined") {
+      HavalandAuditLog.logActivity(
+        "TAMBAH_IDE",
+        "Usulan Ide",
+        `Menambahkan usulan gagasan warga baru: "${judul}" (Kategori: ${kategori})`
+      );
+    }
+
     HavalandUtils.showToast(
       "Usulan Terkirim",
       `Gagasan '${judul}' dari ${user.nama} berhasil dicatat dan masuk ke kotak suara warga!`,
@@ -3842,22 +4120,118 @@ const HavalandUserManagement = {
     this.resetForm();
     this.populateWargaDropdown();
     this.loadUsers();
+    if (typeof HavalandAuditLog !== "undefined") {
+      HavalandAuditLog.init();
+    }
   },
 
   async loadUsers() {
     this.isLoading = true;
     this.render();
 
+    // Akun pengurus inti resmi sistem Havaland
+    const officialAccounts = [
+      {
+        id: "USR-ADMIN-01",
+        username: "admin",
+        nama: "Admin RT 04 Havaland",
+        role: "Administrator RT",
+        blok: "Kantor RT",
+        is_admin: true,
+        created_at: "2026-09-01T00:00:00Z"
+      },
+      {
+        id: "USR-RT-01",
+        username: "rt",
+        nama: "Bpk. Bambang Sujarwo",
+        role: "Pengurus RT",
+        blok: "Blok A-01",
+        is_admin: false,
+        created_at: "2026-09-01T00:00:00Z"
+      },
+      {
+        id: "USR-BENDAHARA-01",
+        username: "bendahara",
+        nama: "Ibu Citra Lestari, S.E.",
+        role: "Bendahara RT",
+        blok: "Blok B-02",
+        is_admin: false,
+        created_at: "2026-09-01T00:00:00Z"
+      }
+    ];
+
+    // 1. Baca data lokal havaland_custom_users yang ada
+    let localCustomUsers = [];
+    const local = localStorage.getItem("havaland_custom_users");
+    if (local) {
+      try { localCustomUsers = JSON.parse(local); } catch (e) {}
+    }
+
     try {
-      const token = HavalandAuth.serverToken || (HavalandAuth.currentSession ? HavalandAuth.currentSession.token : null);
+      const token = HavalandAuth.syncToken || HavalandAuth.serverToken || (HavalandAuth.currentSession ? HavalandAuth.currentSession.token : null);
       if (token) {
         const res = await fetch("/api/users", {
-          headers: { "Authorization": `Bearer ${token}` }
+          headers: { 
+            "Authorization": `Bearer ${token}`,
+            "X-Sync-Token": token
+          }
         });
         if (res.ok) {
           const result = await res.json();
-          if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-            this.users = result.data;
+          if (result.success && Array.isArray(result.data)) {
+            const serverUsers = result.data;
+            const serverUsernames = new Set(serverUsers.map(u => (u.username || "").toLowerCase()));
+
+            // Pastikan akun resmi selalu ada di serverUsers jika belum ada di database cloud
+            officialAccounts.forEach(off => {
+              if (!serverUsernames.has(off.username.toLowerCase())) {
+                serverUsers.push(off);
+                serverUsernames.add(off.username.toLowerCase());
+              }
+            });
+
+            // Cek apakah ada akun lokal custom yang belum masuk ke database Postgres
+            const missingOnServer = localCustomUsers.filter(u => u && u.username && !serverUsernames.has(u.username.toLowerCase()));
+
+            if (missingOnServer.length > 0 && (HavalandAuth.isAdmin() || HavalandAuth.isPengurus())) {
+              // Otomatis selamatkan dan daftarkan akun lokal yang belum ada di database cloud
+              for (const missing of missingOnServer) {
+                try {
+                  const pass = missing.password || "WargaHavaland123!";
+                  const regRes = await fetch("/api/users", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      "Authorization": `Bearer ${token}`,
+                      "X-Sync-Token": token
+                    },
+                    body: JSON.stringify({
+                      username: missing.username,
+                      password: pass,
+                      nama: missing.nama,
+                      role: missing.role || "Warga Tetap",
+                      blok: missing.blok || "-"
+                    })
+                  });
+                  const regData = await regRes.json();
+                  if (regData.success && regData.data) {
+                    serverUsers.push(regData.data);
+                    serverUsernames.add(missing.username.toLowerCase());
+                    console.log(`Akun warga "${missing.username}" berhasil diselamatkan dan didaftarkan ke Database Cloud!`);
+                  }
+                } catch (regErr) {
+                  console.warn("Gagal auto-sync akun lokal ke server:", missing.username, regErr);
+                }
+              }
+            }
+
+            // Gabungkan akun lokal yang belum ter-sync agar TIDAK PERNAH HILANG
+            const remainingLocal = missingOnServer.filter(u => !serverUsernames.has(u.username.toLowerCase()));
+            const allUsers = [...serverUsers, ...remainingLocal];
+
+            this.users = allUsers;
+            const nonAdmin = allUsers.filter(u => u.username !== "admin");
+            localStorage.setItem("havaland_custom_users", JSON.stringify(nonAdmin));
             this.isLoading = false;
             this.render();
             return;
@@ -3868,25 +4242,10 @@ const HavalandUserManagement = {
       console.warn("Gagal memuat akun dari server API, menggunakan data lokal:", e.message);
     }
 
-    // Fallback: Local storage custom users + default admin
-    const local = localStorage.getItem("havaland_custom_users");
-    let customUsers = [];
-    if (local) {
-      try { customUsers = JSON.parse(local); } catch (e) {}
-    }
-
-    const defaultAdmin = {
-      id: "USR-ADMIN-01",
-      username: "admin",
-      nama: "Admin RT 04 Havaland",
-      role: "Administrator RT",
-      blok: "Kantor RT",
-      is_admin: true,
-      created_at: "2026-09-01T00:00:00Z"
-    };
-
-    // Ensure admin is always present and first
-    this.users = [defaultAdmin, ...customUsers.filter(u => u.username !== "admin")];
+    // Fallback offline: gabungkan officialAccounts + customUsers
+    const knownUsernames = new Set(officialAccounts.map(u => u.username.toLowerCase()));
+    const customOnly = localCustomUsers.filter(u => !knownUsernames.has(u.username.toLowerCase()));
+    this.users = [...officialAccounts, ...customOnly];
     this.isLoading = false;
     this.render();
   },
@@ -3990,6 +4349,7 @@ const HavalandUserManagement = {
       passwordInput.value = "";
       passwordInput.required = false;
       passwordInput.placeholder = "Kosongkan jika kata sandi tidak diubah";
+      HavalandApp.resetPasswordVisibility("akun-password");
     }
 
     const reqLabel = document.getElementById("akun-password-req");
@@ -4033,6 +4393,7 @@ const HavalandUserManagement = {
     if (passwordInput) {
       passwordInput.required = true;
       passwordInput.placeholder = "Minimal 6 karakter";
+      HavalandApp.resetPasswordVisibility("akun-password");
     }
 
     const reqLabel = document.getElementById("akun-password-req");
@@ -4077,6 +4438,8 @@ const HavalandUserManagement = {
       return;
     }
 
+    const token = HavalandAuth.syncToken || HavalandAuth.serverToken || (HavalandAuth.currentSession ? HavalandAuth.currentSession.token : null);
+
     // MODE EDIT / PERUBAHAN HAK AKSES
     if (editId) {
       if (password && password.length < 6) {
@@ -4086,51 +4449,62 @@ const HavalandUserManagement = {
 
       if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Menyimpan Perubahan..."; }
 
+      if (!token) {
+        if (errEl) { errEl.textContent = "Sesi login admin tidak valid. Silakan login kembali sebagai Administrator RT."; errEl.style.display = "block"; }
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "💾 Simpan Perubahan Akun"; }
+        return;
+      }
+
       try {
-        const token = HavalandAuth.serverToken || (HavalandAuth.currentSession ? HavalandAuth.currentSession.token : null);
-        if (token) {
-          const payload = { id: editId, username, nama, role, blok };
-          if (password) payload.password = password;
+        const payload = { id: editId, username, nama, role, blok };
+        if (password) payload.password = password;
 
-          const res = await fetch("/api/users", {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify(payload)
-          });
-          const result = await res.json();
-          if (!result.success) {
-            throw new Error(result.error || result.message || "Gagal memperbarui akun di server.");
-          }
+        const res = await fetch("/api/users", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+            "X-Sync-Token": token
+          },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (!result.success) {
+          throw new Error(result.error || result.message || "Gagal memperbarui akun di database server.");
         }
+
+        // Update local storage mirror
+        const local = localStorage.getItem("havaland_custom_users");
+        let customUsers = [];
+        if (local) {
+          try { customUsers = JSON.parse(local); } catch (err) {}
+        }
+
+        const idx = customUsers.findIndex(u => u.id === editId || u.username === username);
+        if (idx !== -1) {
+          customUsers[idx].nama = nama;
+          customUsers[idx].blok = blok;
+          customUsers[idx].role = role;
+          customUsers[idx].is_admin = (role === "Administrator RT" || role === "Admin RT");
+          if (password) customUsers[idx].password = password;
+          customUsers[idx].updated_at = new Date().toISOString();
+          localStorage.setItem("havaland_custom_users", JSON.stringify(customUsers));
+        }
+
+        if (typeof HavalandAuditLog !== "undefined") {
+          HavalandAuditLog.logActivity("EDIT_AKUN", "Manajemen Akun", `Memperbarui hak akses & data akun "${nama}" (@${username}) menjadi peran: ${role}, Blok: ${blok}`);
+        }
+
+        HavalandUtils.showToast("Berhasil Diperbarui", `Hak akses & data akun "${nama}" (${role}) berhasil disimpan ke database cloud!`, "success");
+        this.resetForm();
+        this.loadUsers();
       } catch (e) {
-        console.warn("API server update call:", e.message);
+        console.error("API server update error:", e);
+        if (errEl) { errEl.textContent = e.message; errEl.style.display = "block"; }
+        HavalandUtils.showToast("Gagal Memperbarui Akun", e.message, "danger");
+      } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "+ Buat & Daftarkan Akun Warga"; }
       }
-
-      // Update local storage mirror
-      const local = localStorage.getItem("havaland_custom_users");
-      let customUsers = [];
-      if (local) {
-        try { customUsers = JSON.parse(local); } catch (err) {}
-      }
-
-      const idx = customUsers.findIndex(u => u.id === editId || u.username === username);
-      if (idx !== -1) {
-        customUsers[idx].nama = nama;
-        customUsers[idx].blok = blok;
-        customUsers[idx].role = role;
-        customUsers[idx].is_admin = (role === "Administrator RT" || role === "Admin RT");
-        if (password) customUsers[idx].password = password;
-        customUsers[idx].updated_at = new Date().toISOString();
-        localStorage.setItem("havaland_custom_users", JSON.stringify(customUsers));
-      }
-
-      HavalandUtils.showToast("Berhasil Diperbarui", `Hak akses & data akun "${nama}" (${role}) berhasil disimpan!`, "success");
-      this.resetForm();
-      this.loadUsers();
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "+ Buat & Daftarkan Akun Warga"; }
       return;
     }
 
@@ -4145,68 +4519,68 @@ const HavalandUserManagement = {
       return;
     }
 
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Mendaftarkan Akun..."; }
+    if (!token) {
+      if (errEl) { errEl.textContent = "Sesi login pengurus RT tidak valid. Silakan login kembali sebelum membuat akun."; errEl.style.display = "block"; }
+      HavalandUtils.showToast("Sesi Diperlukan", "Silakan login kembali sebagai Pengurus RT atau Administrator.", "warning");
+      HavalandAuth.openLoginModal();
+      return;
+    }
 
-    let createdOnServer = false;
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Mendaftarkan ke Database Cloud..."; }
+
     try {
-      const token = HavalandAuth.serverToken || (HavalandAuth.currentSession ? HavalandAuth.currentSession.token : null);
-      if (token) {
-        const res = await fetch("/api/users", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({ username, password, nama, role, blok })
-        });
-        const result = await res.json();
-        if (!result.success) {
-          throw new Error(result.error || result.message || "Gagal membuat akun di server.");
-        }
-        createdOnServer = true;
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "X-Sync-Token": token
+        },
+        body: JSON.stringify({ username, password, nama, role, blok })
+      });
+
+      const result = await res.json();
+      if (!result.success) {
+        throw new Error(result.error || result.message || "Gagal membuat akun di database server.");
       }
+
+      const serverNewUser = result.data || {
+        id: `USR-${Date.now()}`,
+        username,
+        nama,
+        role,
+        blok,
+        is_admin: (role === "Administrator RT" || role === "Admin RT"),
+        created_at: new Date().toISOString()
+      };
+
+      // Simpan mirror ke localStorage sebagai cache aman
+      const local = localStorage.getItem("havaland_custom_users");
+      let customUsers = [];
+      if (local) {
+        try { customUsers = JSON.parse(local); } catch (err) {}
+      }
+      customUsers = customUsers.filter(u => u.username !== username);
+      customUsers.push({
+        ...serverNewUser,
+        password: password
+      });
+      localStorage.setItem("havaland_custom_users", JSON.stringify(customUsers));
+
+      if (typeof HavalandAuditLog !== "undefined") {
+        HavalandAuditLog.logActivity("BUAT_AKUN", "Manajemen Akun", `Mendaftarkan akun warga baru: "${nama}" (@${username}) dengan peran: ${role}, Blok: ${blok}`);
+      }
+
+      HavalandUtils.showToast("Akun Berhasil Didaftarkan!", `Akun warga "${nama}" (${role}) berhasil disimpan permanen ke database cloud dan siap login di perangkat manapun!`, "success");
+      this.resetForm();
+      this.loadUsers();
     } catch (e) {
-      console.warn("API server call:", e.message);
-      if (e.message && e.message.toLowerCase().includes("sudah digunakan")) {
-        if (errEl) { errEl.textContent = e.message; errEl.style.display = "block"; }
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "+ Buat & Daftarkan Akun Warga"; }
-        return;
-      }
+      console.error("API server create error:", e);
+      if (errEl) { errEl.textContent = e.message; errEl.style.display = "block"; }
+      HavalandUtils.showToast("Gagal Membuat Akun", e.message, "danger");
+    } finally {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "+ Buat & Daftarkan Akun Warga"; }
     }
-
-    // Mirror to localStorage
-    const local = localStorage.getItem("havaland_custom_users");
-    let customUsers = [];
-    if (local) {
-      try { customUsers = JSON.parse(local); } catch (err) {}
-    }
-
-    if (username === "admin" || customUsers.some(u => u.username === username)) {
-      if (!createdOnServer) {
-        if (errEl) { errEl.textContent = `Username "${username}" sudah digunakan. Silakan gunakan username lain.`; errEl.style.display = "block"; }
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "+ Buat & Daftarkan Akun Warga"; }
-        return;
-      }
-    }
-
-    const newUser = {
-      id: `USR-${Date.now()}`,
-      username: username,
-      password: password,
-      nama: nama,
-      role: role,
-      blok: blok,
-      is_admin: (role === "Administrator RT" || role === "Admin RT"),
-      created_at: new Date().toISOString()
-    };
-
-    customUsers.push(newUser);
-    localStorage.setItem("havaland_custom_users", JSON.stringify(customUsers));
-
-    HavalandUtils.showToast("Akun Berhasil Dibuat", `Akun warga "${nama}" (${role}) berhasil didaftarkan dan siap login!`, "success");
-    this.resetForm();
-    this.loadUsers();
-    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "+ Buat & Daftarkan Akun Warga"; }
   },
 
   async deleteUser(userId, username) {
@@ -4215,24 +4589,32 @@ const HavalandUserManagement = {
       return;
     }
 
-    if (!confirm(`Apakah Anda yakin ingin menghapus akun "${username}"? Akses login warga ini akan dicabut permanen.`)) {
+    if (!confirm(`Apakah Anda yakin ingin menghapus akun "${username}"? Akses login warga ini akan dicabut permanen dari database cloud.`)) {
       return;
     }
 
+    const token = HavalandAuth.syncToken || HavalandAuth.serverToken || (HavalandAuth.currentSession ? HavalandAuth.currentSession.token : null);
+
     try {
-      const token = HavalandAuth.serverToken || (HavalandAuth.currentSession ? HavalandAuth.currentSession.token : null);
       if (token) {
-        await fetch("/api/users", {
+        const res = await fetch("/api/users", {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+            "Authorization": `Bearer ${token}`,
+            "X-Sync-Token": token
           },
           body: JSON.stringify({ id: userId, username })
         });
+        const result = await res.json();
+        if (!result.success) {
+          throw new Error(result.error || result.message || "Gagal menghapus akun di server.");
+        }
       }
     } catch (e) {
-      console.warn("API delete error:", e.message);
+      console.error("API delete error:", e);
+      HavalandUtils.showToast("Gagal Menghapus di Server", e.message, "danger");
+      return;
     }
 
     // Remove from local storage
@@ -4251,7 +4633,11 @@ const HavalandUserManagement = {
       this.resetForm();
     }
 
-    HavalandUtils.showToast("Akun Dihapus", `Akun "${username}" telah berhasil dihapus dari sistem.`, "info");
+    if (typeof HavalandAuditLog !== "undefined") {
+      HavalandAuditLog.logActivity("HAPUS_AKUN", "Manajemen Akun", `Menghapus akun pengguna: "${username}" (ID: ${userId})`);
+    }
+
+    HavalandUtils.showToast("Akun Dihapus", `Akun "${username}" telah berhasil dihapus dari database cloud.`, "info");
     this.loadUsers();
   },
 
@@ -4400,6 +4786,411 @@ const HavalandUserManagement = {
 };
 
 // =============================================================================
+// MODUL 5B: AUDIT LOG & REKAM AKTIVITAS SISTEM (KHUSUS ADMINISTRATOR RT)
+// =============================================================================
+const HavalandAuditLog = {
+  logs: [],
+  isLoading: false,
+  searchQuery: "",
+  categoryFilter: "",
+
+  init() {
+    const card = document.getElementById("card-audit-log");
+    // HANYA ROLE ADMINISTRATOR RT YANG DAPAT MELIHAT TABEL AUDIT LOG
+    if (typeof HavalandAuth === "undefined" || !HavalandAuth.isAdmin()) {
+      if (card) card.style.display = "none";
+      return;
+    }
+
+    if (card) card.style.display = "block";
+    this.searchQuery = "";
+    this.categoryFilter = "";
+    const sInput = document.getElementById("search-audit-log-input");
+    if (sInput) sInput.value = "";
+    const cFilter = document.getElementById("filter-audit-category");
+    if (cFilter) cFilter.value = "";
+
+    // Ambil log dari cache lokal terlebih dahulu agar langsung instan
+    const local = localStorage.getItem("havaland_activity_logs");
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.logs = parsed;
+          this.render();
+        }
+      } catch (e) {}
+    }
+
+    this.loadLogs();
+  },
+
+  async loadLogs() {
+    // Verifikasi otorisasi frontend: HANYA Administrator RT
+    if (typeof HavalandAuth === "undefined" || !HavalandAuth.isAdmin()) {
+      const card = document.getElementById("card-audit-log");
+      if (card) card.style.display = "none";
+      return;
+    }
+
+    this.isLoading = true;
+    this.render();
+
+    try {
+      const token = HavalandAuth.syncToken || HavalandAuth.serverToken || (HavalandAuth.currentSession ? HavalandAuth.currentSession.token : null);
+      if (token) {
+        const res = await fetch("/api/logs", {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "X-Sync-Token": token
+          }
+        });
+
+        if (res.ok) {
+          const result = await res.json();
+          if (result.success && Array.isArray(result.data)) {
+            this.logs = result.data;
+            try {
+              localStorage.setItem("havaland_activity_logs", JSON.stringify(this.logs.slice(0, 100)));
+            } catch (err) {}
+            this.isLoading = false;
+            this.render();
+            return;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Gagal memuat log audit dari server API:", err.message);
+    }
+
+    // Fallback: gunakan data lokal jika offline atau API belum terhubung
+    const local = localStorage.getItem("havaland_activity_logs");
+    if (local) {
+      try {
+        this.logs = JSON.parse(local);
+      } catch (e) {}
+    }
+    this.isLoading = false;
+    this.render();
+  },
+
+  async logActivity(aksi, kategori, deskripsi) {
+    const user = (typeof HavalandAuth !== "undefined") ? HavalandAuth.getCurrentUser() : null;
+    const username = user?.username || "pengunjung";
+    const nama = user?.nama || "Warga / Tamu";
+    const role = user?.role || "Warga Tetap";
+
+    const newLogItem = {
+      id: `LOG-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      waktu: new Date().toISOString(),
+      username: username,
+      nama: nama,
+      role: role,
+      aksi: aksi,
+      kategori: kategori,
+      deskripsi: deskripsi,
+      ip_address: "127.0.0.1",
+      created_at: new Date().toISOString()
+    };
+
+    // 1. Simpan langsung ke cache lokal
+    let localLogs = [];
+    const local = localStorage.getItem("havaland_activity_logs");
+    if (local) {
+      try { localLogs = JSON.parse(local); } catch (e) {}
+    }
+    localLogs.unshift(newLogItem);
+    if (localLogs.length > 200) localLogs = localLogs.slice(0, 200);
+    try {
+      localStorage.setItem("havaland_activity_logs", JSON.stringify(localLogs));
+    } catch (e) {}
+
+    // Jika sedang di memori, perbarui
+    if (Array.isArray(this.logs)) {
+      this.logs.unshift(newLogItem);
+      if (this.logs.length > 200) this.logs = this.logs.slice(0, 200);
+      if (typeof HavalandAuth !== "undefined" && HavalandAuth.isAdmin()) {
+        this.render();
+      }
+    }
+
+    // 2. Kirim ke Backend API secara background
+    try {
+      const token = (typeof HavalandAuth !== "undefined") 
+        ? (HavalandAuth.syncToken || HavalandAuth.serverToken || (HavalandAuth.currentSession ? HavalandAuth.currentSession.token : null))
+        : null;
+
+      const headers = { "Content-Type": "application/json" };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+        headers["X-Sync-Token"] = token;
+      }
+
+      fetch("/api/logs", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({
+          aksi,
+          kategori,
+          deskripsi,
+          username,
+          nama,
+          role
+        })
+      }).catch(() => {});
+    } catch (e) {}
+  },
+
+  onSearchInput(val) {
+    this.searchQuery = (val || "").trim().toLowerCase();
+    this.render();
+  },
+
+  onCategoryFilterChange(val) {
+    this.categoryFilter = (val || "").trim();
+    this.render();
+  },
+
+  render() {
+    // Pengamanan ketat: jika bukan admin, jangan render sama sekali
+    if (typeof HavalandAuth === "undefined" || !HavalandAuth.isAdmin()) {
+      const card = document.getElementById("card-audit-log");
+      if (card) card.style.display = "none";
+      return;
+    }
+
+    const tbody = document.getElementById("audit-log-tbody");
+    const totalCountEl = document.getElementById("audit-log-total-count");
+
+    if (totalCountEl) {
+      const totalNum = (this.logs && Array.isArray(this.logs)) ? this.logs.length : 0;
+      totalCountEl.textContent = `${totalNum} Log`;
+    }
+
+    if (!tbody) return;
+
+    if (this.isLoading) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <span>Memuat riwayat aktivitas sistem...</span>
+            </div>
+          </td>
+        </tr>`;
+      return;
+    }
+
+    if (!this.logs || this.logs.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+            Belum ada catatan aktivitas yang terekam di sistem.
+          </td>
+        </tr>`;
+      return;
+    }
+
+    // Filter berdasarkan query dan kategori
+    const filtered = this.logs.filter(item => {
+      const q = this.searchQuery;
+      const matchQuery = !q ||
+        (item.nama && item.nama.toLowerCase().includes(q)) ||
+        (item.username && item.username.toLowerCase().includes(q)) ||
+        (item.aksi && item.aksi.toLowerCase().includes(q)) ||
+        (item.kategori && item.kategori.toLowerCase().includes(q)) ||
+        (item.deskripsi && item.deskripsi.toLowerCase().includes(q));
+
+      const matchCategory = !this.categoryFilter || (item.kategori === this.categoryFilter);
+      return matchQuery && matchCategory;
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+            Tidak ada riwayat aktivitas yang cocok dengan filter pencarian.
+          </td>
+        </tr>`;
+      return;
+    }
+
+    let rowsHtml = "";
+    filtered.forEach((log, index) => {
+      // 1. Tentukan badge aksi & ikon
+      let badgeClass = "badge-action-login";
+      let actionIcon = "📌";
+      const aksiUpper = (log.aksi || "").toUpperCase();
+
+      if (aksiUpper === "LOGIN") {
+        badgeClass = "badge-action-login";
+        actionIcon = "🔑";
+      } else if (aksiUpper === "LOGOUT") {
+        badgeClass = "badge-action-login";
+        actionIcon = "🚪";
+      } else if (aksiUpper === "KAS_MASUK") {
+        badgeClass = "badge-action-kas-masuk";
+        actionIcon = "💰";
+      } else if (aksiUpper === "KAS_KELUAR") {
+        badgeClass = "badge-action-kas-keluar";
+        actionIcon = "💸";
+      } else if (aksiUpper.includes("HAPUS")) {
+        badgeClass = "badge-action-hapus";
+        actionIcon = "🗑️";
+      } else if (aksiUpper.includes("IDE") || aksiUpper.includes("VOTE")) {
+        badgeClass = "badge-action-ide";
+        actionIcon = "💡";
+      } else if (aksiUpper.includes("KEGIATAN")) {
+        badgeClass = "badge-action-kegiatan";
+        actionIcon = "📅";
+      } else if (aksiUpper.includes("AKUN")) {
+        badgeClass = "badge-action-akun";
+        actionIcon = "👥";
+      } else if (aksiUpper.includes("ASPIRASI")) {
+        badgeClass = "badge-action-aspirasi";
+        actionIcon = "📢";
+      }
+
+      // 2. Role badge
+      let roleIcon = "👤";
+      let rolePillClass = "badge-role-warga";
+      const r = log.role || "Warga Tetap";
+      if (r === "Administrator RT" || r === "Admin RT") {
+        roleIcon = "👑";
+        rolePillClass = "badge-role-admin";
+      } else if (r === "Bendahara RT") {
+        roleIcon = "💰";
+        rolePillClass = "badge-role-bendahara";
+      } else if (r === "Pengurus RT") {
+        roleIcon = "📋";
+        rolePillClass = "badge-role-pengurus";
+      }
+
+      // 3. Format Waktu & Relatif
+      let waktuFull = "-";
+      let waktuRelatif = "";
+      if (log.waktu) {
+        try {
+          const d = new Date(log.waktu);
+          if (!isNaN(d.getTime())) {
+            waktuFull = d.toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "short",
+              year: "numeric"
+            }) + " • " + d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+
+            // Relative time calculation
+            const diffMs = Date.now() - d.getTime();
+            const diffSec = Math.floor(diffMs / 1000);
+            const diffMin = Math.floor(diffSec / 60);
+            const diffHours = Math.floor(diffMin / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffSec < 60) {
+              waktuRelatif = "Baru saja";
+            } else if (diffMin < 60) {
+              waktuRelatif = `${diffMin} menit yang lalu`;
+            } else if (diffHours < 24) {
+              waktuRelatif = `${diffHours} jam yang lalu`;
+            } else if (diffDays === 1) {
+              waktuRelatif = "Kemarin";
+            } else {
+              waktuRelatif = `${diffDays} hari yang lalu`;
+            }
+          }
+        } catch (e) {}
+      }
+
+      rowsHtml += `
+        <tr class="account-table-row audit-table-row">
+          <td style="text-align: center; font-weight: 600; color: var(--text-muted); font-size: 0.8rem;">
+            ${index + 1}
+          </td>
+          <td class="audit-time-cell">
+            <span class="audit-time-primary">${waktuFull}</span>
+            <span class="audit-time-secondary">⏱️ ${waktuRelatif}</span>
+          </td>
+          <td>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <strong style="color: var(--text-primary); font-size: 0.88rem;">${HavalandUtils.escapeHtml(log.nama || '-')}</strong>
+              <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                <code class="account-username-badge" style="font-size: 0.72rem;">@${HavalandUtils.escapeHtml(log.username || '-')}</code>
+                ${log.ip_address ? `<span style="font-size: 0.68rem; color: var(--text-muted);">(${HavalandUtils.escapeHtml(log.ip_address)})</span>` : ''}
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="account-role-pill ${rolePillClass}" style="font-size: 0.72rem;">
+              <span>${roleIcon}</span>
+              <span>${HavalandUtils.escapeHtml(r)}</span>
+            </span>
+          </td>
+          <td>
+            <div style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start;">
+              <span class="audit-action-pill ${badgeClass}">
+                <span>${actionIcon}</span>
+                <span>${HavalandUtils.escapeHtml(log.aksi || 'AKTIVITAS')}</span>
+              </span>
+              <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500;">
+                ${HavalandUtils.escapeHtml(log.kategori || 'Umum')}
+              </span>
+            </div>
+          </td>
+          <td class="audit-desc-cell">
+            ${HavalandUtils.escapeHtml(log.deskripsi || '-')}
+          </td>
+          <td style="text-align: center;">
+            <span class="badge badge-emerald" style="font-size: 0.7rem;">● Sukses</span>
+          </td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = rowsHtml;
+  },
+
+  exportLogsCsv() {
+    if (typeof HavalandAuth === "undefined" || !HavalandAuth.isAdmin()) {
+      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat mengekspor log audit.", "error");
+      return;
+    }
+
+    if (!this.logs || this.logs.length === 0) {
+      HavalandUtils.showToast("Data Kosong", "Belum ada riwayat aktivitas untuk diekspor.", "warning");
+      return;
+    }
+
+    let csvContent = "\uFEFFNo,Waktu,Username,Nama,Peran,Kategori,Aksi,Deskripsi,IP Address\r\n";
+    this.logs.forEach((item, idx) => {
+      const clean = (str) => `"${(str || '').toString().replace(/"/g, '""')}"`;
+      const row = [
+        idx + 1,
+        clean(item.waktu),
+        clean(item.username),
+        clean(item.nama),
+        clean(item.role),
+        clean(item.kategori),
+        clean(item.aksi),
+        clean(item.deskripsi),
+        clean(item.ip_address || '-')
+      ];
+      csvContent += row.join(",") + "\r\n";
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `audit_log_havaland_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    HavalandUtils.showToast("Ekspor Berhasil", "Berkas CSV Audit Log berhasil diunduh.", "success");
+  }
+};
+
+// =============================================================================
 // MODUL 6B: HALAMAN EDIT DATA (pengganti modal edit — full page khusus admin)
 // Dibuka via HavalandApp.openEditPage(type, key). Tipe: kontak, aspirasi,
 // transaksi, kegiatan, warga. Penyimpanan memakai kunci storage, render, dan
@@ -4466,8 +5257,8 @@ Object.assign(HavalandApp, {
   accountManagerReturnTab: "beranda",
 
   openAccountManagerPage() {
-    if (typeof HavalandAuth !== "undefined" && !HavalandAuth.isAdmin()) {
-      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat mengelola akun warga.", "warning");
+    if (typeof HavalandAuth !== "undefined" && !HavalandAuth.isAdmin() && !HavalandAuth.isPengurus()) {
+      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT atau Pengurus RT yang dapat mengelola akun warga.", "warning");
       return;
     }
     if (this.activeTab !== "kelolaakun") {
@@ -4569,6 +5360,9 @@ Object.assign(HavalandApp, {
       t.pj = val("ep-trx-pj");
       t.catatan = val("ep-trx-catatan");
       HavalandUtils.saveStorage("custom_transaksi_full", HavalandData.transaksi);
+      if (typeof HavalandSync !== "undefined") {
+        HavalandSync.pushImmediate("transaksi");
+      }
       this.recalculateSummary();
       this.filterTransaksi();
       this.renderKPIs();
@@ -6050,17 +6844,73 @@ const HavalandSync = {
     custom_kontak_v1: "kontak"
   },
 
-  canPush() {
-    return this.enabled &&
-      typeof HavalandAuth !== "undefined" &&
-      HavalandAuth.isAdmin() &&
-      !!HavalandAuth.syncToken;
+  getPendingKey(name) {
+    return `havaland_pending_sync_${name}`;
+  },
+
+  markPending(name) {
+    try { localStorage.setItem(this.getPendingKey(name), "1"); } catch (e) {}
+  },
+
+  clearPending(name) {
+    try { localStorage.removeItem(this.getPendingKey(name)); } catch (e) {}
+  },
+
+  isPending(name) {
+    try { return localStorage.getItem(this.getPendingKey(name)) === "1"; } catch (e) { return false; }
+  },
+
+  getDeletedKey(name) {
+    return `havaland_deleted_${name}`;
+  },
+
+  getDeletedSet(name) {
+    try {
+      const raw = localStorage.getItem(this.getDeletedKey(name));
+      const arr = raw ? JSON.parse(raw) : [];
+      return new Set(Array.isArray(arr) ? arr.map(String) : []);
+    } catch (e) {
+      return new Set();
+    }
+  },
+
+  markDeleted(name, id) {
+    if (!id) return;
+    try {
+      const set = this.getDeletedSet(name);
+      set.add(String(id));
+      localStorage.setItem(this.getDeletedKey(name), JSON.stringify(Array.from(set)));
+    } catch (e) {}
+  },
+
+  unmarkDeleted(name, id) {
+    if (!id) return;
+    try {
+      const set = this.getDeletedSet(name);
+      if (set.has(String(id))) {
+        set.delete(String(id));
+        localStorage.setItem(this.getDeletedKey(name), JSON.stringify(Array.from(set)));
+      }
+    } catch (e) {}
+  },
+
+  canPush(name = null) {
+    if (!this.enabled || typeof HavalandAuth === "undefined" || !HavalandAuth.isLoggedIn()) return false;
+    const token = HavalandAuth.syncToken || HavalandAuth.serverToken || (HavalandAuth.currentSession && HavalandAuth.currentSession.token);
+    if (!token) return false;
+    if (HavalandAuth.isAdmin()) return true;
+    if (name === "transaksi" && HavalandAuth.isBendahara()) return true;
+    if ((name === "kegiatan" || name === "aspirasi") && HavalandAuth.isPengurus()) return true;
+    if (name === "aspirasi" && HavalandAuth.isLoggedIn()) return true;
+    return false;
   },
 
   authHeaders() {
+    const token = HavalandAuth.syncToken || HavalandAuth.serverToken || (HavalandAuth.currentSession && HavalandAuth.currentSession.token) || "";
     return {
       "Content-Type": "application/json",
-      "X-Sync-Token": HavalandAuth.syncToken
+      "Authorization": `Bearer ${token}`,
+      "X-Sync-Token": token
     };
   },
 
@@ -6167,24 +7017,58 @@ const HavalandSync = {
 
   // Inti sinkron dipakai init() & pullOnLogin(): tarik yang ada di cloud,
   // unggah lokal sebagai seed untuk koleksi cloud yang masih kosong.
-  // Mengembalikan { pulled, seeded, seededItems } untuk umpan balik.
+  // Dilengkapi proteksi anti-overwrite: data lokal baru tidak akan dihapus,
+  // dan item yang telah dihapus pengguna tidak akan dibangkitkan kembali (anti-resurrection).
   async syncAllCollections(status) {
     const result = { pulled: 0, seeded: 0, seededItems: 0 };
     const cols = (status && status.collections) || {};
     const names = Object.keys(this.KEYMAP).map(k => this.KEYMAP[k]).concat(["slides"]);
     for (const name of names) {
-      const cloud = Array.isArray(cols[name]) ? cols[name] : [];
+      const rawCloud = Array.isArray(cols[name]) ? cols[name] : [];
+      const deletedSet = this.getDeletedSet(name);
+
+      // Saring data cloud: buang item yang sudah ditandai dihapus oleh pengguna
+      const cloud = rawCloud.filter(x => x && x.id && !deletedSet.has(String(x.id)));
+
+      // Bila item berstatus terhapus masih ada di cloud dan user berhak push, bersihkan dari cloud
+      if (this.canPush(name)) {
+        const lingering = rawCloud.filter(x => x && x.id && deletedSet.has(String(x.id)));
+        for (const item of lingering) {
+          this.deleteItem(name, item.id).catch(() => {});
+        }
+      }
+
+      const local = (this.collect(name) || []).filter(x => x && x.id && !deletedSet.has(String(x.id)));
+      const hasPending = this.isPending(name);
+
       if (cloud.length > 0) {
-        this.apply(name, cloud);
-        result.pulled += 1;
+        // Proteksi mutlak integritas data: cek apakah ada data lokal yang belum ada di cloud
+        const cloudIds = new Set(cloud.map(x => x && x.id));
+        const unpushedLocal = local.filter(x => x && x.id && !cloudIds.has(x.id));
+
+        if (unpushedLocal.length > 0) {
+          // Data lokal baru (misal transaksi kas baru atau aspirasi baru) jangan pernah dibuang!
+          const merged = HavalandUtils.dedupeById([...cloud, ...unpushedLocal]);
+          this.apply(name, merged);
+          result.pulled += 1;
+          if (this.canPush(name)) {
+            await this.pushImmediate(name);
+          } else {
+            this.markPending(name);
+          }
+        } else {
+          this.apply(name, cloud);
+          result.pulled += 1;
+        }
       } else {
-        const local = this.collect(name);
-        if (local.length > 0 && this.canPush()) {
+        if (local.length > 0 && this.canPush(name)) {
           const ok = await this.pushImmediate(name);
           if (ok) {
             result.seeded += 1;
             result.seededItems += local.length;
           }
+        } else if (local.length > 0) {
+          this.apply(name, local);
         }
       }
     }
@@ -6230,7 +7114,7 @@ const HavalandSync = {
     }
   },
 
-  // Dipanggil ulang setelah admin login: tarik versi cloud terbaru, sekaligus
+  // Dipanggil ulang setelah user login: tarik versi cloud terbaru, sekaligus
   // unggah data lokal untuk koleksi cloud yang masih kosong (seed awal).
   async pullOnLogin() {
     if (!this.enabled) {
@@ -6264,6 +7148,7 @@ const HavalandSync = {
   },
 
   markDirty(name) {
+    this.markPending(name);
     if (this.suspended || !this.enabled) return;
     if (this.timers[name]) clearTimeout(this.timers[name]);
     this.timers[name] = setTimeout(() => {
@@ -6273,8 +7158,9 @@ const HavalandSync = {
   },
 
   async pushImmediate(name) {
-    if (!this.canPush()) return false;
-    const items = this.collect(name);
+    if (!this.canPush(name)) return false;
+    const deletedSet = this.getDeletedSet(name);
+    const items = (this.collect(name) || []).filter(x => x && x.id && !deletedSet.has(String(x.id)));
     try {
       const res = await fetch("/api/sync", {
         method: "POST",
@@ -6285,9 +7171,26 @@ const HavalandSync = {
         console.warn("Sinkron cloud ditolak/gagal:", name, res.status);
         return false;
       }
+      this.clearPending(name);
       return true;
     } catch (e) {
       console.warn("Sinkron cloud offline, dicoba lagi saat ada perubahan:", name);
+      return false;
+    }
+  },
+
+  async deleteItem(name, id) {
+    this.markDeleted(name, id);
+    if (!this.canPush(name)) return false;
+    try {
+      const res = await fetch("/api/sync", {
+        method: "POST",
+        headers: this.authHeaders(),
+        body: JSON.stringify({ collection: name, action: "delete", id: String(id) })
+      });
+      return res.ok;
+    } catch (e) {
+      console.warn("Gagal menghapus item dari cloud:", name, id, e);
       return false;
     }
   }

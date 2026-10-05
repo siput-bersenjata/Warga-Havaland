@@ -1,11 +1,38 @@
 const db = require('./db');
-const { validateToken, setCorsHeaders, handlePreflight, safeErrorResponse, validateStringLength } = require('./middleware/auth');
+const { validateToken, setCorsHeaders, handlePreflight, safeErrorResponse, validateStringLength, recordAuditLog } = require('./middleware/auth');
+
+async function ensureTransaksiTable() {
+  if (!db || !db.isConfigured) return;
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS transaksi_kas (
+        id VARCHAR(50) PRIMARY KEY,
+        tanggal DATE NOT NULL,
+        jenis VARCHAR(20) NOT NULL,
+        kategori VARCHAR(100) NOT NULL,
+        uraian TEXT NOT NULL,
+        nominal BIGINT NOT NULL,
+        metode VARCHAR(50) DEFAULT 'Transfer Mandiri',
+        pj VARCHAR(100) DEFAULT 'Bendahara (Citra L.)',
+        bukti VARCHAR(100),
+        status VARCHAR(30) DEFAULT 'Verified',
+        catatan TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_transaksi_tanggal ON transaksi_kas(tanggal DESC);
+    `);
+  } catch (err) {
+    console.error('[Database ensureTransaksiTable Error]', err.message);
+  }
+}
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
   setCorsHeaders(res);
 
   if (handlePreflight(req, res)) return;
+
+  await ensureTransaksiTable();
 
   if (req.method === 'GET') {
     if (!db.isConfigured) {
@@ -21,10 +48,15 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'POST') {
     // Require authentication for write operations
-    const authHeader = req.headers.authorization || req.headers['Authorization'];
+    const authHeader = req.headers.authorization || req.headers['Authorization'] || req.headers['x-sync-token'];
     const user = validateToken(authHeader);
     if (!user) {
-      return safeErrorResponse(res, 401, "Akses ditolak. Silakan login terlebih dahulu.");
+      return safeErrorResponse(res, 401, "Akses ditolak. Sesi login tidak ditemukan atau kedaluwarsa. Silakan login kembali.");
+    }
+
+    const isBendaharaOrAdmin = Boolean(user.isAdmin || user.isBendahara || user.role === 'Bendahara RT');
+    if (!isBendaharaOrAdmin) {
+      return safeErrorResponse(res, 403, "Akses ditolak. Hanya Administrator RT atau Bendahara RT yang berhak mencatat transaksi kas.");
     }
 
     if (!db.isConfigured) {
@@ -70,10 +102,21 @@ module.exports = async function handler(req, res) {
       const safeTanggal = tanggal || new Date().toISOString().slice(0, 10);
       const generatedId = id || `TRX-${safeTanggal.replace(/-/g, '').slice(0, 6)}-${Date.now().toString().slice(-3)}`;
 
-      // Parameterized query for SQL Injection protection
+      // Parameterized query for SQL Injection protection with UPSERT (idempotent)
       const insertQuery = `
         INSERT INTO transaksi_kas (id, tanggal, jenis, kategori, uraian, nominal, metode, pj, bukti, status, catatan)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        ON CONFLICT (id) DO UPDATE SET
+          tanggal = EXCLUDED.tanggal,
+          jenis = EXCLUDED.jenis,
+          kategori = EXCLUDED.kategori,
+          uraian = EXCLUDED.uraian,
+          nominal = EXCLUDED.nominal,
+          metode = EXCLUDED.metode,
+          pj = EXCLUDED.pj,
+          bukti = EXCLUDED.bukti,
+          status = EXCLUDED.status,
+          catatan = EXCLUDED.catatan
         RETURNING *;
       `;
 
@@ -92,14 +135,99 @@ module.exports = async function handler(req, res) {
       ];
 
       const result = await db.query(insertQuery, values);
+      const insertedRow = result.rows[0];
+
+      // Mirror ke sync_store agar GET /api/sync selalu konsisten
+      try {
+        const syncItem = {
+          id: generatedId,
+          tanggal: safeTanggal,
+          jenis: jenis || 'masuk',
+          kategori: kategori || 'Iuran Warga',
+          uraian,
+          nominal: nominalNum,
+          metode: metode || 'Transfer Mandiri',
+          pj: pj || user.nama,
+          bukti: bukti || `KWT-${Date.now().toString().slice(-4)}`,
+          status: 'Verified',
+          catatan: catatan || `Dicatat oleh ${user.nama} via Portal Havaland`
+        };
+        await db.query(`
+          INSERT INTO sync_store (collection, id, data, updated_at)
+          VALUES ('transaksi', $1, $2, NOW())
+          ON CONFLICT (collection, id) DO UPDATE SET
+            data = EXCLUDED.data,
+            updated_at = NOW();
+        `, [generatedId, JSON.stringify(syncItem)]);
+      } catch (e) {
+        // non-blocking
+      }
+
+      // Catat log aktivitas keuangan kas
+      const clientIp = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '-').split(',')[0].trim();
+      await recordAuditLog({
+        username: user.username,
+        nama: user.nama,
+        role: user.role,
+        aksi: (jenis === 'keluar' ? 'KAS_KELUAR' : 'KAS_MASUK'),
+        kategori: 'Keuangan Kas',
+        deskripsi: `Mencatat kas ${(jenis || 'masuk')}: "${uraian}" sebesar Rp ${nominalNum.toLocaleString('id-ID')} (Metode: ${metode || 'Transfer Mandiri'}).`,
+        ip: clientIp
+      });
 
       return res.status(201).json({
         success: true,
         message: "Transaksi kas berhasil disimpan ke database!",
-        data: result.rows[0]
+        data: insertedRow
       });
     } catch (error) {
       return safeErrorResponse(res, 500, "Gagal menyimpan transaksi.", error);
+    }
+  }
+
+  // DELETE: Hapus catatan transaksi kas
+  if (req.method === 'DELETE') {
+    const authHeader = req.headers.authorization || req.headers['Authorization'] || req.headers['x-sync-token'];
+    const user = validateToken(authHeader);
+    if (!user) {
+      return safeErrorResponse(res, 401, "Akses ditolak. Sesi login tidak ditemukan atau kedaluwarsa.");
+    }
+
+    const isBendaharaOrAdmin = Boolean(user.isAdmin || user.isBendahara || user.role === 'Bendahara RT');
+    if (!isBendaharaOrAdmin) {
+      return safeErrorResponse(res, 403, "Akses ditolak. Hanya Administrator RT atau Bendahara RT yang berhak menghapus transaksi kas.");
+    }
+
+    const { id } = req.body || req.query || {};
+    if (!id) {
+      return safeErrorResponse(res, 400, "ID transaksi kas wajib disertakan.");
+    }
+
+    if (!db.isConfigured) {
+      return res.status(200).json({ success: true, message: "Transaksi dihapus secara lokal." });
+    }
+
+    try {
+      await db.query('DELETE FROM transaksi_kas WHERE id = $1', [id]);
+      await db.query('DELETE FROM sync_store WHERE collection = $1 AND id = $2', ['transaksi', id]).catch(() => {});
+
+      const clientIp = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '-').split(',')[0].trim();
+      await recordAuditLog({
+        username: user.username,
+        nama: user.nama,
+        role: user.role,
+        aksi: 'HAPUS_KAS',
+        kategori: 'Keuangan Kas',
+        deskripsi: `Menghapus catatan transaksi kas nomor "${id}".`,
+        ip: clientIp
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: `Transaksi kas ${id} berhasil dihapus dari database.`
+      });
+    } catch (error) {
+      return safeErrorResponse(res, 500, "Gagal menghapus transaksi dari database.", error);
     }
   }
 

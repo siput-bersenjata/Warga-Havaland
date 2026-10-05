@@ -78,12 +78,29 @@ CREATE TABLE IF NOT EXISTS pengguna_havaland (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 6. TABEL AUDIT LOG & REKAM AKTIVITAS SISTEM
+CREATE TABLE IF NOT EXISTS audit_log_havaland (
+  id VARCHAR(50) PRIMARY KEY,
+  waktu TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  username VARCHAR(50) NOT NULL,
+  nama VARCHAR(150),
+  role VARCHAR(50),
+  aksi VARCHAR(50) NOT NULL,
+  kategori VARCHAR(50) NOT NULL,
+  deskripsi TEXT NOT NULL,
+  ip_address VARCHAR(50) DEFAULT '-',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexing untuk kecepatan filter & live search
 CREATE INDEX IF NOT EXISTS idx_transaksi_tanggal ON transaksi_kas(tanggal DESC);
 CREATE INDEX IF NOT EXISTS idx_transaksi_jenis ON transaksi_kas(jenis);
 CREATE INDEX IF NOT EXISTS idx_warga_blok ON warga_havaland(blok);
 CREATE INDEX IF NOT EXISTS idx_aspirasi_tanggal ON aspirasi_warga(tanggal DESC);
 CREATE INDEX IF NOT EXISTS idx_pengguna_username ON pengguna_havaland(username);
+CREATE INDEX IF NOT EXISTS idx_audit_waktu ON audit_log_havaland(waktu DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_username ON audit_log_havaland(username);
+CREATE INDEX IF NOT EXISTS idx_audit_kategori ON audit_log_havaland(kategori);
 
 -- ==============================================================================
 -- INITIAL SEED DATA (DATA AWAL)
