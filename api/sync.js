@@ -68,6 +68,43 @@ async function ensureTable() {
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
   `).catch(() => {});
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS transaksi_kas (
+      id VARCHAR(50) PRIMARY KEY,
+      tanggal DATE NOT NULL,
+      jenis VARCHAR(20) NOT NULL,
+      kategori VARCHAR(100) NOT NULL,
+      uraian TEXT NOT NULL,
+      nominal BIGINT NOT NULL,
+      metode VARCHAR(50) DEFAULT 'Transfer Mandiri',
+      pj VARCHAR(100) DEFAULT 'Bendahara (Citra L.)',
+      bukti VARCHAR(100),
+      status VARCHAR(30) DEFAULT 'Verified',
+      catatan TEXT,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_transaksi_tanggal ON transaksi_kas(tanggal DESC);
+  `).catch(() => {});
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS warga_havaland (
+      id VARCHAR(50) PRIMARY KEY,
+      blok VARCHAR(20) NOT NULL,
+      cluster VARCHAR(100) NOT NULL,
+      nama_kk VARCHAR(150) NOT NULL,
+      status_hunian VARCHAR(50) DEFAULT 'Tetap',
+      jabatan VARCHAR(100) DEFAULT 'Warga',
+      jumlah_jiwa INT DEFAULT 1,
+      kontak VARCHAR(50),
+      plat_kendaraan JSONB DEFAULT '[]'::jsonb,
+      status_iuran VARCHAR(50) DEFAULT 'Lunas',
+      iuran_bulan_ini BOOLEAN DEFAULT TRUE,
+      terakhir_bayar VARCHAR(100),
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_warga_blok ON warga_havaland(blok);
+  `).catch(() => {});
 }
 
 function toClientItems(rows) {
@@ -521,6 +558,42 @@ module.exports = async function handler(req, res) {
                 d.status || 'Diproses',
                 d.tanggapan || 'Laporan telah diterima sistem.',
                 d.urgensi || 'Sedang'
+              ]);
+            }
+          }
+
+          if (collection === 'warga') {
+            const d = row.data;
+            if (d && (d.blok || d.namaKK || d.nama_kk)) {
+              await safeMirror(`
+                INSERT INTO warga_havaland (id, blok, cluster, nama_kk, status_hunian, jabatan, jumlah_jiwa, kontak, plat_kendaraan, status_iuran, iuran_bulan_ini, terakhir_bayar, updated_at)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
+                ON CONFLICT (id) DO UPDATE SET
+                  blok = EXCLUDED.blok,
+                  cluster = EXCLUDED.cluster,
+                  nama_kk = EXCLUDED.nama_kk,
+                  status_hunian = EXCLUDED.status_hunian,
+                  jabatan = EXCLUDED.jabatan,
+                  jumlah_jiwa = EXCLUDED.jumlah_jiwa,
+                  kontak = EXCLUDED.kontak,
+                  plat_kendaraan = EXCLUDED.plat_kendaraan,
+                  status_iuran = EXCLUDED.status_iuran,
+                  iuran_bulan_ini = EXCLUDED.iuran_bulan_ini,
+                  terakhir_bayar = EXCLUDED.terakhir_bayar,
+                  updated_at = NOW()
+              `, [
+                row.id,
+                d.blok || '',
+                d.cluster || 'Havaland',
+                d.namaKK || d.nama_kk || '-',
+                d.statusHunian || d.status_hunian || 'Tetap',
+                d.jabatan || 'Warga',
+                parseInt(d.jumlahJiwa || d.jumlah_jiwa, 10) || 1,
+                d.kontak || '-',
+                JSON.stringify(d.platKendaraan || d.plat_kendaraan || []),
+                d.statusIuran || d.status_iuran || 'Lunas',
+                Boolean(d.iuranBulanIni ?? d.iuran_bulan_ini ?? true),
+                d.terakhirBayar || d.terakhir_bayar || '-'
               ]);
             }
           }

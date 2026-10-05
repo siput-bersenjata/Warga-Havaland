@@ -1586,13 +1586,21 @@ END:VCALENDAR`;
     this.filterWarga();
     this.renderKPIs();
     if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+
+    // Sinkronisasi instan ke database PostgreSQL cloud
+    if (typeof HavalandSync !== "undefined") {
+      const savedId = idVal || (newWarga && newWarga.id);
+      if (savedId) HavalandSync.unmarkDeleted("warga", savedId);
+      HavalandSync.pushImmediate("warga");
+    }
+
     // Setelah edit: tampilkan kembali profil dengan data terbaru sebagai bukti
     if (idVal) {
       this.openDetailWarga(idVal);
     }
   },
 
-  hapusWarga(wargaId) {
+  async hapusWarga(wargaId) {
     if (!HavalandAuth.isAdmin()) {
       HavalandUtils.showToast("Akses Terbatas", "Hanya Administrator RT yang dapat menghapus data warga.", "error");
       return;
@@ -1601,6 +1609,11 @@ END:VCALENDAR`;
     if (!w) return;
 
     if (!confirm(`Yakin ingin menghapus data warga ${w.blok} - ${w.namaKK}? Data akan dihapus dari direktori perumahan.`)) return;
+
+    // 1. Catat ke tombstone agar tidak dibangkitkan ulang saat refresh
+    if (typeof HavalandSync !== "undefined") {
+      HavalandSync.markDeleted("warga", wargaId);
+    }
 
     HavalandData.warga = HavalandData.warga.filter(item => item.id !== wargaId);
     if (HavalandData.kasSummary) {
@@ -1612,6 +1625,15 @@ END:VCALENDAR`;
     this.filterWarga();
     this.renderKPIs();
     if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+
+    // 2. Hapus langsung dari database cloud PostgreSQL
+    if (typeof HavalandSync !== "undefined") {
+      try {
+        await HavalandSync.deleteItem("warga", wargaId);
+        await HavalandSync.pushImmediate("warga");
+      } catch (_) {}
+    }
+
     HavalandUtils.showToast("Warga Dihapus", `Data warga ${w.blok} (${w.namaKK}) berhasil dihapus.`, "info");
   },
 
@@ -1681,9 +1703,13 @@ END:VCALENDAR`;
     this.closeModal("modal-form-kontak");
     this.renderKontak();
     if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+
+    if (typeof HavalandSync !== "undefined") {
+      HavalandSync.pushImmediate("kontak");
+    }
   },
 
-  hapusKontak(index) {
+  async hapusKontak(index) {
     if (!HavalandAuth.isAdmin()) {
       HavalandUtils.showToast("Akses Terbatas", "Hanya Administrator RT yang dapat menghapus kontak.", "error");
       return;
@@ -1693,10 +1719,23 @@ END:VCALENDAR`;
 
     if (!confirm(`Hapus kontak "${c.nama}" (${c.role}) dari daftar nomor penting Havaland?`)) return;
 
+    if (c.id && typeof HavalandSync !== "undefined") {
+      HavalandSync.markDeleted("kontak", c.id);
+    }
+
     HavalandData.profile.kontakDarurat.splice(index, 1);
     HavalandUtils.saveStorage("custom_kontak_v1", HavalandData.profile.kontakDarurat);
     this.renderKontak();
     if (typeof HavalandBackup !== "undefined") HavalandBackup.autoSnapshot();
+
+    if (typeof HavalandSync !== "undefined") {
+      if (c.id) {
+        try {
+          await HavalandSync.deleteItem("kontak", c.id);
+        } catch (_) {}
+      }
+      HavalandSync.pushImmediate("kontak");
+    }
     HavalandUtils.showToast("Kontak Dihapus", `Kontak "${c.nama}" telah dihapus.`, "info");
   },
 
@@ -6923,7 +6962,10 @@ const HavalandSync = {
         case "aspirasi": return Array.isArray(HavalandData.aspirasi) ? HavalandData.aspirasi : [];
         case "usulan": return Array.isArray(HavalandData.usulanIde) ? HavalandData.usulanIde : [];
         case "kontak": return (HavalandData.profile && Array.isArray(HavalandData.profile.kontakDarurat))
-          ? HavalandData.profile.kontakDarurat : [];
+          ? HavalandData.profile.kontakDarurat.map((c, i) => {
+              if (!c.id) c.id = `kontak-${i}`;
+              return c;
+            }) : [];
         case "slides":
           return (typeof HavalandSlider !== "undefined" && Array.isArray(HavalandSlider.slides))
             ? HavalandSlider.slides : [];
@@ -7160,7 +7202,11 @@ const HavalandSync = {
   async pushImmediate(name) {
     if (!this.canPush(name)) return false;
     const deletedSet = this.getDeletedSet(name);
-    const items = (this.collect(name) || []).filter(x => x && x.id && !deletedSet.has(String(x.id)));
+    const rawItems = this.collect(name) || [];
+    const items = rawItems.map((x, idx) => {
+      if (x && !x.id) x.id = `${name}-${idx}`;
+      return x;
+    }).filter(x => x && x.id && !deletedSet.has(String(x.id)));
     try {
       const res = await fetch("/api/sync", {
         method: "POST",
