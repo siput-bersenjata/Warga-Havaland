@@ -54,9 +54,9 @@ module.exports = async function handler(req, res) {
       return safeErrorResponse(res, 401, "Akses ditolak. Sesi login tidak ditemukan atau kedaluwarsa. Silakan login kembali.");
     }
 
-    const isBendaharaOrAdmin = Boolean(user.isAdmin || user.isBendahara || user.role === 'Bendahara RT');
+    const isBendaharaOrAdmin = Boolean(user.isAdmin || user.isBendahara || user.isPengurus || user.role === 'Bendahara RT' || user.role === 'Pengurus RT' || user.username === 'rt');
     if (!isBendaharaOrAdmin) {
-      return safeErrorResponse(res, 403, "Akses ditolak. Hanya Administrator RT atau Bendahara RT yang berhak mencatat transaksi kas.");
+      return safeErrorResponse(res, 403, "Akses ditolak. Hanya Administrator RT, Pengurus RT, atau Bendahara RT yang berhak mencatat transaksi kas.");
     }
 
     if (!db.isConfigured) {

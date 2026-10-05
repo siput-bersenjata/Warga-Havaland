@@ -3070,7 +3070,7 @@ const HavalandAuth = {
   },
 
   isAdmin() {
-    return !!(this.currentUser && (this.currentUser.isAdmin || this.currentUser.role === 'Administrator RT' || this.currentUser.role === 'Admin RT'));
+    return !!(this.currentUser && (this.currentUser.isAdmin || this.currentUser.role === 'Administrator RT' || this.currentUser.role === 'Admin RT' || this.currentUser.role === 'Pengurus RT' || this.currentUser.username === 'rt'));
   },
 
   isBendahara() {

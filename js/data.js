@@ -829,9 +829,9 @@ const HavalandData = {
       nama: "Bpk. Bambang Sujarwo",
       role: "Pengurus RT",
       blok: "Blok A-01",
-      isAdmin: false,
+      isAdmin: true,
       isPengurus: true,
-      isBendahara: false
+      isBendahara: true
     },
     {
       id: "USR-BENDAHARA-01",

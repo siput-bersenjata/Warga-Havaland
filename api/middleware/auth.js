@@ -35,8 +35,9 @@ const USERS = [
     nama: "Bpk. Bambang Sujarwo",
     role: "Pengurus RT",
     blok: "Blok A-01",
-    isAdmin: false,
-    isPengurus: true
+    isAdmin: true,
+    isPengurus: true,
+    isBendahara: true
   },
   {
     username: "bendahara",

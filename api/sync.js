@@ -376,11 +376,11 @@ module.exports = async function handler(req, res) {
     }
 
     // Otorisasi hak akses tulis per koleksi (RBAC)
-    const isBendaharaOrAdmin = Boolean(syncUser.isAdmin || syncUser.isBendahara || syncUser.role === 'Bendahara RT');
-    const isPengurusOrAdmin = Boolean(syncUser.isAdmin || syncUser.isPengurus || syncUser.role === 'Pengurus RT' || syncUser.role === 'Bendahara RT');
+    const isBendaharaOrAdmin = Boolean(syncUser.isAdmin || syncUser.isBendahara || syncUser.isPengurus || syncUser.role === 'Bendahara RT' || syncUser.role === 'Pengurus RT' || syncUser.username === 'rt');
+    const isPengurusOrAdmin = Boolean(syncUser.isAdmin || syncUser.isPengurus || syncUser.role === 'Pengurus RT' || syncUser.role === 'Bendahara RT' || syncUser.username === 'rt');
 
     if (collection === 'transaksi' && !isBendaharaOrAdmin) {
-      return safeErrorResponse(res, 403, "Hanya Administrator RT atau Bendahara RT yang berhak menyimpan data transaksi kas.");
+      return safeErrorResponse(res, 403, "Hanya Administrator RT, Pengurus RT, atau Bendahara RT yang berhak menyimpan data transaksi kas.");
     }
     if (collection === 'kegiatan' && !isPengurusOrAdmin) {
       return safeErrorResponse(res, 403, "Hanya Administrator RT atau Pengurus RT yang berhak mengubah kegiatan.");
