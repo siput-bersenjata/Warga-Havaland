@@ -195,6 +195,10 @@ const HavalandApp = {
       }
     }
 
+    // Simpan referensi kegiatan default resmi dari data.js
+    const officialKegiatanList = Array.isArray(HavalandData.kegiatan) ? JSON.parse(JSON.stringify(HavalandData.kegiatan)) : [];
+    const officialAct1 = officialKegiatanList.find(k => k && k.id === "ACT-001");
+
     // ---- KEGIATAN (snapshot penuh) ----
     const snapKeg = HavalandUtils.loadStorage("custom_kegiatan_v2", null);
     if (snapKeg && Array.isArray(snapKeg) && snapKeg.length > 0) {
@@ -205,50 +209,24 @@ const HavalandApp = {
         HavalandData.kegiatan = this.mergeWithDeletions(legacyKeg, HavalandData.kegiatan);
         HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
         HavalandUtils.removeStorage("custom_kegiatan");
+      } else if (officialKegiatanList.length > 0) {
+        HavalandData.kegiatan = officialKegiatanList;
+        HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
       }
     }
 
-    // Migrasi otomatis ACT-001: Jika data di cache masih berisi jadwal lama Ronda Malam, perbarui ke jadwal PJU & Tandon Air
-    if (Array.isArray(HavalandData.kegiatan)) {
-      const idxOldRonda = HavalandData.kegiatan.findIndex(k => k.id === "ACT-001" || (k.judul && (k.judul.includes("Ronda") || k.judul.includes("Siskamling"))));
-      const defaultNewAct = {
-        id: "ACT-001",
-        judul: "Pengecekan Token Listrik PJU Luar Dalam & Tandon Air",
-        kategori: "Sarpras",
-        tipe: "Rutin",
-        frekuensi: "Rutin Bulanan (Bergilir Tiap KK)",
-        waktuNext: "Piket Bulan Ini: Oktober 2026",
-        lokasi: "Panel Listrik PJU Luar/Dalam & Tandon Air Kompleks Havaland",
-        koordinator: "Seksi Sarana & Prasarana RT 04",
-        judulPiket: "Jadwal Giliran Bulanan Pengecekan Token Listrik PJU & Tandon Air (Per KK):",
-        thPeriode: "Bulan",
-        thPenanggungJawab: "Giliran KK (Penanggung Jawab)",
-        thTugas: "Fokus Pemeriksaan & Tugas Piket",
-        jadwalPiket: [
-          { bulan: "Januari 2026", kk: "Bu Tutik (D1) & Bu Wati (D2)", tugas: "Cek sisa kWh token PJU luar gerbang & tandon air utama (level air & pelampung otomatis)" },
-          { bulan: "Februari 2026", kk: "Bu Ami (D5) & Bu Ana (D6)", tugas: "Cek sisa kWh token PJU dalam kompleks & kuras/cek filter sedimen tandon air" },
-          { bulan: "Maret 2026", kk: "Bu Diah (D7) & Bu Dewi (D9)", tugas: "Cek token PJU luar & dalam serta cek kebersihan area penampungan tandon" },
-          { bulan: "April 2026", kk: "Bu Shinta (D10) & Bu Gini (E4)", tugas: "Cek sisa kWh token listrik PJU & uji kerja radar/otomatis pompa pendorong" },
-          { bulan: "Mei 2026", kk: "Bu Tere (F4) & Bu Ratna (F5)", tugas: "Cek token PJU luar gerbang & periksa fisik pipa suplai tandon air" },
-          { bulan: "Juni 2026", kk: "Bu Irma (F6) & Bu Maria (F7)", tugas: "Cek token PJU dalam & luar kompleks, catat pemakaian kWh bulanan ke grup WA" },
-          { bulan: "Juli 2026", kk: "Bu Pungky (G2) & Bu Aisyah (G3)", tugas: "Cek sisa token PJU & monitoring kelancaran debit air dari tandon ke rumah warga" },
-          { bulan: "Agustus 2026", kk: "Bu Mely (G4) & Bu Jean (G7)", tugas: "Cek kelistrikan PJU luar/dalam & bersihkan lumut/kerak dinding tandon air" },
-          { bulan: "September 2026", kk: "Bu Melda (H6) & Bu Lina (H7)", tugas: "Cek sisa token PJU luar/dalam & uji fungsi pelampung stop kran otomatis tandon" },
-          { bulan: "Oktober 2026", kk: "Bu Iin (H10) & Bu Nia (I3)", tugas: "Cek token PJU gerbang luar & dalam serta cek grounding & pompa tandon air" },
-          { bulan: "November 2026", kk: "Bu Lia (I8) & Bu Natali (I10-11)", tugas: "Cek sisa kWh token PJU & pastikan pasokan air tandon lancar menjelang musim hujan" },
-          { bulan: "Desember 2026", kk: "Bu Sulaicha (J1), Bu Sulis (J7), & Bu Tanti (J10)", tugas: "Cek akhir tahun: rekap kWh token PJU luar/dalam & servis berkala mesin tandon air" }
-        ],
-        deskripsi: "Pemeriksaan rutin sisa kWh token meteran listrik PJU (Penerangan Jalan Umum) area luar gerbang dan dalam kompleks, serta pengecekan ketersediaan volume air, pelampung otomatis, dan kebersihan tandon air warga. Hasil sisa kWh dan kondisi tandon dicatat serta dilaporkan ke grup WhatsApp warga.",
-        statusBadge: "Piket Bulanan per KK"
-      };
-
-      if (idxOldRonda !== -1) {
-        if (HavalandData.kegiatan[idxOldRonda].judul.includes("Ronda") || HavalandData.kegiatan[idxOldRonda].judul.includes("Siskamling")) {
-          HavalandData.kegiatan[idxOldRonda] = defaultNewAct;
+    // Migrasi otomatis ACT-001: Jika data di cache masih berisi jadwal lama Ronda Malam atau belum 24 bulan (2026-2027 per KK)
+    if (Array.isArray(HavalandData.kegiatan) && officialAct1) {
+      const idxAct1 = HavalandData.kegiatan.findIndex(k => k && (k.id === "ACT-001" || (k.judul && (k.judul.includes("Ronda") || k.judul.includes("Siskamling")))));
+      if (idxAct1 !== -1) {
+        const curAct = HavalandData.kegiatan[idxAct1];
+        const isOutdated = !curAct.jadwalPiket || curAct.jadwalPiket.length < 24 || (curAct.judul && (curAct.judul.includes("Ronda") || curAct.judul.includes("Siskamling")));
+        if (isOutdated) {
+          HavalandData.kegiatan[idxAct1] = JSON.parse(JSON.stringify(officialAct1));
           HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
         }
       } else {
-        HavalandData.kegiatan.unshift(defaultNewAct);
+        HavalandData.kegiatan.unshift(JSON.parse(JSON.stringify(officialAct1)));
         HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
       }
     }
@@ -854,7 +832,37 @@ const HavalandApp = {
     this.renderKegiatan(kategori);
   },
 
+  filterPiketTahun(tahun, btnEl) {
+    if (!btnEl) return;
+    const parentBox = btnEl.closest(".piket-box") || document;
+    parentBox.querySelectorAll(".piket-year-btn").forEach(b => {
+      b.classList.remove("active");
+      b.style.background = "transparent";
+      b.style.color = "var(--text-secondary)";
+      b.style.borderColor = "var(--surface-border)";
+    });
+    btnEl.classList.add("active");
+    btnEl.style.background = "var(--primary)";
+    btnEl.style.color = "#ffffff";
+    btnEl.style.borderColor = "var(--primary)";
+
+    parentBox.querySelectorAll(".piket-data-row").forEach(row => {
+      const rYear = row.getAttribute("data-tahun") || "";
+      if (tahun === "semua" || rYear === tahun) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    });
+  },
+
   renderKegiatan(kategoriFilter = "semua") {
+    // Sinkronkan deskripsi banner highlight piket bulan ini
+    const hlDesc = document.getElementById("agenda-highlight-desc");
+    if (hlDesc) {
+      hlDesc.textContent = "Bulan ini giliran Bu Irma (Blok F6). Pengecekan sisa kWh token meteran PJU luar/dalam serta level air & pelampung otomatis tandon air warga.";
+    }
+
     const container = document.getElementById("kegiatan-cards-stream");
     if (!container) return;
 
@@ -879,16 +887,34 @@ const HavalandApp = {
         const thPeriode = k.thPeriode || (hasBulan ? "Bulan" : "Hari");
         const thPenanggungJawab = k.thPenanggungJawab || (hasBulan ? "Giliran KK (Penanggung Jawab)" : "Giliran Blok");
         const thTugas = k.thTugas || (hasBulan ? "Fokus Pemeriksaan & Tugas Piket" : "Warga Piket Pendamping");
-        const judulPiket = k.judulPiket || (hasBulan ? "Jadwal Giliran Bulanan Pengecekan Token Listrik PJU & Tandon Air (Per KK):" : "Jadwal Giliran Ronda Tiap Malam:");
+        const judulPiket = k.judulPiket || (hasBulan ? "Jadwal Giliran Bulanan Pengecekan Token Listrik PJU & Tandon Air Per KK (2026 - 2027):" : "Jadwal Giliran Ronda Tiap Malam:");
+
+        const has2026 = k.jadwalPiket.some(p => (p.bulan || "").includes("2026"));
+        const has2027 = k.jadwalPiket.some(p => (p.bulan || "").includes("2027"));
+        const showYearFilters = has2026 && has2027;
 
         k.jadwalPiket.forEach(p => {
           const periodeVal = p.bulan || p.hari || p.periode || "-";
           const penanggungVal = p.kk || p.blok || "-";
           const tugasVal = p.tugas || p.petugas || p.fokus || "-";
+
+          let rowYear = "";
+          if (periodeVal.includes("2026")) rowYear = "2026";
+          else if (periodeVal.includes("2027")) rowYear = "2027";
+
+          const isCurrentMonth = periodeVal.toLowerCase().includes("oktober 2026");
+          const rowStyle = isCurrentMonth 
+            ? "background: rgba(16, 185, 129, 0.12); border-left: 3px solid var(--primary);" 
+            : "";
+          const badgeCurrent = isCurrentMonth
+            ? `<span class="badge badge-success" style="font-size: 0.7rem; margin-left: 6px; padding: 2px 6px; font-weight: 700;">⭐ Bulan Ini</span>`
+            : "";
+
           rows += `
-            <tr>
+            <tr class="piket-data-row" data-tahun="${rowYear}" style="${rowStyle}">
               <td style="white-space: nowrap; font-weight: 700; color: var(--primary-text);">
                 <span>📅 ${ek(periodeVal)}</span>
+                ${badgeCurrent}
               </td>
               <td>
                 <span class="badge badge-info" style="font-size: 0.78rem; font-weight: 600; padding: 0.35rem 0.65rem;">
@@ -901,17 +927,33 @@ const HavalandApp = {
             </tr>
           `;
         });
-        piketTableHtml = `
-          <div style="margin-top: 1rem; border-top: 1px dashed var(--surface-border); padding-top: 0.85rem;">
-            <div style="font-size: 0.85rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--primary-text); display: flex; align-items: center; gap: 0.4rem;">
-              <span>📋</span>
-              <span>${ek(judulPiket)}</span>
+
+        let yearFilterHtml = "";
+        if (showYearFilters) {
+          yearFilterHtml = `
+            <div style="display: flex; gap: 0.4rem; margin: 0.6rem 0 0.75rem 0; flex-wrap: wrap;">
+              <button type="button" class="pill-btn piket-year-btn active" style="font-size: 0.76rem; padding: 0.3rem 0.7rem; background: var(--primary); color: #fff; border: 1px solid var(--primary); border-radius: 20px; cursor: pointer;" onclick="HavalandApp.filterPiketTahun('semua', this)">Semua (2026 - 2027)</button>
+              <button type="button" class="pill-btn piket-year-btn" style="font-size: 0.76rem; padding: 0.3rem 0.7rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--surface-border); border-radius: 20px; cursor: pointer;" onclick="HavalandApp.filterPiketTahun('2026', this)">📅 Tahun 2026 (12 Bulan)</button>
+              <button type="button" class="pill-btn piket-year-btn" style="font-size: 0.76rem; padding: 0.3rem 0.7rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--surface-border); border-radius: 20px; cursor: pointer;" onclick="HavalandApp.filterPiketTahun('2027', this)">📅 Tahun 2027 (12 Bulan)</button>
             </div>
-            <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+          `;
+        }
+
+        piketTableHtml = `
+          <div class="piket-box" style="margin-top: 1rem; border-top: 1px dashed var(--surface-border); padding-top: 0.85rem;">
+            <div style="font-size: 0.85rem; font-weight: 800; margin-bottom: 0.35rem; color: var(--primary-text); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem;">
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <span>📋</span>
+                <span>${ek(judulPiket)}</span>
+              </div>
+              <span class="badge badge-success" style="font-size: 0.72rem;">24 Bulan Terjadwal</span>
+            </div>
+            ${yearFilterHtml}
+            <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
               <table class="piket-table">
                 <thead>
                   <tr>
-                    <th style="width: 140px;">${ek(thPeriode)}</th>
+                    <th style="width: 170px;">${ek(thPeriode)}</th>
                     <th style="min-width: 220px;">${ek(thPenanggungJawab)}</th>
                     <th>${ek(thTugas)}</th>
                   </tr>
@@ -6906,8 +6948,19 @@ const HavalandSync = {
         this.apply(name, cloud);
         result.pulled += 1;
       } else {
-        // Jika data di database kosong / dihapus, kosongkan juga di lokal agar tidak terjadi resurrection data
-        this.apply(name, []);
+        // Jika data di database kosong / belum terisi:
+        // Cek apakah ada data lokal/bawaan dan item tersebut belum pernah ditandai dihapus
+        const defaultList = (HavalandData[name] && Array.isArray(HavalandData[name])) ? HavalandData[name] : [];
+        if (defaultList.length > 0 && (!deletedSet || deletedSet.size === 0)) {
+          this.apply(name, defaultList);
+          // Jika pengguna memiliki hak push (admin/RT), otomatis inisialisasi ke database cloud
+          if (this.canPush(name)) {
+            this.pushCollection(name, defaultList).catch(() => {});
+          }
+        } else {
+          // Jika memang telah dihapus oleh pengguna, kosongkan di lokal
+          this.apply(name, []);
+        }
       }
     }
     return result;

@@ -228,73 +228,133 @@ const HavalandData = {
       kategori: "Sarpras",
       tipe: "Rutin",
       frekuensi: "Rutin Bulanan (Bergilir Tiap KK)",
-      waktuNext: "Piket Bulan Ini: Oktober 2026",
+      waktuNext: "Piket Bulan Ini: Oktober 2026 - Bu Irma (Blok F6)",
       lokasi: "Panel Listrik PJU Luar/Dalam & Tandon Air Kompleks Havaland",
       koordinator: "Seksi Sarana & Prasarana RT 04",
-      judulPiket: "Jadwal Giliran Bulanan Pengecekan Token Listrik PJU & Tandon Air (Per KK):",
+      judulPiket: "Jadwal Giliran Bulanan Pengecekan Token Listrik PJU & Tandon Air Per KK (2026 - 2027):",
       thPeriode: "Bulan",
       thPenanggungJawab: "Giliran KK (Penanggung Jawab)",
       thTugas: "Fokus Pemeriksaan & Tugas Piket",
       jadwalPiket: [
         {
           bulan: "Januari 2026",
-          kk: "Bu Tutik (D1) & Bu Wati (D2)",
-          tugas: "Cek sisa kWh token PJU luar gerbang & tandon air utama (level air & pelampung otomatis)"
+          kk: "Bu Astutik (Blok D1)",
+          tugas: "Cek saldo sisa kWh token PJU luar gerbang & tandon air utama (level air & pelampung otomatis)"
         },
         {
           bulan: "Februari 2026",
-          kk: "Bu Ami (D5) & Bu Ana (D6)",
-          tugas: "Cek sisa kWh token PJU dalam kompleks & kuras/cek filter sedimen tandon air"
+          kk: "Bu Ami / P. Tama (Blok D5)",
+          tugas: "Cek sisa kWh token PJU dalam kompleks & kuras/cek filter sedimen tandon air warga"
         },
         {
           bulan: "Maret 2026",
-          kk: "Bu Diah (D7) & Bu Dewi (D9)",
+          kk: "Bu Ana (Blok D6)",
           tugas: "Cek token PJU luar & dalam serta cek kebersihan area penampungan tandon"
         },
         {
           bulan: "April 2026",
-          kk: "Bu Shinta (D10) & Bu Gini (E4)",
+          kk: "Bu Diah (Blok D8)",
           tugas: "Cek sisa kWh token listrik PJU & uji kerja radar/otomatis pompa pendorong"
         },
         {
           bulan: "Mei 2026",
-          kk: "Bu Tere (F4) & Bu Ratna (F5)",
+          kk: "Bu Dewi / P. Hendrik (Blok D9)",
           tugas: "Cek token PJU luar gerbang & periksa fisik pipa suplai tandon air"
         },
         {
           bulan: "Juni 2026",
-          kk: "Bu Irma (F6) & Bu Maria (F7)",
+          kk: "Bu Shinta / P. Sofyan (Blok D10)",
           tugas: "Cek token PJU dalam & luar kompleks, catat pemakaian kWh bulanan ke grup WA"
         },
         {
           bulan: "Juli 2026",
-          kk: "Bu Pungky (G2) & Bu Aisyah (G3)",
+          kk: "Bu Gini / P. Idi (Blok E4)",
           tugas: "Cek sisa token PJU & monitoring kelancaran debit air dari tandon ke rumah warga"
         },
         {
           bulan: "Agustus 2026",
-          kk: "Bu Mely (G4) & Bu Jean (G7)",
+          kk: "Bu Tere / P. Mawardin (Blok F4)",
           tugas: "Cek kelistrikan PJU luar/dalam & bersihkan lumut/kerak dinding tandon air"
         },
         {
           bulan: "September 2026",
-          kk: "Bu Melda (H6) & Bu Lina (H7)",
+          kk: "Bu Ratna / P. Lukman (Blok F5)",
           tugas: "Cek sisa token PJU luar/dalam & uji fungsi pelampung stop kran otomatis tandon"
         },
         {
           bulan: "Oktober 2026",
-          kk: "Bu Iin (H10) & Bu Nia (I3)",
-          tugas: "Cek token PJU gerbang luar & dalam serta cek grounding & pompa tandon air"
+          kk: "Bu Irma (Blok F6)",
+          tugas: "Cek token PJU gerbang luar & dalam serta cek grounding, pompa, dan pelampung tandon air"
         },
         {
           bulan: "November 2026",
-          kk: "Bu Lia (I8) & Bu Natali (I10-11)",
+          kk: "Pak Danu / Bu Maria (Blok F7)",
           tugas: "Cek sisa kWh token PJU & pastikan pasokan air tandon lancar menjelang musim hujan"
         },
         {
           bulan: "Desember 2026",
-          kk: "Bu Sulaicha (J1), Bu Sulis (J7), & Bu Tanti (J10)",
-          tugas: "Cek akhir tahun: rekap kWh token PJU luar/dalam & servis berkala mesin tandon air"
+          kk: "Pak Toto (Blok F8)",
+          tugas: "Rekap tahunan kWh token PJU luar/dalam & cek menyeluruh instalasi mesin pompa tandon"
+        },
+        {
+          bulan: "Januari 2027",
+          kk: "Bu Pungky / P. Doni (Blok G2)",
+          tugas: "Cek sisa kWh token PJU awal tahun & periksa volume air serta kebersihan dasar tandon"
+        },
+        {
+          bulan: "Februari 2027",
+          kk: "Bu Aisyah / P. Hendra (Blok G4)",
+          tugas: "Cek token PJU dalam kompleks & kuras/bersihkan filter saringan kotoran tandon air"
+        },
+        {
+          bulan: "Maret 2027",
+          kk: "Bu Melly / P. Yerik (Blok G5)",
+          tugas: "Cek sisa token PJU luar & dalam serta cek kestabilan sensor otomatis pompa tandon"
+        },
+        {
+          bulan: "April 2027",
+          kk: "Bu Jean / P. Andre (Blok G6)",
+          tugas: "Cek token PJU & kontrol tekanan debit air pipa distribusi utama ke perumahan"
+        },
+        {
+          bulan: "Mei 2027",
+          kk: "Bu Melda / P. Zaza (Blok G7)",
+          tugas: "Cek fisik tiang & meteran PJU gerbang luar serta periksa pelampung otomatis tandon air"
+        },
+        {
+          bulan: "Juni 2027",
+          kk: "Bu Lina / P. Dodik (Blok H6)",
+          tugas: "Cek token PJU luar/dalam, catat rekapitulasi semester pertama ke grup WhatsApp warga"
+        },
+        {
+          bulan: "Juli 2027",
+          kk: "Bu Iin / P. Dedi (Blok H10)",
+          tugas: "Pemeriksaan kelistrikan panel PJU & uji coba darurat pengisian manual tandon air"
+        },
+        {
+          bulan: "Agustus 2027",
+          kk: "Bu Nia / P. Saiful (Blok I3)",
+          tugas: "Cek sisa token PJU & pembersihan lumut serta sterilisasi berkala bak tandon penampungan"
+        },
+        {
+          bulan: "September 2027",
+          kk: "Bu Lia / P. Wandi (Blok I8)",
+          tugas: "Cek token PJU luar & dalam serta cek fungsi saklar otomatis dan stop kran tandon"
+        },
+        {
+          bulan: "Oktober 2027",
+          kk: "Bu Natalia / P. Reynaldo (Blok I10-11)",
+          tugas: "Cek ketersediaan saldo kWh PJU & periksa kebocoran sambungan pipa tandon air warga"
+        },
+        {
+          bulan: "November 2027",
+          kk: "Bu Sulaichan / P. Fatkur (Blok J1)",
+          tugas: "Cek sisa token PJU & pastikan debit air tandon maksimal menghadapi curah hujan tinggi"
+        },
+        {
+          bulan: "Desember 2027",
+          kk: "Bu Sulis / P. Irul (Blok J7) & Bu Tanty / P. Reo (Blok J10)",
+          tugas: "Rekap akhir tahun kWh token PJU luar/dalam & evaluasi perawatan tahunan tandon air bersama"
         }
       ],
       deskripsi: "Pemeriksaan rutin sisa kWh token meteran listrik PJU (Penerangan Jalan Umum) area luar gerbang dan dalam kompleks, serta pengecekan ketersediaan volume air, pelampung otomatis, dan kebersihan tandon air warga. Hasil sisa kWh dan kondisi tandon dicatat serta dilaporkan ke grup WhatsApp warga.",
