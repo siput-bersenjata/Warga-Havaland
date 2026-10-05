@@ -404,6 +404,18 @@ module.exports = async function handler(req, res) {
     try {
       await ensureTable();
       await db.transaction(async (client) => {
+        // Mirror ke tabel relasional diisolasi SAVEPOINT: jika gagal, hanya mirror
+        // yang dibatalkan — simpan utama ke sync_store tetap berhasil.
+        const safeMirror = async (sql, params) => {
+          await client.query('SAVEPOINT mirror_sp');
+          try {
+            await client.query(sql, params);
+            await client.query('RELEASE SAVEPOINT mirror_sp');
+          } catch (e) {
+            console.warn(`[sync mirror ${collection}]`, e.message);
+            await client.query('ROLLBACK TO SAVEPOINT mirror_sp');
+          }
+        };
         // PERLINDUNGAN MUTLAK DATABASE:
         // JANGAN PERNAH MENJALANKAN DELETE FROM sync_store WHERE collection = $1!
         // Data yang sudah ada di database TIDAK BOLEH ditimpa atau dihapus massal.
@@ -423,7 +435,7 @@ module.exports = async function handler(req, res) {
             const tNominal = parseInt(d.nominal, 10) || 0;
             if (tNominal > 0 && d.uraian) {
               const tDate = d.tanggal || new Date().toISOString().slice(0, 10);
-              await client.query(`
+              await safeMirror(`
                 INSERT INTO transaksi_kas (id, tanggal, jenis, kategori, uraian, nominal, metode, pj, bukti, status, catatan)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                 ON CONFLICT (id) DO UPDATE SET
@@ -449,14 +461,14 @@ module.exports = async function handler(req, res) {
                 d.bukti || '-',
                 d.status || 'Verified',
                 d.catatan || ''
-              ]).catch(() => {});
+              ]);
             }
           }
 
           if (collection === 'kegiatan') {
             const d = row.data;
             if (d && (d.judul || d.nama)) {
-              await client.query(`
+              await safeMirror(`
                 INSERT INTO kegiatan_rutin (id, judul, kategori, tipe, frekuensi, waktu_next, lokasi, koordinator, deskripsi, status_badge, jadwal_piket)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                 ON CONFLICT (id) DO UPDATE SET
@@ -482,14 +494,14 @@ module.exports = async function handler(req, res) {
                 d.deskripsi || '',
                 d.statusBadge || d.status || 'Aktif',
                 JSON.stringify(d.jadwalPiket || [])
-              ]).catch(() => {});
+              ]);
             }
           }
 
           if (collection === 'aspirasi') {
             const d = row.data;
             if (d && (d.judul || d.isi)) {
-              await client.query(`
+              await safeMirror(`
                 INSERT INTO aspirasi_warga (id, pelapor, kategori, judul, tanggal, status, tanggapan, urgensi)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 ON CONFLICT (id) DO UPDATE SET
@@ -509,7 +521,7 @@ module.exports = async function handler(req, res) {
                 d.status || 'Diproses',
                 d.tanggapan || 'Laporan telah diterima sistem.',
                 d.urgensi || 'Sedang'
-              ]).catch(() => {});
+              ]);
             }
           }
         }
