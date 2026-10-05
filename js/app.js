@@ -2391,6 +2391,32 @@ END:VCALENDAR`;
   },
 
   openCekIuranModal() {
+    // Verifikasi otorisasi: wajib login dengan akun Bendahara RT atau Admin
+    if (typeof HavalandAuth !== "undefined") {
+      const isAuthorized = HavalandAuth.isAdmin() || HavalandAuth.isBendahara();
+      if (!isAuthorized) {
+        if (!HavalandAuth.isLoggedIn()) {
+          HavalandUtils.showToast(
+            "Login Diperlukan",
+            "Silakan login terlebih dahulu dengan akun Bendahara atau Admin untuk mengonfirmasi iuran.",
+            "warning"
+          );
+        } else {
+          HavalandUtils.showToast(
+            "Akses Khusus Bendahara & Admin",
+            `Akun Anda saat ini (${HavalandAuth.currentUser.nama} - ${HavalandAuth.currentUser.role}) bukan Bendahara atau Admin. Silakan masuk dengan akun Bendahara atau Admin.`,
+            "warning"
+          );
+        }
+        HavalandAuth.postLoginAction = "openCekIuranModal";
+        HavalandAuth.openLoginModal(
+          "bendahara",
+          "Fitur Konfirmasi Iuran memerlukan akses masuk akun Bendahara RT atau Administrator RT."
+        );
+        return;
+      }
+    }
+
     this.openModal("modal-cek-iuran");
     this.currentBlokFilter = "semua";
     this.activeAutocompleteIndex = -1;
@@ -2974,6 +3000,13 @@ END:VCALENDAR`;
   },
 
   closeModal(modalId) {
+    if (modalId === "modal-login") {
+      const roleNotice = document.getElementById("login-role-required-notice");
+      if (roleNotice) roleNotice.style.display = "none";
+      if (typeof HavalandAuth !== "undefined") {
+        HavalandAuth.postLoginAction = null;
+      }
+    }
     const modal = document.getElementById(modalId);
     if (modal) {
       modal.classList.remove("active");
@@ -3019,6 +3052,7 @@ END:VCALENDAR`;
 const HavalandAuth = {
   currentUser: null,
   currentSession: null,
+  postLoginAction: null,
   THIRTY_DAYS_MS: 30 * 24 * 60 * 60 * 1000, // 30 hari dalam milidetik (2.592.000.000 ms)
 
   init() {
@@ -3140,11 +3174,13 @@ const HavalandAuth = {
     return this.currentUser;
   },
 
-  openLoginModal(targetRole = null) {
+  openLoginModal(targetRole = null, noticeMessage = null) {
     const userInput = document.getElementById("login-username");
     const passInput = document.getElementById("login-password");
     const errMsg = document.getElementById("login-error-msg");
     const rememberCheckbox = document.getElementById("login-remember-me");
+    const roleNotice = document.getElementById("login-role-required-notice");
+    const roleNoticeText = document.getElementById("login-role-notice-text");
 
     if (userInput) userInput.value = "";
     if (passInput) passInput.value = "";
@@ -3152,7 +3188,48 @@ const HavalandAuth = {
     if (errMsg) errMsg.style.display = "none";
     if (rememberCheckbox) rememberCheckbox.checked = true;
 
+    if (roleNotice) {
+      if (noticeMessage) {
+        if (roleNoticeText) roleNoticeText.textContent = noticeMessage;
+        roleNotice.style.display = "block";
+      } else {
+        roleNotice.style.display = "none";
+      }
+    }
+
+    if (targetRole === "bendahara") {
+      if (userInput) userInput.placeholder = "bendahara / admin";
+    } else if (targetRole === "admin") {
+      if (userInput) userInput.placeholder = "admin";
+    } else {
+      if (userInput) userInput.placeholder = "admin / bendahara / warga";
+    }
+
     HavalandApp.openModal("modal-login");
+    if (userInput) {
+      setTimeout(() => userInput.focus(), 150);
+    }
+  },
+
+  executePostLoginAction() {
+    if (this.postLoginAction === "openCekIuranModal") {
+      this.postLoginAction = null;
+      if (this.isAdmin() || this.isBendahara()) {
+        setTimeout(() => {
+          HavalandApp.openCekIuranModal();
+        }, 250);
+      } else {
+        HavalandUtils.showToast(
+          "Akses Terbatas",
+          "Akun ini bukan Bendahara atau Admin, tidak dapat membuka Konfirmasi Iuran.",
+          "error"
+        );
+      }
+    } else if (typeof this.postLoginAction === "function") {
+      const action = this.postLoginAction;
+      this.postLoginAction = null;
+      setTimeout(() => action(), 250);
+    }
   },
 
   async handleFormLogin(event) {
@@ -3205,6 +3282,7 @@ const HavalandAuth = {
         if (typeof HavalandSettings !== "undefined") {
           HavalandSettings.renderBackupSection();
         }
+        this.executePostLoginAction();
         return;
       }
     } catch (fetchErr) {
@@ -3245,6 +3323,7 @@ const HavalandAuth = {
       if (typeof HavalandSettings !== "undefined") {
         HavalandSettings.renderBackupSection();
       }
+      this.executePostLoginAction();
       if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = "Masuk"; }
       return;
     }
@@ -3270,6 +3349,7 @@ const HavalandAuth = {
         if (typeof HavalandSettings !== "undefined") {
           HavalandSettings.renderBackupSection();
         }
+        this.executePostLoginAction();
         if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = "Masuk"; }
         return;
       }
@@ -3301,6 +3381,7 @@ const HavalandAuth = {
         if (typeof HavalandSettings !== "undefined") {
           HavalandSettings.renderBackupSection();
         }
+        this.executePostLoginAction();
       }
     }
   },

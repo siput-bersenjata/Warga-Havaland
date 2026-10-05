@@ -1947,6 +1947,15 @@
 
       <form id="form-login" onsubmit="HavalandAuth.handleFormLogin(event)">
         <div class="modal-body" style="max-height: 72vh; overflow-y: auto;">
+          <!-- Alert Banner Akses Role Tertentu (Bendahara / Admin) -->
+          <div id="login-role-required-notice" style="display: none; margin-bottom: 0.85rem; padding: 0.75rem 0.9rem; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: var(--radius-md); font-size: 0.8rem; color: #F59E0B; line-height: 1.45;">
+            <div style="font-weight: 700; display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.25rem;">
+              <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+              <span>Akses Khusus Bendahara & Admin</span>
+            </div>
+            <span id="login-role-notice-text">Fitur Konfirmasi Iuran memerlukan akses masuk akun Bendahara RT atau Administrator RT.</span>
+          </div>
+
           <div class="form-group">
             <label class="form-label" for="login-username">Nama Pengguna / Username:</label>
             <input type="text" id="login-username" class="form-control" placeholder="admin" required autocomplete="username">
