@@ -940,21 +940,21 @@ const HavalandApp = {
         }
 
         piketTableHtml = `
-          <div class="piket-box" style="margin-top: 1rem; border-top: 1px dashed var(--surface-border); padding-top: 0.85rem;">
-            <div style="font-size: 0.85rem; font-weight: 800; margin-bottom: 0.35rem; color: var(--primary-text); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem;">
-              <div style="display: flex; align-items: center; gap: 0.4rem;">
+          <div class="piket-box">
+            <div style="font-size: 0.88rem; font-weight: 800; margin-bottom: 0.45rem; color: var(--primary-text); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem;">
+              <div style="display: flex; align-items: center; gap: 0.45rem;">
                 <span>📋</span>
                 <span>${ek(judulPiket)}</span>
               </div>
-              <span class="badge badge-success" style="font-size: 0.72rem;">24 Bulan Terjadwal</span>
+              <span class="badge badge-success" style="font-size: 0.74rem; padding: 0.3rem 0.65rem;">24 Bulan Terjadwal</span>
             </div>
             ${yearFilterHtml}
-            <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
+            <div class="piket-scroll-wrap">
               <table class="piket-table">
                 <thead>
                   <tr>
-                    <th style="width: 170px;">${ek(thPeriode)}</th>
-                    <th style="min-width: 220px;">${ek(thPenanggungJawab)}</th>
+                    <th style="width: 175px;">${ek(thPeriode)}</th>
+                    <th style="width: 250px;">${ek(thPenanggungJawab)}</th>
                     <th>${ek(thTugas)}</th>
                   </tr>
                 </thead>
@@ -968,45 +968,46 @@ const HavalandApp = {
       const ek2 = HavalandUtils.escapeHtml.bind(HavalandUtils);
       html += `
         <div class="activity-card">
-          <div class="activity-main" style="flex: 1;">
-            <div class="activity-details" style="flex: 1;">
-              <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 4px; flex-wrap: wrap;">
-                <span class="badge badge-success">${ek2(k.statusBadge || 'Aktif')}</span>
-                <span style="font-size: 0.78rem; font-weight: 700; color: var(--primary-text);">⏱ ${ek2(k.waktuNext)}</span>
+          <div class="activity-top-row">
+            <div class="activity-main" style="flex: 1; min-width: 280px;">
+              <div class="activity-details" style="flex: 1;">
+                <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 4px; flex-wrap: wrap;">
+                  <span class="badge badge-success">${ek2(k.statusBadge || 'Aktif')}</span>
+                  <span style="font-size: 0.78rem; font-weight: 700; color: var(--primary-text);">⏱ ${ek2(k.waktuNext)}</span>
+                </div>
+                <h3 style="font-size: 1.15rem; font-weight: 800;">${ek2(k.judul)}</h3>
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">${ek2(k.deskripsi)}</p>
+                
+                <div class="activity-meta-tags">
+                  <span>📍 Lokasi: <strong>${ek2(k.lokasi)}</strong></span>
+                  <span>👤 Koordinator: <strong>${ek2(k.koordinator)}</strong></span>
+                  <span>🔄 Frekuensi: ${ek2(k.frekuensi)}</span>
+                  <span class="audit-badge">📝 Pencatat: ${ek2(k.createdBy || k.koordinator)}</span>
+                </div>
               </div>
-              <h3 style="font-size: 1.15rem; font-weight: 800;">${ek2(k.judul)}</h3>
-              <p style="font-size: 0.85rem; color: var(--text-secondary);">${ek2(k.deskripsi)}</p>
-              
-              <div class="activity-meta-tags">
-                <span>📍 Lokasi: <strong>${ek2(k.lokasi)}</strong></span>
-                <span>👤 Koordinator: <strong>${ek2(k.koordinator)}</strong></span>
-                <span>🔄 Frekuensi: ${ek2(k.frekuensi)}</span>
-                <span class="audit-badge">📝 Pencatat: ${ek2(k.createdBy || k.koordinator)}</span>
-              </div>
-
-              ${piketTableHtml}
+            </div>
+            <div class="activity-actions" style="flex-direction: column; align-self: flex-start; min-width: 165px;">
+              <button class="btn btn-whatsapp btn-sm" onclick="HavalandApp.shareKegiatanWA('${ek2(k.id)}')">
+                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.54 1.764.819 2.791.819h.005c3.18 0 5.767-2.586 5.768-5.766 0-3.18-2.587-5.765-5.773-5.765zm3.364 8.163c-.144.405-.837.774-1.17.824-.312.045-.634.055-1.921-.479-1.503-.623-2.47-2.148-2.545-2.247-.075-.1-1.01-1.344-1.01-2.564 0-1.22.639-1.82.866-2.066.227-.247.498-.309.664-.309.166 0 .332.002.477.01.155.008.363-.058.567.433.21.505.719 1.752.782 1.88.063.128.105.279.021.446-.084.167-.126.27-.25.417-.125.148-.263.33-.375.443-.125.125-.255.261-.11.51.145.249.645 1.066 1.385 1.725.952.848 1.755 1.111 2.004 1.236.249.125.395.104.541-.063.146-.167.625-.729.791-.979.166-.25.332-.208.562-.125.229.083 1.458.687 1.708.812.25.125.417.188.479.292.062.104.062.604-.082 1.009z"/></svg>
+                Bagikan ke Grup WA
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="HavalandApp.simpanKalender('${ek2(k.id)}')">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Simpan ke Kalender
+              </button>
+              ${(typeof HavalandAuth !== 'undefined' && (HavalandAuth.isAdmin() || HavalandAuth.isPengurus())) ? `
+              <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem;" onclick="HavalandApp.openEditPage('kegiatan','${ek2(k.id)}')" title="Edit Jadwal Kegiatan">
+                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                Edit Jadwal
+              </button>
+              <button class="btn btn-sm" style="color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.25); background: transparent; font-size: 0.75rem;" onclick="HavalandApp.hapusKegiatan('${ek2(k.id)}')" title="Hapus Jadwal Kegiatan">
+                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                Hapus
+              </button>
+              ` : ''}
             </div>
           </div>
-          <div class="activity-actions" style="flex-direction: column; align-self: flex-start;">
-            <button class="btn btn-whatsapp btn-sm" onclick="HavalandApp.shareKegiatanWA('${ek2(k.id)}')">
-              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.54 1.764.819 2.791.819h.005c3.18 0 5.767-2.586 5.768-5.766 0-3.18-2.587-5.765-5.773-5.765zm3.364 8.163c-.144.405-.837.774-1.17.824-.312.045-.634.055-1.921-.479-1.503-.623-2.47-2.148-2.545-2.247-.075-.1-1.01-1.344-1.01-2.564 0-1.22.639-1.82.866-2.066.227-.247.498-.309.664-.309.166 0 .332.002.477.01.155.008.363-.058.567.433.21.505.719 1.752.782 1.88.063.128.105.279.021.446-.084.167-.126.27-.25.417-.125.148-.263.33-.375.443-.125.125-.255.261-.11.51.145.249.645 1.066 1.385 1.725.952.848 1.755 1.111 2.004 1.236.249.125.395.104.541-.063.146-.167.625-.729.791-.979.166-.25.332-.208.562-.125.229.083 1.458.687 1.708.812.25.125.417.188.479.292.062.104.062.604-.082 1.009z"/></svg>
-              Bagikan ke Grup WA
-            </button>
-            <button class="btn btn-secondary btn-sm" onclick="HavalandApp.simpanKalender('${ek2(k.id)}')">
-              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-              Simpan ke Kalender
-            </button>
-            ${(typeof HavalandAuth !== 'undefined' && (HavalandAuth.isAdmin() || HavalandAuth.isPengurus())) ? `
-            <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem;" onclick="HavalandApp.openEditPage('kegiatan','${ek2(k.id)}')" title="Edit Jadwal Kegiatan">
-              <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-              Edit Jadwal
-            </button>
-            <button class="btn btn-sm" style="color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.25); background: transparent; font-size: 0.75rem;" onclick="HavalandApp.hapusKegiatan('${ek2(k.id)}')" title="Hapus Jadwal Kegiatan">
-              <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-              Hapus
-            </button>
-            ` : ''}
-          </div>
+          ${piketTableHtml}
         </div>
       `;
     });
