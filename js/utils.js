@@ -302,11 +302,69 @@ const HavalandUtils = {
       btn.setAttribute("title", "Lihat kata sandi");
       btn.classList.remove("is-revealed");
     }
+  },
+
+  // Normalisasi objek warga agar properti camelCase dan snake_case selalu tersedia dan aman dari TypeError
+  normalizeWarga(w) {
+    if (!w || typeof w !== "object") return w;
+    let plat = [];
+    const rawPlat = w.platKendaraan ?? w.plat_kendaraan;
+    if (Array.isArray(rawPlat)) {
+      plat = rawPlat.filter(p => p !== null && p !== undefined).map(p => String(p).trim()).filter(Boolean);
+    } else if (typeof rawPlat === "string") {
+      try {
+        if (rawPlat.startsWith("[")) {
+          plat = JSON.parse(rawPlat);
+        } else {
+          plat = rawPlat.split(",").map(p => p.trim()).filter(Boolean);
+        }
+      } catch (_) {
+        plat = [rawPlat.trim()];
+      }
+    }
+    if (!plat || plat.length === 0) plat = ["-"];
+
+    const isLunas = Boolean(w.iuranBulanIni ?? w.iuran_bulan_ini ?? (w.statusIuran === "Lunas" || w.status_iuran === "Lunas"));
+    const nama = String(w.namaKK || w.nama_kk || "-").trim();
+    const hunian = String(w.statusHunian || w.status_hunian || "Tetap").trim();
+    const blok = String(w.blok || "").trim();
+    const cluster = String(w.cluster || "Havaland").trim();
+    const jabatan = String(w.jabatan || "Warga").trim();
+    const jiwa = parseInt(w.jumlahJiwa ?? w.jumlah_jiwa, 10) || 1;
+    const kontak = String(w.kontak || "-").trim();
+    const tBayar = String(w.terakhirBayar || w.terakhir_bayar || "-").trim();
+    const statusIuran = isLunas ? "Lunas" : "Belum";
+
+    return {
+      ...w,
+      id: w.id || `W-${blok.replace(/[^a-zA-Z0-9]/g, "") || Date.now().toString(36)}`,
+      blok,
+      cluster,
+      namaKK: nama,
+      nama_kk: nama,
+      statusHunian: hunian,
+      status_hunian: hunian,
+      jabatan,
+      jumlahJiwa: jiwa,
+      jumlah_jiwa: jiwa,
+      kontak,
+      platKendaraan: plat,
+      plat_kendaraan: plat,
+      statusIuran: statusIuran,
+      status_iuran: statusIuran,
+      iuranBulanIni: isLunas,
+      iuran_bulan_ini: isLunas,
+      terakhirBayar: tBayar,
+      terakhir_bayar: tBayar
+    };
   }
 };
 
 
-// Export to window
+// Export to window / module
 if (typeof window !== "undefined") {
   window.HavalandUtils = HavalandUtils;
+}
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = HavalandUtils;
 }

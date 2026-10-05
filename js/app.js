@@ -287,7 +287,9 @@ const HavalandApp = {
     }
     const customWarga = HavalandUtils.loadStorage("custom_warga_v2", null);
     if (customWarga && Array.isArray(customWarga) && customWarga.length > 0) {
-      HavalandData.warga = HavalandUtils.dedupeById(customWarga);
+      HavalandData.warga = HavalandUtils.dedupeById(customWarga).map(w => HavalandUtils.normalizeWarga(w));
+    } else if (Array.isArray(HavalandData.warga)) {
+      HavalandData.warga = HavalandData.warga.map(w => HavalandUtils.normalizeWarga(w));
     }
   },
 
@@ -640,13 +642,20 @@ const HavalandApp = {
     const dateRange = this.getDateRangeForPreset(this.currentFilterPeriode || "bulan-ini");
 
     const filtered = HavalandData.transaksi.filter(t => {
+      if (!t) return false;
+      const uraian = String(t.uraian || "").toLowerCase();
+      const kategori = String(t.kategori || "").toLowerCase();
+      const id = String(t.id || "").toLowerCase();
+      const bukti = String(t.bukti || "").toLowerCase();
+      const pj = String(t.pj || "").toLowerCase();
+
       // Keyword search
       const matchSearch = !q || 
-        t.uraian.toLowerCase().includes(q) || 
-        t.kategori.toLowerCase().includes(q) || 
-        t.id.toLowerCase().includes(q) || 
-        (t.bukti && t.bukti.toLowerCase().includes(q)) || 
-        (t.pj && t.pj.toLowerCase().includes(q));
+        uraian.includes(q) || 
+        kategori.includes(q) || 
+        id.includes(q) || 
+        bukti.includes(q) || 
+        pj.includes(q);
 
       // Filter Jenis
       const matchJenis = filterJenis === "semua" || t.jenis === filterJenis;
@@ -1035,26 +1044,45 @@ END:VCALENDAR`;
   },
 
   filterWarga() {
-    const q = (document.getElementById("warga-search")?.value || "").toLowerCase().trim();
+    const searchInput = document.getElementById("warga-search");
+    const q = (searchInput?.value || "").toLowerCase().trim();
     const filterBlok = document.getElementById("warga-filter-blok")?.value || "semua";
     const filterStatus = document.getElementById("warga-filter-status")?.value || "semua";
 
-    const filtered = HavalandData.warga.filter(w => {
-      // Search by name, block, or car plates
+    const filtered = (HavalandData.warga || []).filter(rawW => {
+      if (!rawW) return false;
+      const w = (typeof HavalandUtils !== "undefined" && HavalandUtils.normalizeWarga)
+        ? HavalandUtils.normalizeWarga(rawW)
+        : rawW;
+
+      const nama = String(w.namaKK || w.nama_kk || "").toLowerCase();
+      const blok = String(w.blok || "").toLowerCase();
+      const cluster = String(w.cluster || "").toLowerCase();
+      
+      const platList = Array.isArray(w.platKendaraan)
+        ? w.platKendaraan
+        : (Array.isArray(w.plat_kendaraan) ? w.plat_kendaraan : []);
+      const matchPlat = platList.some(p => p && String(p).toLowerCase().includes(q));
+
+      // Search by name, block, cluster, or car plates
       const matchSearch = !q ||
-        w.namaKK.toLowerCase().includes(q) ||
-        w.blok.toLowerCase().includes(q) ||
-        w.platKendaraan.some(p => p.toLowerCase().includes(q));
+        nama.includes(q) ||
+        blok.includes(q) ||
+        cluster.includes(q) ||
+        matchPlat;
 
       // Filter Blok
-      const matchBlok = filterBlok === "semua" || w.blok.startsWith(filterBlok);
+      const rawBlok = String(w.blok || "");
+      const matchBlok = filterBlok === "semua" || rawBlok.toUpperCase().startsWith(filterBlok.toUpperCase());
 
       // Filter Status
+      const isLunas = Boolean(w.iuranBulanIni ?? w.iuran_bulan_ini);
+      const statusHunian = w.statusHunian || w.status_hunian || "Tetap";
       let matchStatus = true;
       if (filterStatus === "belum_bayar") {
-        matchStatus = !w.iuranBulanIni;
+        matchStatus = !isLunas;
       } else if (filterStatus !== "semua") {
-        matchStatus = w.statusHunian === filterStatus;
+        matchStatus = (statusHunian === filterStatus);
       }
 
       return matchSearch && matchBlok && matchStatus;
@@ -1074,17 +1102,29 @@ END:VCALENDAR`;
     }
 
     let html = "";
-    filtered.forEach(w => {
-      const isLunas = w.iuranBulanIni;
+    filtered.forEach(rawW => {
+      const w = (typeof HavalandUtils !== "undefined" && HavalandUtils.normalizeWarga)
+        ? HavalandUtils.normalizeWarga(rawW)
+        : rawW;
+      const isLunas = Boolean(w.iuranBulanIni ?? w.iuran_bulan_ini);
+      const statusHunian = w.statusHunian || w.status_hunian || "Tetap";
+      const namaKK = w.namaKK || w.nama_kk || "-";
+      const blok = w.blok || "-";
+      const jabatan = w.jabatan || 'Warga Havaland';
+      const jumlahJiwa = w.jumlahJiwa ?? w.jumlah_jiwa ?? 1;
+
       let badgeHunian = "badge-info";
-      if (w.statusHunian === "Tetap") badgeHunian = "badge-success";
-      else if (w.statusHunian === "Kontrak") badgeHunian = "badge-warning";
-      else if (w.statusHunian === "Kosong") badgeHunian = "badge-purple";
+      if (statusHunian === "Tetap") badgeHunian = "badge-success";
+      else if (statusHunian === "Kontrak") badgeHunian = "badge-warning";
+      else if (statusHunian === "Kosong") badgeHunian = "badge-purple";
 
       let vehiclesHtml = "";
-      w.platKendaraan.forEach(plat => {
-        if (plat !== "-") {
-          vehiclesHtml += `<span class="vehicle-pill">🚗 ${plat}</span> `;
+      const platList = Array.isArray(w.platKendaraan)
+        ? w.platKendaraan
+        : (Array.isArray(w.plat_kendaraan) ? w.plat_kendaraan : []);
+      platList.forEach(plat => {
+        if (plat && plat !== "-") {
+          vehiclesHtml += `<span class="vehicle-pill">🚗 ${HavalandUtils.escapeHtml(plat)}</span> `;
         }
       });
 
@@ -1094,18 +1134,18 @@ END:VCALENDAR`;
             <div class="resident-top">
               <div class="house-badge">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                ${w.blok}
+                ${HavalandUtils.escapeHtml(blok)}
               </div>
-              <span class="badge ${badgeHunian}">${w.statusHunian}</span>
+              <span class="badge ${badgeHunian}">${HavalandUtils.escapeHtml(statusHunian)}</span>
             </div>
 
-            <h3 class="resident-name">${w.namaKK}</h3>
-            <div class="resident-role">${w.jabatan || 'Warga Havaland'}</div>
+            <h3 class="resident-name">${HavalandUtils.escapeHtml(namaKK)}</h3>
+            <div class="resident-role">${HavalandUtils.escapeHtml(jabatan)}</div>
           </div>
 
           <div class="resident-meta">
             <div class="meta-row" style="justify-content: space-between;">
-              <span>Jumlah Jiwa: <strong>${w.jumlahJiwa} orang</strong></span>
+              <span>Jumlah Jiwa: <strong>${jumlahJiwa} orang</strong></span>
               <span class="badge ${isLunas ? 'badge-success' : 'badge-danger'}">
                 ${isLunas ? 'Iuran Lunas' : 'Belum Lunas'}
               </span>
@@ -1141,16 +1181,24 @@ END:VCALENDAR`;
   },
 
   openDetailWarga(wargaId) {
-    const w = HavalandData.warga.find(item => item.id === wargaId);
-    if (!w) return;
+    const rawW = HavalandData.warga.find(item => item.id === wargaId);
+    if (!rawW) return;
+    const w = (typeof HavalandUtils !== "undefined" && HavalandUtils.normalizeWarga)
+      ? HavalandUtils.normalizeWarga(rawW)
+      : rawW;
 
     document.getElementById("modal-warga-title").textContent = `Profil Warga: ${w.blok} - ${w.namaKK}`;
 
     let vehicleList = "";
-    const platList = Array.isArray(w.platKendaraan) ? w.platKendaraan : (w.platKendaraan ? [w.platKendaraan] : ["-"]);
+    const platList = Array.isArray(w.platKendaraan) ? w.platKendaraan : (Array.isArray(w.plat_kendaraan) ? w.plat_kendaraan : ["-"]);
     platList.forEach(v => {
-      vehicleList += `<li style="margin-bottom: 3px;">${v}</li>`;
+      if (v && v !== "-") {
+        vehicleList += `<li style="margin-bottom: 3px;">🚗 ${HavalandUtils.escapeHtml(v)}</li>`;
+      }
     });
+    if (!vehicleList) {
+      vehicleList = `<li><em>Tidak ada kendaraan terdaftar</em></li>`;
+    }
 
     const isLunas = w.iuranBulanIni;
     const bodyHtml = `
@@ -2456,11 +2504,11 @@ END:VCALENDAR`;
       // If no query string, keep all for this cluster
       if (!rawQ) return true;
 
-      const blokLower = w.blok.toLowerCase();
+      const blokLower = String(w.blok || "").toLowerCase();
       const blokClean = blokLower.replace(/[\s\-]/g, "");
-      const namaLower = w.namaKK.toLowerCase();
-      const clusterLower = w.cluster.toLowerCase();
-      const hunianLower = (w.statusHunian || "").toLowerCase();
+      const namaLower = String(w.namaKK || w.nama_kk || "").toLowerCase();
+      const clusterLower = String(w.cluster || "").toLowerCase();
+      const hunianLower = String(w.statusHunian || w.status_hunian || "").toLowerCase();
 
       return (
         blokLower.includes(qLower) ||
@@ -2474,17 +2522,21 @@ END:VCALENDAR`;
     // Sort: exact/prefix match on blok or nama first
     if (rawQ) {
       matches.sort((a, b) => {
-        const aBlokMatch = a.blok.toLowerCase().startsWith(qLower) || a.blok.toLowerCase().replace(/[\s\-]/g, "").startsWith(qClean);
-        const bBlokMatch = b.blok.toLowerCase().startsWith(qLower) || b.blok.toLowerCase().replace(/[\s\-]/g, "").startsWith(qClean);
+        const aBlok = String(a.blok || "").toLowerCase();
+        const bBlok = String(b.blok || "").toLowerCase();
+        const aBlokMatch = aBlok.startsWith(qLower) || aBlok.replace(/[\s\-]/g, "").startsWith(qClean);
+        const bBlokMatch = bBlok.startsWith(qLower) || bBlok.replace(/[\s\-]/g, "").startsWith(qClean);
         if (aBlokMatch && !bBlokMatch) return -1;
         if (!aBlokMatch && bBlokMatch) return 1;
 
-        const aNamaMatch = a.namaKK.toLowerCase().startsWith(qLower);
-        const bNamaMatch = b.namaKK.toLowerCase().startsWith(qLower);
+        const aNama = String(a.namaKK || a.nama_kk || "").toLowerCase();
+        const bNama = String(b.namaKK || b.nama_kk || "").toLowerCase();
+        const aNamaMatch = aNama.startsWith(qLower);
+        const bNamaMatch = bNama.startsWith(qLower);
         if (aNamaMatch && !bNamaMatch) return -1;
         if (!aNamaMatch && bNamaMatch) return 1;
 
-        return a.blok.localeCompare(b.blok);
+        return String(a.blok || "").localeCompare(String(b.blok || ""));
       });
     }
 
@@ -2626,9 +2678,10 @@ END:VCALENDAR`;
     const qClean = qLower.replace(/[\s\-]/g, "");
 
     const matches = HavalandData.warga.filter(w => {
-      const blokLower = w.blok.toLowerCase();
+      if (!w) return false;
+      const blokLower = String(w.blok || "").toLowerCase();
       const blokClean = blokLower.replace(/[\s\-]/g, "");
-      const namaLower = w.namaKK.toLowerCase();
+      const namaLower = String(w.namaKK || w.nama_kk || "").toLowerCase();
       return (
         blokLower.includes(qLower) ||
         blokClean.includes(qClean) ||
@@ -6672,8 +6725,9 @@ const HavalandSync = {
         HavalandUtils.saveStorage("custom_kegiatan_v2", clean);
         break;
       case "warga":
-        HavalandData.warga = clean;
-        HavalandUtils.saveStorage("custom_warga_v2", clean);
+        const normalizedWarga = clean.map(w => (typeof HavalandUtils !== "undefined" && HavalandUtils.normalizeWarga) ? HavalandUtils.normalizeWarga(w) : w);
+        HavalandData.warga = normalizedWarga;
+        HavalandUtils.saveStorage("custom_warga_v2", normalizedWarga);
         break;
       case "aspirasi":
         HavalandData.aspirasi = clean;

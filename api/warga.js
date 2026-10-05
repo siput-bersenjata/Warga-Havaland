@@ -14,7 +14,39 @@ module.exports = async function handler(req, res) {
     }
     try {
       const result = await db.query('SELECT * FROM warga_havaland ORDER BY blok ASC');
-      return res.status(200).json({ success: true, isConfigured: true, data: result.rows });
+      const rows = (result.rows || []).map(r => {
+        let plat = [];
+        try {
+          if (Array.isArray(r.plat_kendaraan)) plat = r.plat_kendaraan;
+          else if (typeof r.plat_kendaraan === 'string') plat = r.plat_kendaraan.startsWith('[') ? JSON.parse(r.plat_kendaraan) : [r.plat_kendaraan];
+          else plat = ['-'];
+        } catch (_) {
+          plat = ['-'];
+        }
+        const isLunas = Boolean(r.iuran_bulan_ini);
+        return {
+          id: r.id,
+          blok: r.blok || '',
+          cluster: r.cluster || 'Havaland',
+          namaKK: r.nama_kk || '-',
+          nama_kk: r.nama_kk || '-',
+          statusHunian: r.status_hunian || 'Tetap',
+          status_hunian: r.status_hunian || 'Tetap',
+          jabatan: r.jabatan || 'Warga',
+          jumlahJiwa: parseInt(r.jumlah_jiwa, 10) || 1,
+          jumlah_jiwa: parseInt(r.jumlah_jiwa, 10) || 1,
+          kontak: r.kontak || '-',
+          platKendaraan: plat,
+          plat_kendaraan: plat,
+          statusIuran: isLunas ? 'Lunas' : 'Belum',
+          status_iuran: isLunas ? 'Lunas' : 'Belum',
+          iuranBulanIni: isLunas,
+          iuran_bulan_ini: isLunas,
+          terakhirBayar: r.terakhir_bayar || '-',
+          terakhir_bayar: r.terakhir_bayar || '-'
+        };
+      });
+      return res.status(200).json({ success: true, isConfigured: true, data: rows });
     } catch (error) {
       return safeErrorResponse(res, 500, "Gagal mengambil data warga.", error);
     }

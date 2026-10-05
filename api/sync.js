@@ -154,20 +154,43 @@ async function getCollectionItems(collectionName) {
       if (wargaTableCheck.rows[0].exists) {
         const wargaRes = await db.query('SELECT * FROM warga_havaland ORDER BY blok ASC');
         if (wargaRes.rows) {
-          return wargaRes.rows.map(r => ({
-            id: r.id,
-            blok: r.blok,
-            cluster: r.cluster,
-            nama_kk: r.nama_kk,
-            status_hunian: r.status_hunian,
-            jabatan: r.jabatan,
-            jumlah_jiwa: r.jumlah_jiwa,
-            kontak: r.kontak,
-            plat_kendaraan: r.plat_kendaraan,
-            status_iuran: r.status_iuran,
-            iuran_bulan_ini: Boolean(r.iuran_bulan_ini),
-            terakhir_bayar: r.terakhir_bayar
-          }));
+          return wargaRes.rows.map(r => {
+            let plat = [];
+            try {
+              if (Array.isArray(r.plat_kendaraan)) {
+                plat = r.plat_kendaraan;
+              } else if (typeof r.plat_kendaraan === 'string') {
+                plat = r.plat_kendaraan.startsWith('[') ? JSON.parse(r.plat_kendaraan) : [r.plat_kendaraan];
+              } else {
+                plat = ['-'];
+              }
+            } catch (_) {
+              plat = ['-'];
+            }
+            const isLunas = Boolean(r.iuran_bulan_ini);
+            const statusIuran = isLunas ? 'Lunas' : 'Belum';
+            return {
+              id: r.id,
+              blok: r.blok || '',
+              cluster: r.cluster || 'Havaland',
+              namaKK: r.nama_kk || '-',
+              nama_kk: r.nama_kk || '-',
+              statusHunian: r.status_hunian || 'Tetap',
+              status_hunian: r.status_hunian || 'Tetap',
+              jabatan: r.jabatan || 'Warga',
+              jumlahJiwa: parseInt(r.jumlah_jiwa, 10) || 1,
+              jumlah_jiwa: parseInt(r.jumlah_jiwa, 10) || 1,
+              kontak: r.kontak || '-',
+              platKendaraan: plat,
+              plat_kendaraan: plat,
+              statusIuran: statusIuran,
+              status_iuran: statusIuran,
+              iuranBulanIni: isLunas,
+              iuran_bulan_ini: isLunas,
+              terakhirBayar: r.terakhir_bayar || '-',
+              terakhir_bayar: r.terakhir_bayar || '-'
+            };
+          });
         }
       }
     }
