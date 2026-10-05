@@ -3562,18 +3562,15 @@ const HavalandSettings = {
     const container = document.getElementById("backup-controls-container");
     if (!container) return;
 
-    const isAdmin = HavalandAuth.isAdmin();
-    const folder = localStorage.getItem("havaland_backup_folder") || "D:\\koding\\Warga Havaland\\backups";
-    const autoBackup = localStorage.getItem("havaland_auto_backup") === "true";
-    const lastSnapshot = localStorage.getItem("havaland_last_snapshot_time") || "Belum ada snapshot";
+    const isAuthorized = HavalandAuth.isAdmin() || HavalandAuth.isPengurus();
 
-    if (!isAdmin) {
+    if (!isAuthorized) {
       container.innerHTML = `
         <div class="admin-locked-box">
           <svg class="w-5 h-5" style="color: var(--accent-gold); flex-shrink: 0; margin-top: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
           <div style="flex: 1;">
             <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">Fitur Khusus Administrator / Pengurus RT</div>
-            <div style="margin-bottom: 0.6rem; line-height: 1.4;">Pengaturan cadangan (backup), pemulihan data (restore), dan penunjukan folder otomatis hanya dapat diakses oleh Admin RT / Bendahara demi keamanan data warga.</div>
+            <div style="margin-bottom: 0.6rem; line-height: 1.4;">Manajemen akun pengguna dan hak akses warga hanya dapat diakses oleh Administrator RT atau Pengurus RT demi keamanan sistem.</div>
             <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandAuth.openLoginModal('admin')" style="font-size: 0.75rem;">
               🔐 Masuk Sebagai Admin RT (Pak RT / Bendahara)
             </button>
@@ -3584,7 +3581,7 @@ const HavalandSettings = {
       return;
     }
 
-    // Tampilan Admin Terverifikasi
+    // Tampilan Admin / Pengurus RT Terverifikasi
     container.innerHTML = `
       <div style="display: flex; flex-direction: column; gap: 0.85rem;">
         <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent); padding: 0.6rem 0.85rem; border-radius: var(--radius-md);">
@@ -3592,54 +3589,18 @@ const HavalandSettings = {
             <span>🛡️ Akses Terverifikasi:</span>
             <span>${HavalandAuth.getCurrentUser()?.nama} (${HavalandAuth.getCurrentUser()?.role})</span>
           </div>
-          <span class="badge badge-success" style="font-size: 0.7rem;">Akses Penuh</span>
+          <span class="badge badge-success" style="font-size: 0.7rem;">Database Terhubung</span>
         </div>
 
+        <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">
+          Seluruh data warga, kas, dan akun tersimpan langsung secara terpusat di database PostgreSQL Vercel. Tidak ada pencadangan berkas JSON manual.
+        </p>
+
         <!-- Tombol Manajemen Akun Warga & Akses -->
-        <button type="button" class="btn btn-outline-primary btn-sm" onclick="HavalandApp.openAccountManagerPage();" style="justify-content: center; width: 100%; padding: 0.5rem 0.85rem; font-weight: 600;">
+        <button type="button" class="btn btn-outline-primary btn-sm" onclick="HavalandApp.openAccountManagerPage();" style="justify-content: center; width: 100%; padding: 0.6rem 0.85rem; font-weight: 600;">
           <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
           👥 Buka Manajemen Akun & Hak Akses Warga
         </button>
-
-        <!-- Tombol Backup Manual & Restore -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
-          <button type="button" class="btn btn-primary btn-sm" onclick="HavalandBackup.exportJSON()" style="justify-content: center;">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Unduh Backup JSON
-          </button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandBackup.triggerFileInput()" style="justify-content: center;">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12"/></svg>
-            Pulihkan Data JSON
-          </button>
-        </div>
-
-        <!-- Folder Penunjukan & Auto Backup -->
-        <div class="card" style="background: var(--bg-subtle); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--surface-border);">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-            <div>
-              <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary);">📁 Lokasi Folder Penyimpanan Cadangan:</div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); word-break: break-all;" id="backup-folder-display">${folder}</div>
-            </div>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="HavalandBackup.selectFolder()" style="font-size: 0.72rem; padding: 3px 8px; flex-shrink: 0;">
-              Ganti Folder
-            </button>
-          </div>
-
-          <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px dashed var(--surface-border); padding-top: 0.6rem; margin-top: 0.6rem;">
-            <div>
-              <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary);">Otomatis Cadangkan Setiap Ada CRUD</div>
-              <div style="font-size: 0.72rem; color: var(--text-muted);">Simpan snapshot lokal otomatis saat ada transaksi, kegiatan, atau usulan baru</div>
-            </div>
-            <div class="switch-input ${autoBackup ? 'active' : ''}" style="cursor: pointer;" onclick="HavalandBackup.toggleAutoBackup()"></div>
-          </div>
-
-          <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px dashed var(--surface-border); padding-top: 0.6rem; margin-top: 0.6rem; font-size: 0.75rem;">
-            <span style="color: var(--text-muted);">Snapshot Terakhir: <strong style="color: var(--text-primary);">${lastSnapshot}</strong></span>
-            <button type="button" class="btn btn-sm" style="font-size: 0.72rem; color: var(--primary-text); text-decoration: underline; background: transparent; padding: 0;" onclick="HavalandBackup.restoreLastSnapshot()">
-              Pulihkan dari Snapshot
-            </button>
-          </div>
-        </div>
       </div>
     `;
     this.renderSlideSection();
@@ -3696,216 +3657,27 @@ const HavalandSettings = {
 // =============================================================================
 // MODUL 3: CADANGAN & PEMULIHAN DATA (BACKUP & RESTORE DENGAN HAK ADMIN)
 // =============================================================================
+// =============================================================================
+// MODUL 3: CADANGAN DATA (Fungsi backup JSON dinonaktifkan sesuai permintaan pengguna)
+// Data tersimpan langsung secara terpusat di database PostgreSQL Vercel.
+// =============================================================================
 const HavalandBackup = {
-  directoryHandle: null,
-
-  exportJSON() {
-    if (!HavalandAuth.isAdmin()) {
-      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang berhak mengunduh cadangan data.", "error");
-      return;
-    }
-
-    const payload = {
-      havalandMeta: {
-        portal: "Pusat Informasi Warga Havaland RT 04 / RW 08",
-        versi: "2.1",
-        diexportPada: new Date().toISOString(),
-        diexportOleh: HavalandAuth.getCurrentUser()?.nama || "Admin RT"
-      },
-      transaksi: HavalandData.transaksi,
-      kegiatan: HavalandData.kegiatan,
-      warga: HavalandData.warga,
-      aspirasi: HavalandData.aspirasi,
-      usulanIde: HavalandData.usulanIde,
-      kasSummary: HavalandData.kasSummary
-    };
-
-    const jsonString = JSON.stringify(payload, null, 2);
-    const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
-    const filename = `havaland_backup_${new Date().toISOString().slice(0, 10)}.json`;
-
-    // Download trigger
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    // Save as latest snapshot
-    localStorage.setItem("havaland_latest_snapshot", jsonString);
-    localStorage.setItem("havaland_last_snapshot_time", new Date().toLocaleString("id-ID"));
-    if (typeof HavalandSettings !== "undefined") {
-      HavalandSettings.renderBackupSection();
-    }
-
-    HavalandUtils.showToast("Backup Berhasil", `Berkas cadangan ${filename} berhasil diunduh!`, "success");
-  },
-
-  triggerFileInput() {
-    if (!HavalandAuth.isAdmin()) {
-      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang berhak memulihkan data.", "error");
-      return;
-    }
-    const input = document.getElementById("backup-file-input");
-    if (input) {
-      input.value = "";
-      input.click();
-    }
-  },
-
-  handleFileSelected(event) {
-    if (!HavalandAuth.isAdmin()) {
-      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang berhak memulihkan data.", "error");
-      return;
-    }
-
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const parsed = JSON.parse(e.target.result);
-
-        // Validasi struktur data
-        if (!parsed.transaksi && !parsed.kegiatan && !parsed.data) {
-          throw new Error("Format berkas backup tidak valid.");
-        }
-
-        const dataSrc = parsed.data ? parsed.data : parsed;
-
-        if (dataSrc.transaksi && Array.isArray(dataSrc.transaksi)) {
-          HavalandData.transaksi = HavalandUtils.dedupeById(dataSrc.transaksi);
-          HavalandUtils.saveStorage("custom_transaksi_full", HavalandData.transaksi);
-          HavalandUtils.removeStorage("custom_transaksi");
-        }
-        if (dataSrc.kegiatan && Array.isArray(dataSrc.kegiatan)) {
-          HavalandData.kegiatan = HavalandUtils.dedupeById(dataSrc.kegiatan);
-          HavalandUtils.saveStorage("custom_kegiatan_v2", HavalandData.kegiatan);
-          HavalandUtils.removeStorage("custom_kegiatan");
-        }
-        if (dataSrc.usulanIde && Array.isArray(dataSrc.usulanIde)) {
-          HavalandData.usulanIde = HavalandUtils.dedupeById(dataSrc.usulanIde);
-          HavalandUtils.saveStorage("custom_usulan_v2", HavalandData.usulanIde);
-          HavalandUtils.removeStorage("custom_usulan");
-        }
-        if (dataSrc.warga && Array.isArray(dataSrc.warga)) {
-          HavalandData.warga = dataSrc.warga;
-        }
-        if (dataSrc.aspirasi && Array.isArray(dataSrc.aspirasi)) {
-          HavalandData.aspirasi = dataSrc.aspirasi;
-          HavalandUtils.saveStorage("custom_aspirasi", dataSrc.aspirasi);
-        }
-
-        // Re-render semua antarmuka
-        HavalandApp.recalculateSummary();
-        HavalandApp.renderKPIs();
-        HavalandApp.renderMiniChart();
-        HavalandApp.renderExpenseAllocations();
-        HavalandApp.renderBerandaHighlights();
-        HavalandApp.renderTransaksi();
-        HavalandApp.renderKegiatan("semua");
-        HavalandApp.renderWarga();
-        HavalandProposals.renderSlider();
-
-        HavalandUtils.showToast(
-          "Pemulihan Berhasil",
-          "Seluruh data transaksi, kegiatan, dan usulan berhasil dipulihkan dari berkas backup!",
-          "success"
-        );
-      } catch (err) {
-        alert("Gagal membaca file backup: " + err.message);
-      }
-    };
-    reader.readAsText(file);
-  },
-
-  async selectFolder() {
-    if (!HavalandAuth.isAdmin()) {
-      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang berhak mengatur lokasi folder backup.", "error");
-      return;
-    }
-
-    if ("showDirectoryPicker" in window) {
-      try {
-        const dirHandle = await window.showDirectoryPicker({ mode: "readwrite" });
-        this.directoryHandle = dirHandle;
-        localStorage.setItem("havaland_backup_folder", dirHandle.name);
-        HavalandUtils.showToast(
-          "Folder Ditunjuk",
-          `Folder '${dirHandle.name}' berhasil ditetapkan sebagai lokasi backup otomatis.`,
-          "success"
-        );
-        HavalandSettings.renderBackupSection();
-      } catch (e) {
-        // User cancelled picker
-      }
-    } else {
-      const cur = localStorage.getItem("havaland_backup_folder") || "D:\\koding\\Warga Havaland\\backups";
-      const manual = prompt("Tentukan path folder lokasi pencadangan otomatis di komputer Anda:", cur);
-      if (manual && manual.trim()) {
-        localStorage.setItem("havaland_backup_folder", manual.trim());
-        HavalandUtils.showToast("Lokasi Disimpan", `Lokasi folder disetel ke: ${manual.trim()}`, "info");
-        HavalandSettings.renderBackupSection();
-      }
-    }
-  },
-
-  toggleAutoBackup() {
-    if (!HavalandAuth.isAdmin()) {
-      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat mengubah pengaturan backup otomatis.", "error");
-      return;
-    }
-
-    const current = localStorage.getItem("havaland_auto_backup") === "true";
-    const nextVal = !current;
-    localStorage.setItem("havaland_auto_backup", nextVal ? "true" : "false");
-    HavalandSettings.renderBackupSection();
-    HavalandUtils.showToast(
-      "Backup Otomatis",
-      nextVal ? "Pencadangan otomatis setiap operasi CRUD diaktifkan!" : "Pencadangan otomatis dinonaktifkan.",
-      "info"
-    );
-  },
-
-  autoSnapshot() {
-    // Nonaktif sesuai instruksi pengguna agar data selalu live dan sinkron langsung ke database
-    return;
-  },
-
-  restoreLastSnapshot() {
-    if (!HavalandAuth.isAdmin()) {
-      HavalandUtils.showToast("Akses Ditolak", "Hanya Administrator RT yang dapat memulihkan snapshot.", "error");
-      return;
-    }
-
-    const snap = localStorage.getItem("havaland_latest_snapshot");
-    if (!snap) {
-      HavalandUtils.showToast("Snapshot Kosong", "Belum ada snapshot cadangan yang tersimpan.", "warning");
-      return;
-    }
-
-    if (!confirm("Pulihkan data dari snapshot terakhir yang tersimpan secara lokal?")) return;
-
-    try {
-      const parsed = JSON.parse(snap);
-      if (parsed.transaksi) HavalandData.transaksi = parsed.transaksi;
-      if (parsed.kegiatan) HavalandData.kegiatan = parsed.kegiatan;
-      if (parsed.usulanIde) HavalandData.usulanIde = parsed.usulanIde;
-
-      HavalandApp.recalculateSummary();
-      HavalandApp.renderKPIs();
-      HavalandApp.renderTransaksi();
-      HavalandApp.renderKegiatan("semua");
-      HavalandProposals.renderSlider();
-
-      HavalandUtils.showToast("Dipulihkan", "Data berhasil dikembalikan dari snapshot terakhir!", "success");
-    } catch (e) {
-      HavalandUtils.showToast("Backup Rusak", "Format berkas snapshot tidak dikenali. Pilih berkas JSON cadangan yang lain.", "error");
-    }
-  }
+  exportJSON() {},
+  triggerFileInput() {},
+  handleFileSelected() {},
+  selectFolder() {},
+  toggleAutoBackup() {},
+  autoSnapshot() {},
+  restoreLastSnapshot() {}
 };
+
+// Bersihkan data snapshot lokal lama agar tidak memakan ruang penyimpanan peramban
+try {
+  localStorage.removeItem("havaland_latest_snapshot");
+  localStorage.removeItem("havaland_last_snapshot_time");
+  localStorage.removeItem("havaland_backup_folder");
+  localStorage.removeItem("havaland_auto_backup");
+} catch (_) {}
 
 // =============================================================================
 // MODUL 4: KOTAK SUARA & USULAN IDE WARGA (SLIDER DI BERANDA)
@@ -4169,53 +3941,6 @@ const HavalandUserManagement = {
     this.isLoading = true;
     this.render();
 
-    // Akun pengurus inti resmi sistem Havaland
-    const officialAccounts = [
-      {
-        id: "USR-ADMIN-01",
-        username: "admin",
-        nama: "Admin RT 04 Havaland",
-        role: "Administrator RT",
-        blok: "Kantor RT",
-        is_admin: true,
-        created_at: "2026-09-01T00:00:00Z"
-      },
-      {
-        id: "USR-RT-01",
-        username: "rt",
-        nama: "Bpk. Bambang Sujarwo",
-        role: "Pengurus RT",
-        blok: "Blok A-01",
-        is_admin: true,
-        created_at: "2026-09-01T00:00:00Z"
-      },
-      {
-        id: "USR-BENDAHARA-01",
-        username: "bendahara",
-        nama: "Ibu Citra Lestari, S.E.",
-        role: "Bendahara RT",
-        blok: "Blok B-02",
-        is_admin: false,
-        created_at: "2026-09-01T00:00:00Z"
-      },
-      {
-        id: "USR-WARGA-01",
-        username: "warga",
-        nama: "Warga Havaland",
-        role: "Warga Tetap",
-        blok: "Perum Havaland",
-        is_admin: false,
-        created_at: "2026-09-01T00:00:00Z"
-      }
-    ];
-
-    // 1. Baca data lokal havaland_custom_users yang ada
-    let localCustomUsers = [];
-    const local = localStorage.getItem("havaland_custom_users");
-    if (local) {
-      try { localCustomUsers = JSON.parse(local); } catch (e) {}
-    }
-
     try {
       const token = HavalandAuth.syncToken || HavalandAuth.serverToken || (HavalandAuth.currentSession ? HavalandAuth.currentSession.token : null);
       if (token) {
@@ -4228,59 +3953,8 @@ const HavalandUserManagement = {
         if (res.ok) {
           const result = await res.json();
           if (result.success && Array.isArray(result.data)) {
-            const serverUsers = result.data;
-            const serverUsernames = new Set(serverUsers.map(u => (u.username || "").toLowerCase()));
-
-            // Pastikan akun resmi selalu ada di serverUsers jika belum ada di database cloud
-            officialAccounts.forEach(off => {
-              if (!serverUsernames.has(off.username.toLowerCase())) {
-                serverUsers.push(off);
-                serverUsernames.add(off.username.toLowerCase());
-              }
-            });
-
-            // Cek apakah ada akun lokal custom yang belum masuk ke database Postgres
-            const missingOnServer = localCustomUsers.filter(u => u && u.username && !serverUsernames.has(u.username.toLowerCase()));
-
-            if (missingOnServer.length > 0 && (HavalandAuth.isAdmin() || HavalandAuth.isPengurus())) {
-              // Otomatis selamatkan dan daftarkan akun lokal yang belum ada di database cloud
-              for (const missing of missingOnServer) {
-                try {
-                  const pass = missing.password || "WargaHavaland123!";
-                  const regRes = await fetch("/api/users", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      "Authorization": `Bearer ${token}`,
-                      "X-Sync-Token": token
-                    },
-                    body: JSON.stringify({
-                      username: missing.username,
-                      password: pass,
-                      nama: missing.nama,
-                      role: missing.role || "Warga Tetap",
-                      blok: missing.blok || "-"
-                    })
-                  });
-                  const regData = await regRes.json();
-                  if (regData.success && regData.data) {
-                    serverUsers.push(regData.data);
-                    serverUsernames.add(missing.username.toLowerCase());
-                    console.log(`Akun warga "${missing.username}" berhasil diselamatkan dan didaftarkan ke Database Cloud!`);
-                  }
-                } catch (regErr) {
-                  console.warn("Gagal auto-sync akun lokal ke server:", missing.username, regErr);
-                }
-              }
-            }
-
-            // Gabungkan akun lokal yang belum ter-sync agar TIDAK PERNAH HILANG
-            const remainingLocal = missingOnServer.filter(u => !serverUsernames.has(u.username.toLowerCase()));
-            const allUsers = [...serverUsers, ...remainingLocal];
-
-            this.users = allUsers;
-            const nonAdmin = allUsers.filter(u => u.username !== "admin");
-            localStorage.setItem("havaland_custom_users", JSON.stringify(nonAdmin));
+            // Data murni dari database PostgreSQL Vercel (Single Source of Truth)
+            this.users = result.data;
             this.isLoading = false;
             this.render();
             return;
@@ -4288,13 +3962,13 @@ const HavalandUserManagement = {
         }
       }
     } catch (e) {
-      console.warn("Gagal memuat akun dari server API, menggunakan data lokal:", e.message);
+      console.warn("Gagal memuat akun dari database server:", e.message);
     }
 
-    // Fallback offline: gabungkan officialAccounts + customUsers
-    const knownUsernames = new Set(officialAccounts.map(u => u.username.toLowerCase()));
-    const customOnly = localCustomUsers.filter(u => !knownUsernames.has(u.username.toLowerCase()));
-    this.users = [...officialAccounts, ...customOnly];
+    // Fallback minimal jika API belum merespons
+    this.users = [
+      { id: "USR-ADMIN-01", username: "admin", nama: "Admin RT 04 Havaland", role: "Administrator RT", blok: "Kantor RT", is_admin: true }
+    ];
     this.isLoading = false;
     this.render();
   },
@@ -4638,7 +4312,7 @@ const HavalandUserManagement = {
       return;
     }
 
-    if (!confirm(`Apakah Anda yakin ingin menghapus akun "${username}"? Akses login warga ini akan dicabut permanen dari database cloud.`)) {
+    if (!confirm(`Apakah Anda yakin ingin menghapus akun "${username}"? Akses login warga ini akan dicabut permanen dari database.`)) {
       return;
     }
 
@@ -4657,16 +4331,16 @@ const HavalandUserManagement = {
         });
         const result = await res.json();
         if (!result.success) {
-          throw new Error(result.error || result.message || "Gagal menghapus akun di server.");
+          throw new Error(result.error || result.message || "Gagal menghapus akun di server database.");
         }
       }
     } catch (e) {
       console.error("API delete error:", e);
-      HavalandUtils.showToast("Gagal Menghapus di Server", e.message, "danger");
+      HavalandUtils.showToast("Gagal Menghapus", e.message, "danger");
       return;
     }
 
-    // Remove from local storage
+    // Bersihkan dari penyimpanan lokal jika ada
     const local = localStorage.getItem("havaland_custom_users");
     if (local) {
       try {
@@ -4676,7 +4350,7 @@ const HavalandUserManagement = {
       } catch (err) {}
     }
 
-    // If currently editing this user, reset form
+    // Jika sedang mengedit user ini, reset form
     const currentEditId = document.getElementById("akun-edit-id")?.value;
     if (currentEditId === userId) {
       this.resetForm();
@@ -4686,8 +4360,8 @@ const HavalandUserManagement = {
       HavalandAuditLog.logActivity("HAPUS_AKUN", "Manajemen Akun", `Menghapus akun pengguna: "${username}" (ID: ${userId})`);
     }
 
-    HavalandUtils.showToast("Akun Dihapus", `Akun "${username}" telah berhasil dihapus dari database cloud.`, "info");
-    this.loadUsers();
+    HavalandUtils.showToast("Akun Dihapus", `Akun "${username}" telah berhasil dihapus dari database.`, "info");
+    await this.loadUsers();
   },
 
   render() {
@@ -7091,37 +6765,14 @@ const HavalandSync = {
       }
 
       const local = (this.collect(name) || []).filter(x => x && x.id && !deletedSet.has(String(x.id)));
-      const hasPending = this.isPending(name);
 
       if (cloud.length > 0) {
-        // Proteksi mutlak integritas data: cek apakah ada data lokal yang belum ada di cloud
-        const cloudIds = new Set(cloud.map(x => x && x.id));
-        const unpushedLocal = local.filter(x => x && x.id && !cloudIds.has(x.id));
-
-        if (unpushedLocal.length > 0) {
-          // Data lokal baru (misal transaksi kas baru atau aspirasi baru) jangan pernah dibuang!
-          const merged = HavalandUtils.dedupeById([...cloud, ...unpushedLocal]);
-          this.apply(name, merged);
-          result.pulled += 1;
-          if (this.canPush(name)) {
-            await this.pushImmediate(name);
-          } else {
-            this.markPending(name);
-          }
-        } else {
-          this.apply(name, cloud);
-          result.pulled += 1;
-        }
+        // Data dari database Vercel adalah sumber data utama (Single Source of Truth)
+        this.apply(name, cloud);
+        result.pulled += 1;
       } else {
-        if (local.length > 0 && this.canPush(name)) {
-          const ok = await this.pushImmediate(name);
-          if (ok) {
-            result.seeded += 1;
-            result.seededItems += local.length;
-          }
-        } else if (local.length > 0) {
-          this.apply(name, local);
-        }
+        // Jika data di database kosong / dihapus, kosongkan juga di lokal agar tidak terjadi resurrection data
+        this.apply(name, []);
       }
     }
     return result;
@@ -7140,34 +6791,14 @@ const HavalandSync = {
 
     this.enabled = true;
     this.suspended = true; // jangan memicu push balik selama pull awal
-    let summary = { pulled: 0, seeded: 0, seededItems: 0 };
     try {
-      summary = await this.syncAllCollections(status);
+      await this.syncAllCollections(status);
     } finally {
       this.suspended = false;
     }
-
-    console.log("Terhubung ke Vercel Cloud Database! Sinkron antar-device aktif.");
-    const badge = document.querySelector(".live-badge");
-    if (badge) {
-      badge.innerHTML = `<span class="pulse-dot" style="background:#10B981;"></span><span>Cloud DB Aktif</span>`;
-      badge.setAttribute("title", "Terhubung ke Database Cloud — data sinkron antar-device");
-    }
-    if (!this.badgeNotified) {
-      this.badgeNotified = true;
-      HavalandUtils.showToast("Cloud DB Aktif", "Data tersinkron antar-device via database cloud.", "success");
-    }
-    if (summary.seeded > 0) {
-      HavalandUtils.showToast(
-        "Data Diunggah ke Cloud",
-        `${summary.seededItems} data dari ${summary.seeded} koleksi berhasil disimpan ke database cloud.`,
-        "success"
-      );
-    }
   },
 
-  // Dipanggil ulang setelah user login: tarik versi cloud terbaru, sekaligus
-  // unggah data lokal untuk koleksi cloud yang masih kosong (seed awal).
+  // Dipanggil ulang setelah user login: tarik data database Vercel terbaru
   async pullOnLogin() {
     if (!this.enabled) {
       await this.init();
@@ -7179,16 +6810,9 @@ const HavalandSync = {
       if (!res.ok) return;
       const status = await res.json();
       if (!status || !status.connected) return;
-      const summary = await this.syncAllCollections(status);
-      if (summary.seeded > 0) {
-        HavalandUtils.showToast(
-          "Data Diunggah ke Cloud",
-          `${summary.seededItems} data dari ${summary.seeded} koleksi berhasil disimpan ke database cloud.`,
-          "success"
-        );
-      }
+      await this.syncAllCollections(status);
     } catch (e) {
-      console.warn("Gagal menarik data cloud saat login:", e);
+      console.warn("Gagal menarik data database saat login:", e);
     } finally {
       this.suspended = false;
     }

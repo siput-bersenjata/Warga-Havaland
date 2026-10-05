@@ -311,21 +311,29 @@ async function ensureUsersTable() {
       CREATE INDEX IF NOT EXISTS idx_pengguna_username ON pengguna_havaland(username);
     `);
 
-    // Pastikan akun resmi (admin, rt, bendahara, warga) selalu terdaftar dan ter-update di database cloud
-    await db.query(`
-      INSERT INTO pengguna_havaland (id, username, password_hash, nama, role, blok, is_admin)
-      VALUES 
-        ('USR-ADMIN-01', 'admin', $1, 'Admin RT 04 Havaland', 'Administrator RT', 'Kantor RT', TRUE),
-        ('USR-RT-01', 'rt', $2, 'Bpk. Bambang Sujarwo', 'Pengurus RT', 'Blok A-01', TRUE),
-        ('USR-BENDAHARA-01', 'bendahara', $3, 'Ibu Citra Lestari, S.E.', 'Bendahara RT', 'Blok B-02', FALSE),
-        ('USR-WARGA-01', 'warga', $4, 'Warga Havaland', 'Warga Tetap', 'Perum Havaland', FALSE)
-      ON CONFLICT (username) DO UPDATE SET
-        is_admin = EXCLUDED.is_admin,
-        role = EXCLUDED.role,
-        nama = EXCLUDED.nama,
-        blok = EXCLUDED.blok,
-        updated_at = NOW();
-    `, [ADMIN_HASH, RT_HASH, BENDAHARA_HASH, WARGA_HASH]);
+    // Hanya lakukan initial seed jika tabel pengguna_havaland BENAR-BENAR KOSONG (0 baris).
+    // Jangan pernah memasukkan kembali akun (rt, bendahara, warga, dll) yang sudah dihapus pengguna!
+    const countCheck = await db.query('SELECT COUNT(*) AS count FROM pengguna_havaland');
+    const totalUsers = parseInt((countCheck.rows && countCheck.rows[0]?.count) || 0, 10);
+
+    if (totalUsers === 0) {
+      await db.query(`
+        INSERT INTO pengguna_havaland (id, username, password_hash, nama, role, blok, is_admin)
+        VALUES 
+          ('USR-ADMIN-01', 'admin', $1, 'Admin RT 04 Havaland', 'Administrator RT', 'Kantor RT', TRUE),
+          ('USR-RT-01', 'rt', $2, 'Bpk. Bambang Sujarwo', 'Pengurus RT', 'Blok A-01', TRUE),
+          ('USR-BENDAHARA-01', 'bendahara', $3, 'Ibu Citra Lestari, S.E.', 'Bendahara RT', 'Blok B-02', FALSE),
+          ('USR-WARGA-01', 'warga', $4, 'Warga Havaland', 'Warga Tetap', 'Perum Havaland', FALSE)
+        ON CONFLICT (username) DO NOTHING;
+      `, [ADMIN_HASH, RT_HASH, BENDAHARA_HASH, WARGA_HASH]);
+    } else {
+      // Jika tabel sudah ada isinya, hanya pastikan akun darurat 'admin' tetap terdaftar demi keamanan sistem
+      await db.query(`
+        INSERT INTO pengguna_havaland (id, username, password_hash, nama, role, blok, is_admin)
+        VALUES ('USR-ADMIN-01', 'admin', $1, 'Admin RT 04 Havaland', 'Administrator RT', 'Kantor RT', TRUE)
+        ON CONFLICT (username) DO NOTHING;
+      `, [ADMIN_HASH]);
+    }
   } catch (err) {
     console.error('[Database ensureUsersTable Error]', err.message);
   }

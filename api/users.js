@@ -86,7 +86,7 @@ module.exports = async function handler(req, res) {
           created_at ASC
       `);
 
-      const rows = (result.rows && result.rows.length > 0) ? result.rows : defaultAccounts;
+      const rows = result.rows || [];
       return res.status(200).json({
         success: true,
         isConfigured: true,

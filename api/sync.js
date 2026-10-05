@@ -126,8 +126,8 @@ async function getCollectionItems(collectionName) {
       `);
       if (trxTableCheck.rows[0].exists) {
         const trxRes = await db.query('SELECT * FROM transaksi_kas ORDER BY tanggal DESC, created_at DESC');
-        if (trxRes.rows && trxRes.rows.length > 0) {
-          const itemsFromTable = trxRes.rows.map(r => ({
+        if (trxRes.rows) {
+          return trxRes.rows.map(r => ({
             id: r.id,
             tanggal: r.tanggal instanceof Date ? r.tanggal.toISOString().slice(0, 10) : String(r.tanggal || '').slice(0, 10),
             jenis: r.jenis,
@@ -140,13 +140,6 @@ async function getCollectionItems(collectionName) {
             status: r.status || 'Verified',
             catatan: r.catatan || ''
           }));
-
-          const syncRes = await db.query('SELECT id, data FROM sync_store WHERE collection = $1 ORDER BY updated_at ASC', ['transaksi']);
-          const tableIds = new Set(itemsFromTable.map(x => x.id));
-          const syncItems = toClientItems(syncRes.rows);
-          const extraSyncItems = syncItems.filter(x => x && x.id && !tableIds.has(x.id));
-
-          return [...itemsFromTable, ...extraSyncItems];
         }
       }
     }
@@ -160,8 +153,8 @@ async function getCollectionItems(collectionName) {
       `);
       if (wargaTableCheck.rows[0].exists) {
         const wargaRes = await db.query('SELECT * FROM warga_havaland ORDER BY blok ASC');
-        if (wargaRes.rows && wargaRes.rows.length > 0) {
-          const itemsFromTable = wargaRes.rows.map(r => ({
+        if (wargaRes.rows) {
+          return wargaRes.rows.map(r => ({
             id: r.id,
             blok: r.blok,
             cluster: r.cluster,
@@ -175,13 +168,6 @@ async function getCollectionItems(collectionName) {
             iuran_bulan_ini: Boolean(r.iuran_bulan_ini),
             terakhir_bayar: r.terakhir_bayar
           }));
-
-          const syncRes = await db.query('SELECT id, data FROM sync_store WHERE collection = $1 ORDER BY updated_at ASC', ['warga']);
-          const tableIds = new Set(itemsFromTable.map(x => x.id));
-          const syncItems = toClientItems(syncRes.rows);
-          const extraSyncItems = syncItems.filter(x => x && x.id && !tableIds.has(x.id));
-
-          return [...itemsFromTable, ...extraSyncItems];
         }
       }
     }
@@ -195,8 +181,8 @@ async function getCollectionItems(collectionName) {
       `);
       if (kegTableCheck.rows[0].exists) {
         const kegRes = await db.query('SELECT * FROM kegiatan_rutin ORDER BY created_at ASC');
-        if (kegRes.rows && kegRes.rows.length > 0) {
-          const itemsFromTable = kegRes.rows.map(r => ({
+        if (kegRes.rows) {
+          return kegRes.rows.map(r => ({
             id: r.id,
             judul: r.judul,
             kategori: r.kategori,
@@ -209,13 +195,6 @@ async function getCollectionItems(collectionName) {
             statusBadge: r.status_badge || 'Aktif',
             jadwalPiket: typeof r.jadwal_piket === 'string' ? JSON.parse(r.jadwal_piket) : (r.jadwal_piket || [])
           }));
-
-          const syncRes = await db.query('SELECT id, data FROM sync_store WHERE collection = $1 ORDER BY updated_at ASC', ['kegiatan']);
-          const tableIds = new Set(itemsFromTable.map(x => x.id));
-          const syncItems = toClientItems(syncRes.rows);
-          const extraSyncItems = syncItems.filter(x => x && x.id && !tableIds.has(x.id));
-
-          return [...itemsFromTable, ...extraSyncItems];
         }
       }
     }
@@ -229,8 +208,8 @@ async function getCollectionItems(collectionName) {
       `);
       if (aspTableCheck.rows[0].exists) {
         const aspRes = await db.query('SELECT * FROM aspirasi_warga ORDER BY tanggal DESC, created_at DESC');
-        if (aspRes.rows && aspRes.rows.length > 0) {
-          const itemsFromTable = aspRes.rows.map(r => ({
+        if (aspRes.rows) {
+          return aspRes.rows.map(r => ({
             id: r.id,
             pelapor: r.pelapor,
             kategori: r.kategori,
@@ -240,13 +219,6 @@ async function getCollectionItems(collectionName) {
             tanggapan: r.tanggapan || 'Laporan telah diterima sistem.',
             urgensi: r.urgensi || 'Sedang'
           }));
-
-          const syncRes = await db.query('SELECT id, data FROM sync_store WHERE collection = $1 ORDER BY updated_at ASC', ['aspirasi']);
-          const tableIds = new Set(itemsFromTable.map(x => x.id));
-          const syncItems = toClientItems(syncRes.rows);
-          const extraSyncItems = syncItems.filter(x => x && x.id && !tableIds.has(x.id));
-
-          return [...itemsFromTable, ...extraSyncItems];
         }
       }
     }
