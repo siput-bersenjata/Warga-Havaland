@@ -36,6 +36,38 @@ async function ensureTable() {
     )
   `);
   await db.query(`CREATE INDEX IF NOT EXISTS idx_sync_store_collection ON sync_store (collection)`);
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS aspirasi_warga (
+      id VARCHAR(50) PRIMARY KEY,
+      pelapor VARCHAR(150) NOT NULL,
+      kategori VARCHAR(100) NOT NULL,
+      judul TEXT NOT NULL,
+      tanggal DATE DEFAULT CURRENT_DATE,
+      status VARCHAR(50) DEFAULT 'Diproses',
+      tanggapan TEXT DEFAULT 'Laporan telah diterima sistem dan dalam penanganan pengurus RT.',
+      urgensi VARCHAR(50) DEFAULT 'Sedang',
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_aspirasi_tanggal ON aspirasi_warga(tanggal DESC);
+  `).catch(() => {});
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS kegiatan_rutin (
+      id VARCHAR(50) PRIMARY KEY,
+      judul VARCHAR(200) NOT NULL,
+      kategori VARCHAR(100) NOT NULL,
+      tipe VARCHAR(50) DEFAULT 'Rutin',
+      frekuensi VARCHAR(150),
+      waktu_next VARCHAR(150),
+      lokasi VARCHAR(200),
+      koordinator VARCHAR(150),
+      deskripsi TEXT,
+      status_badge VARCHAR(50),
+      jadwal_piket JSONB DEFAULT '[]'::jsonb,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+  `).catch(() => {});
 }
 
 function toClientItems(rows) {

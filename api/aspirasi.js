@@ -1,11 +1,35 @@
 const db = require('./db');
 const { validateToken, setCorsHeaders, handlePreflight, safeErrorResponse, validateStringLength } = require('./middleware/auth');
 
+async function ensureAspirasiTable() {
+  if (!db || !db.isConfigured) return;
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS aspirasi_warga (
+        id VARCHAR(50) PRIMARY KEY,
+        pelapor VARCHAR(150) NOT NULL,
+        kategori VARCHAR(100) NOT NULL,
+        judul TEXT NOT NULL,
+        tanggal DATE DEFAULT CURRENT_DATE,
+        status VARCHAR(50) DEFAULT 'Diproses',
+        tanggapan TEXT DEFAULT 'Laporan telah diterima sistem dan dalam penanganan pengurus RT.',
+        urgensi VARCHAR(50) DEFAULT 'Sedang',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_aspirasi_tanggal ON aspirasi_warga(tanggal DESC);
+    `);
+  } catch (err) {
+    console.error('[Database ensureAspirasiTable Error]', err.message);
+  }
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
   setCorsHeaders(res);
 
   if (handlePreflight(req, res)) return;
+
+  await ensureAspirasiTable();
 
   if (req.method === 'GET') {
     if (!db.isConfigured) {
