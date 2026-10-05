@@ -842,6 +842,16 @@ const HavalandData = {
       isAdmin: false,
       isPengurus: false,
       isBendahara: true
+    },
+    {
+      id: "USR-WARGA-01",
+      username: "warga",
+      nama: "Warga Havaland",
+      role: "Warga Tetap",
+      blok: "Perum Havaland",
+      isAdmin: false,
+      isPengurus: false,
+      isBendahara: false
     }
   ],
 

@@ -3201,7 +3201,8 @@ const HavalandAuth = {
     if (officialTarget) {
       const isDefaultPassValid = (userVal === "admin" && (passVal === "admin" || passVal === "Amalia2125" || (window.DEFAULT_ADMIN_PASS && passVal === window.DEFAULT_ADMIN_PASS))) ||
                                 (userVal === "rt" && (passVal === "rt" || passVal === "admin" || passVal === "Amalia2125" || passVal === "rt123456")) ||
-                                (userVal === "bendahara" && (passVal === "bendahara" || passVal === "admin" || passVal === "Amalia2125" || passVal === "bendahara123"));
+                                (userVal === "bendahara" && (passVal === "bendahara" || passVal === "admin" || passVal === "Amalia2125" || passVal === "bendahara123")) ||
+                                (userVal === "warga" && (passVal === "warga" || passVal === "warga123"));
 
       if (isDefaultPassValid) {
         this.saveSession(officialTarget, rememberMe);
@@ -4185,7 +4186,7 @@ const HavalandUserManagement = {
         nama: "Bpk. Bambang Sujarwo",
         role: "Pengurus RT",
         blok: "Blok A-01",
-        is_admin: false,
+        is_admin: true,
         created_at: "2026-09-01T00:00:00Z"
       },
       {
@@ -4194,6 +4195,15 @@ const HavalandUserManagement = {
         nama: "Ibu Citra Lestari, S.E.",
         role: "Bendahara RT",
         blok: "Blok B-02",
+        is_admin: false,
+        created_at: "2026-09-01T00:00:00Z"
+      },
+      {
+        id: "USR-WARGA-01",
+        username: "warga",
+        nama: "Warga Havaland",
+        role: "Warga Tetap",
+        blok: "Perum Havaland",
         is_admin: false,
         created_at: "2026-09-01T00:00:00Z"
       }

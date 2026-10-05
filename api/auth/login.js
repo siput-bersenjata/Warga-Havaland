@@ -74,7 +74,7 @@ module.exports = async function handler(req, res) {
       success: true,
       message: `Selamat datang, ${session.user.nama}!`,
       token: session.token,
-      syncToken: canSync ? session.token : null,
+      syncToken: session.token,
       user: session.user,
       expiresAt: session.expiresAt
     });

@@ -46,7 +46,7 @@ module.exports = async function handler(req, res) {
         nama: "Bpk. Bambang Sujarwo",
         role: "Pengurus RT",
         blok: "Blok A-01",
-        is_admin: false,
+        is_admin: true,
         created_at: "2026-09-01T00:00:00Z"
       },
       {
@@ -55,6 +55,15 @@ module.exports = async function handler(req, res) {
         nama: "Ibu Citra Lestari, S.E.",
         role: "Bendahara RT",
         blok: "Blok B-02",
+        is_admin: false,
+        created_at: "2026-09-01T00:00:00Z"
+      },
+      {
+        id: "USR-WARGA-01",
+        username: "warga",
+        nama: "Warga Havaland",
+        role: "Warga Tetap",
+        blok: "Perum Havaland",
         is_admin: false,
         created_at: "2026-09-01T00:00:00Z"
       }
@@ -73,7 +82,7 @@ module.exports = async function handler(req, res) {
         SELECT id, username, nama, role, blok, is_admin, created_at, updated_at 
         FROM pengguna_havaland 
         ORDER BY 
-          CASE WHEN username = 'admin' THEN 0 WHEN username = 'rt' THEN 1 WHEN username = 'bendahara' THEN 2 ELSE 3 END,
+          CASE WHEN username = 'admin' THEN 0 WHEN username = 'rt' THEN 1 WHEN username = 'bendahara' THEN 2 WHEN username = 'warga' THEN 3 ELSE 4 END,
           created_at ASC
       `);
 
